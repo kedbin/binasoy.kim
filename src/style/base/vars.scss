@@ -1,0 +1,40 @@
+// colors
+$page-background: #000000;
+$text-main: #00ff41;
+$text-secondary: #008f11;
+$text-body: #e0e0e0;  // White/light gray for body text
+$accent-color: #00ff41;
+$btn-background: #003b00;
+$btn-background-secondary: #001a00;
+$content-background: #0a0a0a;
+$highlight-color: #00ff41;
+
+// shadows
+$box-shadow: 0px 0px 75px 35px #00000042;
+$content-box-shadow-dark: 0px 0px 20px 13px #00ff4126;
+$content-box-shadow: 0px 0px 20px 13px #00ff4126;
+$text-shadow: 4px 4px 0px #00000040;
+$text-shadow-secondary: 0px 4px 10px #00ff41;
+$purple-glow: 0px 4px 4px #00ff41;
+$purple-glow2: 0px 0px 19px 3px rgb(0 255 65 / 70%);
+
+//borders
+$border-radius: 0.7vw;
+$content-border-radius: 7vw;
+
+//backgrounds
+$content-background-image: url("/src/assets/images/profile_v4.webp");
+
+// fonts
+@font-face {
+    font-family: 'Alata';
+    font-style: normal;
+    font-weight: 400;
+    src: url("/src/assets/fonts/Alata-Regular.ttf");
+}
+
+$font-family: 'Courier New', monospace;
+$font-family-secondary: 'Courier New', monospace;
+
+// transitions
+$transition: all 0.3s ease-in-out;

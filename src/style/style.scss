@@ -1,0 +1,1340 @@
+html {
+  height: 100%;
+}
+
+body {
+  height: 100%;
+  background-color: $page-background;
+  margin: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+* {
+  font-family: 'Alata', sans-serif;
+  text-shadow: $text-shadow;
+  color: $text-main;
+  font-size: clamp(12px, 0.8vw, 16px);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  box-sizing: border-box;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.slider-wrapper {
+  overflow-x: hidden;
+}
+
+.hidden {
+  display: none;
+}
+
+.content-card {
+  flex: 1;
+  margin: 1vw;
+  display: flex;
+  flex-direction: column;
+  background-color: $content-background;
+  box-shadow: $content-box-shadow;
+  border-radius: $content-border-radius;
+  transition: $transition;
+  opacity: 0; // Start hidden, animate when loaded
+  position: relative;
+  overflow: hidden;
+
+  // Profile picture as pseudo-element for filter effects
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 45%;
+    height: 85%;
+    background-image: $content-background-image;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: bottom left;
+    z-index: 0;
+    pointer-events: none;
+    animation: profileGlow 4s ease-in-out infinite;
+  }
+
+
+  header {
+    padding: 4vw 4vw 3vw;
+    display: flex;
+    justify-content: space-between;
+
+    * {
+      font-family: $font-family-secondary;
+    }
+
+    .logo {
+      font-size: 2vw;
+      display: flex;
+      align-items: center;
+      animation: enterAnimation 1s ease-in-out;
+      flex: 1;
+      font-family: $font-family-secondary; // Keep logo monospace
+
+      #typing-logo {
+        font-family: $font-family-secondary;
+        white-space: pre;
+      }
+
+      .cursor {
+         font-family: $font-family-secondary;
+         animation: blink-caret 0.75s step-end infinite;
+      }
+    }
+
+
+    a {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      margin-right: 3vw;
+      margin-left: 2vw;
+
+      button {
+        animation: tadaAnimation 1s ease-in-out;
+        animation-delay: 1s;
+        font-size: 1.2vw; // Increased from default
+        padding: 0.8vw 1.5vw;
+      }
+    }
+
+    nav {
+      display: flex;
+      gap: 2vw;
+
+      .nav-item {
+        // Reset button styles
+        background: none;
+        border: none;
+        color: inherit;
+        font-family: inherit;
+        
+        animation: popupAnimation 1s ease-in-out;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        padding: 1vw 1.5vw;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        font-size: 1.2vw;
+        position: relative;
+
+        &:nth-child(1) {
+          animation-delay: 0.2s;
+        }
+
+        &:nth-child(2) {
+          animation-delay: 0.4s;
+        }
+
+        &:nth-child(3) {
+          animation-delay: 0.6s;
+        }
+
+        &:nth-child(4) {
+          animation-delay: 0.8s;
+        }
+
+        &::after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 50%;
+          width: 0;
+          height: 2px;
+          background: $accent-color;
+          box-shadow: $purple-glow;
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          transform: translateX(-50%);
+        }
+
+        &:hover {
+          text-shadow: $text-shadow-secondary;
+          transform: translateY(-0.15vw);
+
+          &::after {
+            width: 80%;
+          }
+        }
+
+        &.active {
+          text-shadow: $text-shadow-secondary;
+          transform: translateY(-0.2vw);
+
+          &::after {
+            width: 100%;
+          }
+        }
+      }
+
+    }
+  }
+
+  content {
+    display: flex;
+    flex: 1;
+    justify-content: flex-end;
+    padding: 0 7vw 0 3vw;
+
+    .profile-picture-mobile {
+      display: none; // Hidden on desktop, uses background-image instead
+    }
+
+    .content-container {
+      z-index: 2;
+      width: 50%;
+      max-height: 66vh;
+      overflow: hidden;
+      animation: fadeInAnimation 3s ease-in-out;
+
+      .about {
+        padding-left: 2vw;
+
+        h3 {
+          font-size: 1.5vw;
+          color: $accent-color;
+          margin: 0;
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        h1 {
+          font-size: 3.6vw;
+          margin: 0;
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          
+          a {
+            color: inherit;
+            text-decoration: none;
+            font-size: inherit;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            
+            // Underline hint that it's clickable
+            &::after {
+              content: '';
+              position: absolute;
+              bottom: 0;
+              left: 0;
+              width: 100%;
+              height: 2px;
+              background: $accent-color;
+              transform: scaleX(0);
+              transform-origin: right;
+              transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            
+            &:hover {
+              text-shadow: $text-shadow-secondary;
+              
+              &::after {
+                transform: scaleX(1);
+                transform-origin: left;
+              }
+            }
+          }
+        }
+
+        h4 {
+          font-size: 1vw;
+          color: $text-secondary;
+          margin: 0;
+        }
+
+        p {
+          font-size: 1vw;
+          margin: 1.3vw 0;
+          line-height: 1.6vw;
+          color: $text-body;
+          
+          a {
+            color: $accent-color;
+            text-decoration: none;
+            font-size: inherit;
+            border-bottom: 1px dashed rgba(0, 255, 65, 0.5);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            
+            &:hover {
+              text-shadow: 0 0 8px rgba(0, 255, 65, 0.5);
+              border-bottom-color: $accent-color;
+              border-bottom-style: solid;
+            }
+          }
+
+          strong {
+            color: $text-main;
+          }
+        }
+      }
+
+      .resume {
+
+        .resume-item {
+          padding: 0.8vw;
+          display: flex;
+          gap: 1.6vw;
+          padding-left: 0;
+
+          .item-titles {
+            text-align: right;
+            padding: 0.8vw;
+            flex: 1;
+            padding-left: 0;
+
+            .item-date {
+              display: block;
+              padding-bottom: 0.8vw;
+              color: $accent-color;
+            }
+
+            .item-company {
+              font-size: 0.7vw;
+              color: $text-secondary;
+            }
+          }
+
+          .item-info {
+            flex: 2;
+            padding: 0.8vw;
+            position: relative;
+
+            &::before {
+              top: 0;
+              bottom: 0;
+              left: -0.8vw;
+              position: absolute;
+              content: "";
+              display: block;
+              width: 0.1vw;
+              height: 100%;
+              background: $highlight-color;
+              box-shadow: $purple-glow;
+              border-radius: 0.8vw;
+              transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            &:hover::before {
+              box-shadow: $purple-glow2;
+              width: 0.15vw;
+            }
+
+            .item-job-title {
+              font-size: 1.1vw;
+              margin: 0 0 0.8vw 0;
+              transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+              &:hover {
+                text-shadow: $text-shadow-secondary;
+              }
+            }
+
+            .item-job-desc {
+              padding: 0 0 0 1.6vw;
+              line-height: 1.2vw;
+
+              li {
+                font-family: monospace;
+                color: $text-body;
+
+                strong {
+                  color: $text-main;
+                }
+              }
+
+              ul {
+                padding: 0 0 0 1.6vw;
+              }
+
+              &.skills-list li {
+                margin-bottom: 0.6vw;
+              }
+            }
+          }
+        }
+
+        .resume-download {
+          margin-top: 1.5vw;
+          text-align: center;
+
+          a {
+            color: $accent-color;
+            text-decoration: none;
+            border-bottom: 1px solid $accent-color;
+            padding-bottom: 2px;
+            transition: $transition;
+
+            &:hover {
+              text-shadow: $text-shadow-secondary;
+            }
+          }
+        }
+      }
+
+      // Skills Section - New Design
+      .skills-section {
+        padding: 1vw 2vw;
+
+        .skills-certifications {
+          margin-bottom: 2vw;
+
+          .skills-heading {
+            font-size: 1.2vw;
+            color: $accent-color;
+            margin: 0 0 1vw 0;
+            text-transform: uppercase;
+            letter-spacing: 0.1vw;
+          }
+
+          .cert-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6vw;
+
+            .cert-badge {
+              background: rgba(0, 255, 65, 0.1);
+              border: 1px solid $accent-color;
+              border-radius: 0.3vw;
+              padding: 0.5vw 1vw;
+              font-size: 0.85vw;
+              transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+              &:hover {
+                background: rgba(0, 255, 65, 0.2);
+                box-shadow: $purple-glow;
+                transform: translateY(-2px);
+              }
+            }
+          }
+        }
+
+        .skills-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1.5vw;
+
+          .skill-category {
+            .category-title {
+              font-size: 0.9vw;
+              color: $text-secondary;
+              margin: 0 0 0.6vw 0;
+              text-transform: uppercase;
+              letter-spacing: 0.05vw;
+            }
+
+            .skill-tags {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 0.4vw;
+
+              span {
+                background: rgba(0, 255, 65, 0.05);
+                border: 1px solid rgba(0, 255, 65, 0.3);
+                border-radius: 0.2vw;
+                padding: 0.3vw 0.7vw;
+                font-size: 0.75vw;
+                color: $text-body;
+                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+                &:hover {
+                  border-color: $accent-color;
+                  background: rgba(0, 255, 65, 0.1);
+                  color: $text-main;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .gallery {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1vw;
+        justify-content: center;
+        align-items: center;
+        padding: 1vw;
+        padding-top: 5vw;
+
+        &.certificates {
+          padding-top: 0;
+          align-items: flex-start;
+          
+          .skills-item {
+            width: 100%;
+            padding: 0;
+            
+            .item-info {
+              width: 100%;
+              padding: 0.8vw;
+
+              &::before {
+                display: none;
+              }
+
+              .item-job-title {
+                font-size: 1.4vw;
+                margin-bottom: 1vw;
+                transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                display: inline-block;
+
+                &:hover {
+                  text-shadow: $text-shadow-secondary;
+                }
+              }
+
+              .skills-list {
+                padding-left: 1.6vw;
+                
+                li {
+                  margin-bottom: 0.8vw;
+                  line-height: 1.4vw;
+                  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                  padding: 0.3vw 0;
+                  border-radius: 0.3vw;
+
+                  &:hover {
+                    background: rgba(0, 255, 65, 0.05);
+                    padding-left: 0.5vw;
+                  }
+
+                  strong {
+                    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                  }
+
+                  &:hover strong {
+                    text-shadow: $text-shadow-secondary;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        div:not(.skills-item):not(.item-info) {
+          cursor: pointer;
+          width: 48%;
+          height: auto;
+          box-shadow: $content-box-shadow-dark;
+          border-radius: 1vw;
+          overflow: hidden;
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+          &:hover {
+             box-shadow: $content-box-shadow;
+             transform: translateY(-3px);
+          }
+
+          &:nth-child(even) {
+            margin-top: -5vw;
+          }
+
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+        }
+      }
+    }
+  }
+
+
+}
+
+.shapes {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+
+  .shape {
+    position: absolute;
+    width: 3vw;
+    height: 3vw;
+    filter: blur(1px);
+
+    &:nth-child(1) {
+      top: 10vw;
+      left: 5vw;
+      animation: moveAroundAnimation 40s ease-in-out infinite;
+      animation-delay: 3s;
+    }
+
+    &:nth-child(2) {
+      bottom: 10vw;
+      left: 33vw;
+      animation: moveAroundAnimation 20s ease-in-out infinite;
+    }
+
+    &:nth-child(3) {
+      bottom: 16vw;
+      left: 5vw;
+      animation: moveAroundAnimation 50s ease-in-out infinite;
+      animation-delay: 1s;
+    }
+
+  }
+
+}
+
+.particles {
+  display: none; // Hidden per user request
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+
+  .particle {
+    position: absolute;
+    width: 3vw;
+    height: 3vw;
+    animation-delay: 3s;
+
+    &:nth-child(1) {
+      bottom: 14vw;
+      animation-delay: 1s;
+      left: 13vw;
+      animation: moveAroundAnimation2 50s ease-in-out infinite;
+    }
+
+    &:nth-child(2) {
+      top: 25vw;
+      left: 2vw;
+      animation: moveAroundAnimation2 60s ease-in-out infinite;
+      animation-delay: 3s;
+    }
+
+    &:nth-child(3) {
+      border-radius: 50%;
+      filter: hue-rotate(292deg);
+      width: 3vw;
+      height: 3vw;
+      left: 6vw;
+      bottom: 3.5vw;
+      box-shadow: 0px 0px 43px 31px black;
+    }
+
+
+
+
+  }
+}
+
+.social {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  flex-direction: row;
+  z-index: 100;
+  opacity: 0; // Start hidden, animate when loaded
+
+  a {
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    transition: $transition;
+    box-shadow: $content-box-shadow-dark;
+    width: 40px !important;
+    height: 40px !important;
+
+    &:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    &:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    &:nth-child(4) {
+      animation-delay: 0.6s;
+    }
+
+    img {
+      height: 100%;
+      width: 100%;
+      object-fit: contain;
+      filter: brightness(0) saturate(100%) invert(66%) sepia(94%) saturate(429%) hue-rotate(88deg) brightness(119%) contrast(119%) !important;
+    }
+
+    &:hover {
+      transform: translateX(-5px);
+
+      img {
+        filter: brightness(0) saturate(100%) invert(66%) sepia(94%) saturate(429%) hue-rotate(88deg) brightness(140%) contrast(119%) !important;
+      }
+    }
+  }
+
+}
+
+@media (max-width: 768px) {
+  * {
+    font-size: clamp(12px, 2vw, 16px);
+  }
+
+  body {
+    overflow-y: auto;
+  }
+
+  .content-card {
+    background-image: none;
+    border-radius: 2vw;
+    margin: 1vw;
+
+    header {
+      flex-wrap: wrap;
+      padding: 3vw;
+
+      .logo {
+        font-size: clamp(18px, 4vw, 28px);
+
+        #typing-logo, .cursor {
+          font-size: clamp(18px, 4vw, 28px);
+        }
+
+        .mech-spinner {
+          &:after {
+            font-size: clamp(18px, 4vw, 28px);
+          }
+        }
+      }
+
+      nav {
+        .nav-item {
+          font-size: clamp(12px, 2vw, 16px);
+        }
+      }
+
+      a {
+        margin-right: 0;
+        margin-left: auto;
+
+        button {
+          font-size: clamp(12px, 2vw, 16px);
+        }
+      }
+    }
+
+    content {
+      padding: 0 4vw 4vw;
+
+      .content-container {
+        width: 100%;
+        max-height: 70vh;
+        overflow-y: auto;
+
+        .about {
+          padding: 2vw 0;
+
+          h3 {
+            font-size: clamp(14px, 3vw, 18px);
+          }
+
+          h1 {
+            font-size: clamp(24px, 5vw, 36px);
+            line-height: 1.2;
+          }
+
+          h4 {
+            font-size: clamp(12px, 2vw, 16px);
+            line-height: 1.4;
+          }
+
+          p {
+            font-size: clamp(13px, 2vw, 16px);
+            line-height: 1.6;
+
+            strong {
+              font-size: inherit;
+            }
+          }
+        }
+
+        .resume {
+          .resume-item {
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+
+            .item-titles {
+              text-align: left;
+              width: 100%;
+              max-width: 100%;
+              padding: 0;
+
+              .item-company {
+                font-size: clamp(11px, 2vw, 14px);
+              }
+              .item-date {
+                font-size: clamp(11px, 2vw, 14px);
+              }
+            }
+
+            .item-info {
+              padding: 12px 0 12px 16px;
+              border-left: 2px solid rgba(0, 255, 65, 0.5);
+              
+              &::before {
+                display: none;
+              }
+
+              .item-job-desc {
+                padding: 0;
+                line-height: 1.5;
+
+                li {
+                  font-size: clamp(12px, 2vw, 14px);
+                  margin-left: 16px;
+                }
+              }
+
+              .item-job-title {
+                font-size: clamp(14px, 3vw, 18px);
+              }
+            }
+          }
+        }
+
+        .gallery {
+          gap: 3vw;
+
+          &.certificates {
+            .resume-item {
+              .item-info {
+                border-left: none;
+                padding: 0;
+
+                .item-job-desc li {
+                  font-size: clamp(12px, 2vw, 14px);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .social {
+    gap: 8px;
+    bottom: 16px;
+    right: 16px;
+
+    a {
+      width: 36px !important;
+      height: 36px !important;
+      min-width: 36px;
+      min-height: 36px;
+    }
+  }
+
+  .shapes {
+    opacity: 0.3;
+  }
+}
+
+@media (max-width: 500px) {
+  // Mobile specific overrides for readability
+  html, body {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  body {
+    display: block;
+  }
+
+  * {
+    font-size: 14px;
+  }
+
+  .content-card {
+    margin: 0;
+    border-radius: 0;
+    min-height: 100vh;
+    height: auto;
+    overflow: visible;
+
+    // Hide desktop profile picture on mobile
+    &::before {
+      display: none;
+    }
+
+    header {
+      flex-wrap: wrap;
+      padding: 16px;
+      gap: 12px;
+
+      .logo {
+        font-size: 18px;
+        width: 100%;
+        margin-bottom: 0;
+        justify-content: center;
+
+        #typing-logo {
+          font-size: 18px;
+        }
+
+        .cursor {
+          font-size: 18px;
+        }
+
+        .mech-spinner {
+          &:after {
+            font-size: 18px;
+          }
+        }
+      }
+
+      nav {
+        order: 2;
+        width: 100%;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 8px;
+
+        .nav-item {
+          // Reset button styles for mobile
+          background: none;
+          color: inherit;
+          font-family: inherit;
+          
+          font-size: 13px;
+          padding: 8px 12px;
+          border: 1px solid rgba(0, 255, 65, 0.3);
+          border-radius: 4px;
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+          &::after {
+            display: none; // Remove desktop underline on mobile
+          }
+
+          &:active {
+            background: rgba(0, 255, 65, 0.1);
+            transform: scale(0.98);
+          }
+
+          &.active {
+            background: rgba(0, 255, 65, 0.15);
+            border-color: $accent-color;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+          }
+        }
+      }
+
+      a {
+        order: 1;
+        margin: 0;
+        width: 100%;
+        justify-content: center;
+
+        button {
+          font-size: 14px;
+          padding: 10px 24px;
+          width: 100%;
+        }
+      }
+    }
+
+    content {
+      padding: 16px;
+      display: block;
+      position: relative;
+      min-height: 60vh;
+
+      .profile-picture-mobile {
+        display: block;
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 0;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.4s ease-in-out;
+
+        &.visible {
+          opacity: 0.9;
+          animation: profileGlowMobile 4s ease-in-out infinite;
+        }
+
+        img {
+          width: 220px;
+          height: auto;
+          object-fit: contain;
+        }
+      }
+
+      .content-container {
+        width: 100%;
+        max-height: none;
+        overflow: visible;
+        position: relative;
+        z-index: 1;
+
+        .slider-wrapper {
+          height: auto;
+          overflow: visible;
+
+          .slides-container {
+            flex-direction: column;
+            overflow: visible;
+            height: auto;
+            position: relative;
+
+            .slide {
+              flex: none;
+              height: auto;
+              overflow: visible;
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              opacity: 0;
+              visibility: hidden;
+              transform: translateY(10px);
+              transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                          visibility 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                          transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+
+              &.active-slide {
+                position: relative;
+                opacity: 1;
+                visibility: visible;
+                transform: translateY(0);
+              }
+            }
+          }
+        }
+
+        .about {
+          padding: 0;
+
+          h3 { 
+            font-size: 14px;
+            margin-bottom: 4px;
+          }
+          h1 { 
+            font-size: 32px; 
+            line-height: 1.1;
+            margin-bottom: 8px;
+          }
+          h4 { 
+            font-size: 13px; 
+            margin-top: 0;
+            margin-bottom: 16px;
+            line-height: 1.4;
+          }
+          p {
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 12px 0;
+            color: $text-body;
+
+            strong {
+              font-size: 14px;
+              color: $text-main;
+            }
+          }
+        }
+
+        .resume {
+          margin-top: 0;
+          padding: 0;
+
+          .resume-item {
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 24px;
+            padding: 0;
+
+            .item-titles {
+              max-width: 100%;
+              text-align: left;
+              padding: 0;
+              display: flex;
+              flex-wrap: wrap;
+              gap: 8px;
+              align-items: center;
+              
+              .item-date { 
+                font-size: 12px;
+                padding-bottom: 0;
+                display: inline;
+              }
+              .item-company { 
+                font-size: 12px;
+                display: inline;
+
+                &::before {
+                  content: "•";
+                  margin-right: 8px;
+                }
+              }
+            }
+
+            .item-info {
+              padding: 12px 0 0 16px;
+              border-left: 2px solid rgba(0, 255, 65, 0.5);
+              margin-left: 0;
+
+              &::before {
+                display: none;
+              }
+
+              .item-job-title {
+                font-size: 16px;
+                margin: 0 0 8px 0;
+                line-height: 1.3;
+              }
+
+              .item-job-desc {
+                padding-left: 0;
+                margin: 0;
+
+                li {
+                  font-size: 13px;
+                  line-height: 1.5;
+                  margin-bottom: 8px;
+                  list-style-position: outside;
+                  margin-left: 16px;
+                  color: $text-body;
+
+                  strong {
+                    font-size: 13px;
+                    color: $text-main;
+                  }
+                }
+
+                ul {
+                  padding-left: 16px;
+                  margin: 8px 0;
+                }
+              }
+            }
+          }
+
+          // Download link styling
+          .resume-download {
+            margin-top: 16px;
+            text-align: center;
+            
+            a {
+              font-size: 14px;
+              display: inline-block;
+              padding: 8px 16px;
+            }
+          }
+        }
+
+        // Mobile Skills Section
+        .skills-section {
+          padding: 0;
+
+          .skills-certifications {
+            margin-bottom: 24px;
+
+            .skills-heading {
+              font-size: 14px;
+              margin-bottom: 12px;
+              text-align: center;
+            }
+
+            .cert-badges {
+              gap: 8px;
+              justify-content: center;
+
+              .cert-badge {
+                font-size: 12px;
+                padding: 8px 12px;
+                border-radius: 4px;
+                text-align: center;
+
+                &:active {
+                  background: rgba(0, 255, 65, 0.2);
+                  box-shadow: $purple-glow;
+                }
+              }
+            }
+          }
+
+          .skills-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+
+            .skill-category {
+              .category-title {
+                font-size: 12px;
+                margin-bottom: 10px;
+                text-align: center;
+              }
+
+              .skill-tags {
+                gap: 8px;
+                justify-content: center;
+
+                span {
+                  font-size: 13px;
+                  padding: 6px 12px;
+                  border-radius: 4px;
+                  color: $text-body;
+
+                  &:active {
+                    color: $text-main;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        .gallery {
+          gap: 12px;
+          padding: 0;
+
+          &.certificates {
+            .resume-item {
+              margin-bottom: 0;
+              
+              .item-info {
+                width: 100%;
+                padding: 0;
+                border-left: none;
+
+                .item-job-title {
+                  font-size: 18px;
+                  margin-bottom: 16px;
+                  text-align: center;
+                  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+                  &:active {
+                    text-shadow: $text-shadow-secondary;
+                  }
+                }
+
+                .item-job-desc {
+                  padding: 0;
+
+                  li {
+                    font-size: 13px;
+                    line-height: 1.6;
+                    margin-bottom: 12px;
+                    padding: 8px;
+                    background: rgba(0, 255, 65, 0.05);
+                    border-radius: 4px;
+                    border-left: 2px solid rgba(0, 255, 65, 0.3);
+                    list-style: none;
+                    margin-left: 0;
+
+                    strong {
+                      font-size: 13px;
+                      display: block;
+                      margin-bottom: 4px;
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+          div {
+            width: 100%;
+
+            &:nth-child(even) {
+              margin-top: 0;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  .social {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    flex-direction: column;
+    gap: 8px;
+
+    a {
+      width: 40px !important;
+      height: 40px !important;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 50%;
+      padding: 8px;
+    }
+  }
+
+  .particles {
+    display: none;
+  }
+
+  .shapes {
+    display: none;
+  }
+}
+
+// Defer animations until loader is done
+// Hide animated elements initially
+body:not(.loaded) {
+  .content-card {
+    opacity: 0;
+  }
+  
+  .social {
+    opacity: 0;
+    
+    a {
+      animation: none;
+    }
+  }
+  
+  .shapes,
+  .particles {
+    opacity: 0;
+  }
+}
+
+// Play animations when loaded
+body.loaded {
+  .content-card {
+    animation: fadeInAnimation2 0.5s ease-in-out forwards;
+  }
+  
+  .social {
+    animation: fadeInAnimation 0.8s ease-in-out forwards;
+    
+    a {
+      animation: slideInAnimation 1s ease-in-out forwards;
+      
+      &:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+    }
+  }
+  
+  .shapes,
+  .particles {
+    animation: fadeInAnimation 1s ease-in-out forwards;
+  }
+}

@@ -1,0 +1,116 @@
+.loader {
+  background-color: $page-background;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 1vw;
+  border-radius: 7vw;
+
+  @media (max-width: 500px) {
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .terminal-loader {
+    background-color: #0a0a0a;
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    border-radius: 8px;
+    padding: 0;
+    width: 320px;
+    max-width: 90%;
+    box-shadow: 0 0 20px rgba(0, 255, 65, 0.15), 0 0 40px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+
+    .terminal-header {
+      background: linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid rgba(0, 255, 65, 0.2);
+
+      .terminal-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+
+        &.red {
+          background: #ff5f56;
+          box-shadow: 0 0 6px rgba(255, 95, 86, 0.5);
+        }
+
+        &.yellow {
+          background: #ffbd2e;
+          box-shadow: 0 0 6px rgba(255, 189, 46, 0.5);
+        }
+
+        &.green {
+          background: #27c93f;
+          box-shadow: 0 0 6px rgba(39, 201, 63, 0.5);
+        }
+      }
+
+      .terminal-title {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 12px;
+        font-family: $font-family-secondary;
+        margin-left: auto;
+        margin-right: auto;
+        padding-right: 36px;
+      }
+    }
+
+    .terminal-body {
+      padding: 16px;
+      font-family: $font-family-secondary;
+      font-size: 14px;
+      line-height: 1.8;
+
+      .terminal-line {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        .terminal-prompt {
+          color: $accent-color;
+          font-weight: bold;
+          text-shadow: 0 0 8px rgba(0, 255, 65, 0.5);
+        }
+
+        .terminal-text {
+          color: $text-body;
+
+          &.typing {
+            color: $accent-color;
+          }
+        }
+
+        .terminal-cursor {
+          color: $accent-color;
+          animation: cursorBlink 1s step-end infinite;
+          text-shadow: 0 0 8px rgba(0, 255, 65, 0.8);
+        }
+      }
+    }
+  }
+}
+
+@keyframes cursorBlink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
+  }
+}

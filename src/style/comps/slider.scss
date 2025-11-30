@@ -1,0 +1,78 @@
+.slider-wrapper {
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+
+  .slides-container {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    overflow-x: scroll;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+
+    .slide {
+      width: 100%;
+      height: 100%;
+      flex: 1 0 100%;
+      scroll-snap-align: start;
+      overflow-y: auto;
+      overflow-x: hidden;
+
+      // Content fade-in when scrolling into view
+      > div {
+        transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      //scrollbar
+      &::-webkit-scrollbar {
+        width: 0.5vw;
+        background-color: $page-background;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background-color: $accent-color;
+        border-radius: 0.5vw;
+        transition: $transition;
+
+        &:hover {
+          background-color: $highlight-color;
+        }
+      }
+    }
+
+    &::-webkit-scrollbar {
+      width: 0;
+      background: transparent;
+    }
+  }
+
+}
+
+// Mobile slider adjustments
+@media (max-width: 500px) {
+  .slider-wrapper {
+    height: auto;
+    overflow: visible;
+
+    .slides-container {
+      flex-direction: column;
+      overflow: visible;
+      height: auto;
+      scroll-snap-type: none;
+
+      .slide {
+        flex: none;
+        height: auto;
+        min-height: auto;
+        overflow: visible;
+      }
+    }
+  }
+}
