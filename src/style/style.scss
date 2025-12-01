@@ -687,7 +687,7 @@ body {
 
 }
 
-@media (max-width: 768px) {
+@media (max-width: 768px), (orientation: portrait) {
   * {
     font-size: clamp(12px, 2vw, 16px);
   }
@@ -700,6 +700,11 @@ body {
     background-image: none;
     border-radius: 2vw;
     margin: 1vw;
+
+    // Hide desktop profile picture
+    &::before {
+      display: none;
+    }
 
     header {
       flex-wrap: wrap;
@@ -737,6 +742,27 @@ body {
 
     content {
       padding: 0 4vw 4vw;
+      flex-direction: column;
+      justify-content: center;
+
+      .profile-picture-mobile {
+        display: block;
+        position: relative;
+        margin-top: 2vw;
+        margin-bottom: 2vw;
+        text-align: center;
+        z-index: 0;
+        pointer-events: none;
+        opacity: 0.9;
+        animation: profileGlowMobile 4s ease-in-out infinite;
+
+        img {
+          width: 50vw;
+          max-width: 500px;
+          height: auto;
+          object-fit: contain;
+        }
+      }
 
       .content-container {
         width: 100%;
