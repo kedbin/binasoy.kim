@@ -841,6 +841,50 @@ body {
           }
         }
 
+        .skills-section {
+          padding: 2vw 0;
+
+          .skills-certifications {
+            margin-bottom: 4vw;
+
+            .skills-heading {
+              font-size: clamp(16px, 3vw, 24px);
+              margin-bottom: 2vw;
+            }
+
+            .cert-badges {
+              gap: 1.5vw;
+
+              .cert-badge {
+                font-size: clamp(13px, 2vw, 16px);
+                padding: 1vw 1.5vw;
+                border-radius: 0.5vw;
+              }
+            }
+          }
+
+          .skills-grid {
+            gap: 3vw;
+
+            .skill-category {
+              .category-title {
+                font-size: clamp(14px, 2.5vw, 18px);
+                margin-bottom: 1.5vw;
+              }
+
+              .skill-tags {
+                gap: 1vw;
+
+                span {
+                  font-size: clamp(13px, 2vw, 16px);
+                  padding: 0.8vw 1.2vw;
+                  border-radius: 0.4vw;
+                }
+              }
+            }
+          }
+        }
+
         .gallery {
           gap: 3vw;
 
