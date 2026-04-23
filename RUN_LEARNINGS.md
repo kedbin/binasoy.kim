@@ -17,8 +17,18 @@
 - Recovery: create a local virtualenv (`.venv-resume`) and install `python-pptx` there for PPTX generation.
 - PPTX redesign verification is easier by converting the generated deck to PDF with LibreOffice headless and then rasterizing the first page with `pdftoppm` for visual inspection.
 - The first PPTX draft fit content semantically but still overflowed visually; PPTX layout work needs screenshot-style verification, not just XML text extraction.
+- Mobile digestibility review identified a true horizontal overflow at 390px width; validating with `document.documentElement.scrollWidth` is faster and more reliable than trusting screenshots alone when dev overlays are present.
+- Recovery: add `min-width: 0` to grid children and convert the mobile role rail from a long horizontal row into a compact wrapped/grid treatment.
+- Webpack dev warnings can still inject an overlay iframe during visual checks even against the current local URL, so interaction failures in Playwright may be overlay-related rather than layout-related.
 
 ## 2026-04-23 – Design review round 2
 
 - The screenshot path restriction still applies for round-two artifacts; keep using project-root save plus copy-out instead of trying direct writes to `/home/kedbin` via Playwright.
 - Second-pass review was easiest when comparing only the remaining fidelity gaps rather than repeating solved round-one issues.
+
+## 2026-04-23 – Mobile digestibility review
+
+- Playwright screenshot writes to `/tmp` failed because the CLI only allows artifact paths inside the repo or `.playwright-cli`. Recovery: save screenshots/snapshots in the project root, keep `/tmp` only for notes/status outputs.
+- Webpack dev-server warnings injected an overlay iframe that intercepted Playwright clicks on the stage arrows in dev. Recovery: inspect warnings separately and use JS-triggered stage changes for review when the overlay blocks pointer actions.
+- The most actionable mobile bug was confirmed by measuring layout widths, not just screenshots: a 390px viewport rendered a 433px document because the mobile hero/stage content was not shrinking inside the single-column grid.
+- The `kitty-send.sh` helper expects `--title <name> --message <text>` rather than a raw `title:name` positional target, and in this environment the helper also hung while direct `kitty @ send-text` + `send-key enter` worked immediately. Recovery: use direct kitty remote commands as a fallback when the helper does not return promptly.

@@ -235,6 +235,10 @@ body {
   align-items: center;
   flex: 1;
   min-height: 0;
+
+  > * {
+    min-width: 0;
+  }
 }
 
 // ============================================
@@ -444,7 +448,7 @@ body {
     margin: 0;
   }
 
-  .hero-actions {
+.hero-actions {
     grid-area: actions;
     display: flex;
     gap: 10px;
@@ -455,10 +459,11 @@ body {
       align-items: center;
       gap: 8px;
       font-family: $font-body;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 500;
       text-decoration: none;
-      padding: 9px 16px;
+      padding: 11px 18px;
+      min-height: 44px;
       border-radius: 8px;
       transition: $transition-fast;
       cursor: pointer;
@@ -603,8 +608,8 @@ body {
 
       p {
         margin: 0;
-        font-size: 11px;
-        line-height: 1.45;
+        font-size: 12px;
+        line-height: 1.55;
         color: rgba(169, 176, 184, 0.88);
 
         strong {
@@ -655,8 +660,8 @@ body {
 }
 
 .stage-arrow {
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   border-radius: 999px;
   border: 1px solid $border;
   background: rgba($surface-raised, 0.72);
@@ -872,8 +877,8 @@ body {
 
     li {
       position: relative;
-      font-size: 12px;
-      line-height: 1.65;
+      font-size: 13px;
+      line-height: 1.72;
       color: rgba(169, 176, 184, 0.92);
       padding-left: 10px;
       margin-bottom: 7px;
@@ -1057,7 +1062,7 @@ body {
       display: flex;
       align-items: center;
       gap: 6px;
-      font-size: 12px;
+      font-size: 13px;
       color: $text-secondary;
       text-decoration: none;
       transition: $transition-fast;
@@ -1257,6 +1262,16 @@ body {
 
     .mobile-menu-btn {
       display: flex;
+      width: 44px;
+      height: 44px;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  .main-grid {
+    > * {
+      min-width: 0;
     }
   }
 
@@ -1264,17 +1279,28 @@ body {
     grid-template-columns: 1fr;
     align-items: center;
     text-align: center;
-    gap: 16px;
+    gap: 14px;
 
     .role-rail {
-      flex-direction: row;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       justify-content: center;
+      align-items: stretch;
       padding-bottom: 0;
-      gap: 12px;
+      gap: 8px;
+      width: 100%;
+      max-width: 320px;
 
       .role-label {
-        flex-direction: row;
-        font-size: 10px;
+        flex-direction: column;
+        justify-content: center;
+        min-width: 0;
+        min-height: 52px;
+        padding: 8px 10px;
+        font-size: 9px;
+        border: 1px solid rgba($border, 0.8);
+        border-radius: 10px;
+        background: rgba($surface, 0.72);
 
         br {
           display: none;
@@ -1282,8 +1308,7 @@ body {
       }
 
       .role-sep {
-        width: 24px;
-        height: 1px;
+        display: none;
       }
     }
 
@@ -1315,13 +1340,28 @@ body {
 
       .hero-actions {
         justify-content: center;
+        width: 100%;
+
+        .btn {
+          flex: 1 1 100%;
+          justify-content: center;
+          width: 100%;
+        }
       }
 
       .certifications {
         width: 100%;
+
         .cert-grid {
           grid-template-columns: 1fr 1fr;
           max-width: 100%;
+        }
+
+        .cert-meta-lines {
+          p {
+            font-size: 12px;
+            line-height: 1.55;
+          }
         }
       }
     }
@@ -1336,12 +1376,12 @@ body {
   }
 
   .stage-topbar {
-    padding: 0 2px;
+    padding: 0;
   }
 
   .stage-arrow {
-    width: 34px;
-    height: 34px;
+    width: 44px;
+    height: 44px;
   }
 
   .experience-panel {
@@ -1364,7 +1404,7 @@ body {
 
   .timeline-content {
     .timeline-role {
-      font-size: 14px;
+      font-size: 15px;
 
       .timeline-company {
         display: block;
@@ -1385,8 +1425,8 @@ body {
     }
 
     .stack-item {
-      padding: 5px 10px;
-      font-size: 11px;
+      padding: 6px 10px;
+      font-size: 12px;
     }
   }
 
@@ -1408,6 +1448,10 @@ body {
     .footer-meta {
       flex-direction: column;
       gap: 10px;
+
+      .meta-item {
+        font-size: 13px;
+      }
     }
 
     .footer-social {
