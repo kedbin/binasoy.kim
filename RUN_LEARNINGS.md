@@ -13,6 +13,10 @@
 - The stats strip added noise without improving the story; removing it gave the hero and experience panel more authority.
 - When the right side becomes too information-dense, splitting hero content and experience into separate slide states is more digestible than trying to balance both in one viewport.
 - Recovery: keep the left portrait/role rail fixed, and let the right column act as a two-panel carousel with explicit arrow controls.
+- `python3 -m pip install --user` failed due to the system's externally-managed Python environment (PEP 668).
+- Recovery: create a local virtualenv (`.venv-resume`) and install `python-pptx` there for PPTX generation.
+- PPTX redesign verification is easier by converting the generated deck to PDF with LibreOffice headless and then rasterizing the first page with `pdftoppm` for visual inspection.
+- The first PPTX draft fit content semantically but still overflowed visually; PPTX layout work needs screenshot-style verification, not just XML text extraction.
 
 ## 2026-04-23 – Design review round 2
 
