@@ -1,55 +1,62 @@
 // ============================================
 // binasoy.kim — Design Tokens
-// Technical studio / systems portfolio palette
+// Professional multi-cloud engineer portfolio
 // ============================================
 
-// Base
+// Base surfaces
 $bg: #090B10;
-$surface: #11151C;
-$surface-raised: #171C24;
-$border: #232A35;
+$surface: #10141B;
+$surface-raised: #161C25;
+$surface-hover: #1B2230;
+$border: #232C39;
+$border-soft: #1A212B;
 
 // Text
-$text-primary: #F3EFE7;
-$text-secondary: #A9B0B8;
-$text-muted: #6F7882;
+$text-primary: #F2EFE8;
+$text-secondary: #AEB6C0;
+$text-muted: #717B87;
 
 // Accent family
 $accent-emerald: #6FAE8D;
+$accent-emerald-bright: #84C3A4;
 $accent-amber: #C8A96B;
 $accent-slate: #7E97B8;
 
-// Legacy aliases for smooth migration
-$page-background: $bg;
-$text-main: $text-primary;
-$text-body: $text-secondary;
-$accent-color: $accent-emerald;
-$highlight-color: $accent-emerald;
-$content-background: $surface;
+// Vendor tints (subtle)
+$gcp-tint: #6FAE8D;
+$azure-tint: #5BA2E0;
+$aws-tint: #C8A96B;
+$genai-tint: #B58FE0;
 
-// Shadows (subtle, moody)
-$box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
-$content-box-shadow: 0 0 40px rgba(111, 174, 141, 0.06);
-$content-box-shadow-dark: 0 0 20px rgba(0, 0, 0, 0.35);
-$text-shadow: none;
-$text-shadow-secondary: 0 0 20px rgba(111, 174, 141, 0.25);
-$purple-glow: 0 0 12px rgba(111, 174, 141, 0.35);
-$purple-glow2: 0 0 24px rgba(111, 174, 141, 0.5);
+// Shadows
+$box-shadow: 0 10px 34px rgba(0, 0, 0, 0.5);
+$box-shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.35);
+$glow-emerald: 0 0 40px rgba(111, 174, 141, 0.10);
 
 // Border radius
-$border-radius: 8px;
-$content-border-radius: 16px;
+$radius-sm: 8px;
+$radius: 14px;
+$radius-lg: 20px;
+$radius-pill: 999px;
 
-// Background image (portrait)
-$content-background-image: url("/src/assets/images/profile_v4.webp");
+// Layout
+$container-max: 1140px;
+$container-pad: clamp(20px, 5vw, 40px);
+$section-pad-y: clamp(72px, 9vw, 128px);
 
 // Fonts
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-$font-heading: 'Playfair Display', Georgia, serif;
-$font-body: 'Inter', system-ui, sans-serif;
-$font-mono: 'JetBrains Mono', 'Courier New', monospace;
+$font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+$font-mono: 'JetBrains Mono', 'SFMono-Regular', 'Courier New', monospace;
+
+$font-heading: $font-body;
 
 // Transitions
 $transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-$transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+$transition-fast: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+
+// Breakpoints
+$bp-lg: 1024px;
+$bp-md: 768px;
+$bp-sm: 540px;

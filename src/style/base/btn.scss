@@ -1,2 +1,40 @@
-// Buttons are styled per-component in style.scss
-// This file is kept for compatibility with the build system.
+// ============================================
+// Buttons
+// ============================================
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 12px 22px;
+    border-radius: $radius-sm;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: $transition-fast;
+    white-space: nowrap;
+}
+.btn-icon { width: 18px; height: 18px; transition: transform 0.2s ease; }
+
+.btn-primary {
+    background: $accent-emerald;
+    color: #06210f;
+}
+.btn-primary:hover {
+    background: $accent-emerald-bright;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(111, 174, 141, 0.28);
+}
+.btn-primary:hover .btn-icon { transform: translateX(3px); }
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.03);
+    color: $text-primary;
+    border-color: $border;
+}
+.btn-secondary:hover {
+    border-color: $accent-emerald;
+    background: rgba(111, 174, 141, 0.08);
+    transform: translateY(-2px);
+}
