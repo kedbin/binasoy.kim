@@ -36,8 +36,8 @@ jobs:
       - name: Copy CNAME to dist
         run: cp CNAME dist/
 
-      - name: Copy resume.pptx to dist
-        run: cp resume.pptx dist/
+      - name: Copy résumé PDF to dist
+        run: cp Kim_Binasoy_Resume.pdf dist/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

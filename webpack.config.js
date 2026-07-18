@@ -28,7 +28,7 @@ module.exports = (env, argv = {}) => {
             }),
             new CopyWebpackPlugin({
                 patterns: [
-                    { from: 'resume.pptx', to: 'resume.pptx' },
+                    { from: 'Kim_Binasoy_Resume.pdf', to: 'Kim_Binasoy_Resume.pdf' },
                 ],
             }),
         ],

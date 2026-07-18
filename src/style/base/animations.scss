@@ -27,21 +27,17 @@
 }
 
 html.js .reveal {
-    opacity: 0;
     transform: translateY(22px);
-    transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
-                transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-    will-change: opacity, transform;
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
 }
 
 html.js .reveal.is-visible {
-    opacity: 1;
     transform: translateY(0);
 }
 
 @media (prefers-reduced-motion: reduce) {
     html.js .reveal {
-        opacity: 1 !important;
         transform: none !important;
         transition: none !important;
     }

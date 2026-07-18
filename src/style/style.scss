@@ -751,8 +751,15 @@ strong { color: $text-primary; font-weight: 600; }
     }
     .hero-portrait { justify-self: center; }
     .portrait-wrap { width: clamp(220px, 66vw, 300px); }
-    .hero-roles { font-size: 0.86rem; letter-spacing: 0.01em; }
-    .hero-roles .sep { margin: 0 6px; }
+    .hero-roles {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 3px;
+        font-size: 0.92rem;
+        letter-spacing: 0.01em;
+    }
+    .hero-roles .sep { display: none; }
 
     .cert-grid { grid-template-columns: 1fr; }
     .skills-grid { grid-template-columns: 1fr; }

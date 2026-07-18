@@ -15,14 +15,14 @@ test.describe('Links', () => {
     expect(await page.locator('a[href="https://relearn.ing"]').count()).toBeGreaterThanOrEqual(1);
   });
 
-  test('résumé download link targets the deployed pptx', async ({ cleanPage }) => {
+  test('résumé download link targets the deployed PDF', async ({ cleanPage }) => {
     const { page } = cleanPage;
     await page.goto('/');
     // Use the always-visible hero CTA (the nav "Resume" link is hidden on mobile).
-    const resume = page.locator('.hero-actions a[href="/resume.pptx"]');
+    const resume = page.locator('.hero-actions a[href="/Kim_Binasoy_Resume.pdf"]');
     await expect(resume).toBeVisible();
     // The file is copied into dist by the build and served by the test server.
-    const status = await page.request.get('/resume.pptx');
+    const status = await page.request.get('/Kim_Binasoy_Resume.pdf');
     expect(status.status()).toBe(200);
   });
 
