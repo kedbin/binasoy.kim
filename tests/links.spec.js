@@ -9,8 +9,8 @@ test.describe('Links', () => {
     expect(await mailto.count()).toBeGreaterThanOrEqual(1);
     await expect(mailto.first()).toHaveAttribute('href', 'mailto:hello@binasoy.kim');
 
-    await expect(page.locator('a[href="https://github.com/kedbin"]')).toHaveCount(1);
-    await expect(page.locator('a[href="https://linkedin.com/in/kedbin"]')).toHaveCount(1);
+    await expect(page.locator('a[href="https://github.com/kedbin"]')).toHaveCount(2);
+    await expect(page.locator('a[href="https://linkedin.com/in/kedbin"]')).toHaveCount(2);
     // relearn.ing is linked from the flagship project card AND the footer social row.
     expect(await page.locator('a[href="https://relearn.ing"]').count()).toBeGreaterThanOrEqual(1);
   });

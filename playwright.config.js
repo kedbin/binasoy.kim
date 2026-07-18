@@ -36,10 +36,20 @@ module.exports = defineConfig({
     {
       name: 'desktop-chromium',
       use: { ...devices['Desktop Chrome'] },
+      testIgnore: /nojs\.spec\.js/,
     },
     {
       name: 'mobile-chromium',
       use: { ...devices['Pixel 7'] },
+      testIgnore: /nojs\.spec\.js/,
+    },
+    {
+      name: 'nojs',
+      testMatch: /nojs\.spec\.js/,
+      use: {
+        javaScriptEnabled: false,
+        viewport: { width: 1280, height: 800 },
+      },
     },
   ],
 });

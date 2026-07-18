@@ -14,7 +14,7 @@ $border-soft: #1A212B;
 // Text
 $text-primary: #F2EFE8;
 $text-secondary: #AEB6C0;
-$text-muted: #717B87;
+$text-muted: #828C9A;
 
 // Accent family
 $accent-emerald: #6FAE8D;
@@ -42,7 +42,7 @@ $radius-pill: 999px;
 // Layout
 $container-max: 1140px;
 $container-pad: clamp(20px, 5vw, 40px);
-$section-pad-y: clamp(72px, 9vw, 128px);
+$section-pad-y: clamp(56px, 7vw, 96px);
 
 // Fonts
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');

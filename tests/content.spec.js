@@ -23,16 +23,28 @@ test.describe('Content', () => {
     expect(text).toContain('Cloud Practitioner');
   });
 
-  test('skills groups are populated', async ({ cleanPage }) => {
+  test('skills groups are populated (six categories, no orphan cell)', async ({ cleanPage }) => {
     const { page } = cleanPage;
     await page.goto('/');
     const groups = page.locator('.skill-group');
-    await expect(groups).toHaveCount(5);
+    await expect(groups).toHaveCount(6);
+    const titles = (await page.locator('.skill-group-title').allTextContents()).join(' | ');
+    expect(titles).toContain('Reliability');
     // Spot-check key skills appear as chips.
     const chipsText = (await page.locator('.chips li').allTextContents()).join(' | ');
-    for (const skill of ['Azure', 'Terraform', 'Playwright', 'Python', 'CI/CD']) {
+    for (const skill of ['Azure', 'Terraform', 'Playwright', 'Python', 'CI/CD', 'Runbooks']) {
       expect(chipsText).toContain(skill);
     }
+  });
+
+  test('hero contact row exposes email, LinkedIn and GitHub', async ({ cleanPage }) => {
+    const { page } = cleanPage;
+    await page.goto('/');
+    const contact = page.locator('.hero-contact');
+    await expect(contact).toBeVisible();
+    await expect(contact.locator('a[href="mailto:hello@binasoy.kim"]')).toHaveCount(1);
+    await expect(contact.locator('a[href="https://linkedin.com/in/kedbin"]')).toHaveCount(1);
+    await expect(contact.locator('a[href="https://github.com/kedbin"]')).toHaveCount(1);
   });
 
   test('experience timeline has three roles with Accenture', async ({ cleanPage }) => {

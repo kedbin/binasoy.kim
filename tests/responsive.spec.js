@@ -59,4 +59,30 @@ test.describe('Responsive layout', () => {
     await page.keyboard.press('Escape');
     await expect(page.locator('.mobile-nav-overlay')).not.toHaveClass(/open/);
   });
+
+  test('mobile hero: name before portrait; both CTAs above the 390x844 fold', async ({ cleanPage }) => {
+    const { page } = cleanPage;
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
+    // Freeze animations so positions reflect the final layout.
+    await page.addStyleTag({ content: '*,*::before,*::after{transition:none!important;animation:none!important;}' });
+    await page.evaluate(() => document.querySelectorAll('.reveal').forEach((el) => el.classList.add('is-visible')));
+    await page.waitForTimeout(60);
+
+    const rectOf = (sel) => page.locator(sel).evaluate(
+      (el) => { const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom }; }
+    );
+    const h1 = await rectOf('h1');
+    const portrait = await rectOf('.portrait-img');
+    // Name / role / lead render BEFORE the portrait.
+    expect(h1.bottom).toBeLessThanOrEqual(portrait.top + 1);
+
+    // Both hero CTAs sit above the 844px fold.
+    const ctaBottoms = await page.locator('.hero-actions .btn').evaluateAll((els) =>
+      els.map((e) => Math.round(e.getBoundingClientRect().bottom))
+    );
+    expect(ctaBottoms.length).toBe(2);
+    for (const b of ctaBottoms) expect(b).toBeLessThanOrEqual(844);
+  });
 });
