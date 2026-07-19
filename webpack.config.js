@@ -47,7 +47,7 @@ module.exports = (env, argv = {}) => {
                     use: 'html-loader'
                 },
                 {
-                    test: /\.(png|svg|jpg|gif|ttf|pptx|webp|webmanifest)$/i,
+                    test: /\.(png|svg|jpg|gif|ttf|woff2?|eot|otf|pptx|webp|webmanifest)$/i,
                     type: 'asset/resource',
                     generator: {
                         filename: 'images/[name]-[hash][ext]'
