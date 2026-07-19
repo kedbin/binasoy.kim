@@ -44,8 +44,8 @@ $container-max: 1140px;
 $container-pad: clamp(20px, 5vw, 40px);
 $section-pad-y: clamp(56px, 7vw, 96px);
 
-// Fonts
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+// Fonts are loaded via <link> in index.html <head> (preconnect + stylesheet)
+// to avoid the render-blocking CSS @import chain.
 
 $font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
 $font-mono: 'JetBrains Mono', 'SFMono-Regular', 'Courier New', monospace;

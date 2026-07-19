@@ -1,8 +1,14 @@
 // ============================================
 // binasoy.kim — Main Entry
 // Lightweight, dependency-free interactivity.
+// Every effect degrades gracefully: respects prefers-reduced-motion,
+// pauses when off-screen, and leaves content fully visible without JS.
 // ============================================
 import '/src/style/index.scss';
+
+const prefersReducedMotion = () =>
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 document.addEventListener('DOMContentLoaded', () => {
   const header = document.querySelector('.site-header');
@@ -29,11 +35,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Escape') setMenu(false);
   });
 
-  // ---- Scroll-driven UI: sticky header shadow, back-to-top, active nav ----
+  // ---- Scroll-driven UI ----
   const navLinks = Array.from(document.querySelectorAll('.main-nav .nav-link[href^="#"]'));
-  const sections = navLinks
-    .map((l) => document.querySelector(l.getAttribute('href')))
-    .filter(Boolean);
+  const sections = navLinks.map((l) => document.querySelector(l.getAttribute('href'))).filter(Boolean);
+  const progressBar = document.querySelector('.scroll-progress > span');
 
   const onScroll = () => {
     const y = window.scrollY;
@@ -43,6 +48,11 @@ document.addEventListener('DOMContentLoaded', () => {
       backToTop.classList.toggle('is-visible', show);
       backToTop.hidden = !show;
     }
+    if (progressBar) {
+      const h = document.documentElement.scrollHeight - window.innerHeight;
+      const pct = h > 0 ? Math.min(1, y / h) : 0;
+      progressBar.style.transform = `scaleX(${pct})`;
+    }
   };
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
@@ -51,16 +61,13 @@ document.addEventListener('DOMContentLoaded', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
-  // Scroll-spy: highlight the nav item for the section in view
   if (sections.length && 'IntersectionObserver' in window) {
     const spy = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) return;
           const id = `#${entry.target.id}`;
-          navLinks.forEach((l) =>
-            l.classList.toggle('active', l.getAttribute('href') === id)
-          );
+          navLinks.forEach((l) => l.classList.toggle('active', l.getAttribute('href') === id));
         });
       },
       { rootMargin: '-45% 0px -50% 0px' }
@@ -68,9 +75,9 @@ document.addEventListener('DOMContentLoaded', () => {
     sections.forEach((s) => spy.observe(s));
   }
 
-  // ---- Reveal-on-scroll ----
+  // ---- Reveal-on-scroll (transform-only: content always visible) ----
   const reveals = document.querySelectorAll('.reveal');
-  if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  if ('IntersectionObserver' in window && !prefersReducedMotion()) {
     const revealObserver = new IntersectionObserver(
       (entries, obs) => {
         entries.forEach((entry) => {
@@ -85,6 +92,233 @@ document.addEventListener('DOMContentLoaded', () => {
     reveals.forEach((el) => revealObserver.observe(el));
   } else {
     reveals.forEach((el) => el.classList.add('is-visible'));
+  }
+
+  // ---- Animated stat counters (count-up on reveal) ----
+  const counters = document.querySelectorAll('[data-count]');
+  const animateCounter = (el) => {
+    const target = parseFloat(el.dataset.count);
+    const suffix = el.dataset.suffix || '';
+    if (prefersReducedMotion()) {
+      el.textContent = `${target}${suffix}`;
+      return;
+    }
+    const duration = 1100;
+    const start = performance.now();
+    const step = (now) => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
+      el.textContent = `${Math.round(target * eased)}${suffix}`;
+      if (t < 1) requestAnimationFrame(step);
+      else el.textContent = `${target}${suffix}`;
+    };
+    requestAnimationFrame(step);
+  };
+  if (counters.length && 'IntersectionObserver' in window) {
+    const cObs = new IntersectionObserver(
+      (entries, obs) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            animateCounter(entry.target);
+            obs.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.6 }
+    );
+    counters.forEach((c) => cObs.observe(c));
+  } else {
+    counters.forEach((c) => animateCounter(c));
+  }
+
+  // ---- Card tilt micro-interaction (fine pointers only, motion allowed) ----
+  const finePointer = window.matchMedia('(pointer: fine)').matches;
+  if (finePointer && !prefersReducedMotion()) {
+    document.querySelectorAll('.cert-card, .timeline-card').forEach((card) => {
+      const MAX = 5; // degrees
+      card.addEventListener('pointermove', (e) => {
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        card.style.transform = `perspective(800px) rotateX(${(-py * MAX).toFixed(2)}deg) rotateY(${(px * MAX).toFixed(2)}deg) translateY(-3px)`;
+      });
+      card.addEventListener('pointerleave', () => {
+        card.style.transform = '';
+      });
+    });
+  }
+
+  // ---- Canvas particle "network" hero accent ----
+  // 2D canvas (no WebGL) => tiny weight, runs anywhere, no dGPU risk.
+  // Capped FPS, paused when hero off-screen, skipped entirely under reduced-motion.
+  const canvas = document.querySelector('.hero-canvas');
+  const heroSection = document.querySelector('.hero');
+  if (canvas && heroSection && canvas.getContext && !prefersReducedMotion()) {
+    const ctx = canvas.getContext('2d');
+    let width = 0, height = 0, particles = [], raf = null, lastFrame = 0, visible = true;
+    const FPS = 30;
+    const FRAME_MS = 1000 / FPS;
+    const COLORS = ['rgba(111,174,141,', 'rgba(126,151,184,', 'rgba(200,169,107,'];
+
+    const buildParticles = () => {
+      const area = width * height;
+      const count = Math.min(46, Math.max(14, Math.round(area / 26000)));
+      particles = Array.from({ length: count }, () => ({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.28,
+        vy: (Math.random() - 0.5) * 0.28,
+        r: 1 + Math.random() * 1.6,
+        c: COLORS[Math.floor(Math.random() * COLORS.length)],
+      }));
+    };
+
+    const resize = () => {
+      const ratio = window.devicePixelRatio || 1;
+      const rect = heroSection.getBoundingClientRect();
+      width = Math.max(1, Math.floor(rect.width));
+      height = Math.max(1, Math.floor(rect.height));
+      canvas.width = Math.floor(width * ratio);
+      canvas.height = Math.floor(height * ratio);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      buildParticles();
+    };
+
+    const draw = (now) => {
+      raf = requestAnimationFrame(draw);
+      if (now - lastFrame < FRAME_MS) return;
+      lastFrame = now;
+      ctx.clearRect(0, 0, width, height);
+
+      for (const p of particles) {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0 || p.x > width) p.vx *= -1;
+        if (p.y < 0 || p.y > height) p.vy *= -1;
+      }
+      // connecting lines between near particles
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const a = particles[i], b = particles[j];
+          const dx = a.x - b.x, dy = a.y - b.y;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < 14000) {
+            const alpha = (1 - d2 / 14000) * 0.16;
+            ctx.strokeStyle = `rgba(111,174,141,${alpha})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+          }
+        }
+      }
+      for (const p of particles) {
+        ctx.fillStyle = `${p.c}0.55)`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    };
+
+    const start = () => { if (!raf) { lastFrame = 0; raf = requestAnimationFrame(draw); } };
+    const stop = () => { if (raf) { cancelAnimationFrame(raf); raf = null; } };
+
+    resize();
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(resize, 200);
+    });
+
+    // Pause when the hero scrolls out of view (saves CPU/battery).
+    if ('IntersectionObserver' in window) {
+      const visObs = new IntersectionObserver(
+        (entries) => {
+          visible = entries[0].isIntersecting;
+          if (visible) start(); else stop();
+        },
+        { threshold: 0 }
+      );
+      visObs.observe(heroSection);
+    } else {
+      start();
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) stop(); else if (visible) start();
+    });
+  }
+
+  // ---- Typing terminal (on-brand automation showcase) ----
+  const termOut = document.getElementById('terminal-output');
+  if (termOut) {
+    const COMMANDS = [
+      { cmd: 'terraform plan', lines: [
+        { t: 'Acquiring state lock… OK', c: 'muted' },
+        { t: 'Plan: 12 to add, 0 to change, 0 to destroy.', c: 'out' },
+        { t: '✓ Infrastructure drift-free', c: 'ok' },
+      ]},
+      { cmd: 'playwright test --reporter=line', lines: [
+        { t: 'Running 42 tests across 3 projects…', c: 'muted' },
+        { t: '  42 passed (8.4s)', c: 'out' },
+        { t: '✓ All green — shipping', c: 'ok' },
+      ]},
+      { cmd: 'gh run list --limit 3', lines: [
+        { t: '✓ deploy.yml  success  main  2m03s', c: 'ok' },
+        { t: '✓ test.yml   success  main  1m12s', c: 'ok' },
+        { t: '✓ build.yml  success  main  0m54s', c: 'ok' },
+      ]},
+    ];
+
+    const prompt = '<span class="t-prompt">➜</span> <span class="t-cwd">~/kim</span> ';
+
+    const renderStatic = () => {
+      const c = COMMANDS[0];
+      termOut.innerHTML = `${prompt}<span class="t-cmd">${c.cmd}</span>\n` +
+        c.lines.map((l) => `<span class="t-${l.c}">${l.t}</span>`).join('\n');
+    };
+
+    if (prefersReducedMotion() || !('IntersectionObserver' in window)) {
+      renderStatic();
+    } else {
+      let cancelled = false;
+      let inView = false;
+      const typeRun = async () => {
+        for (let i = 0; !cancelled; i = (i + 1) % COMMANDS.length) {
+          const c = COMMANDS[i];
+          // type the command
+          let typed = '';
+          termOut.innerHTML = prompt + '<span class="t-cmd"></span>';
+          const cmdEl = termOut.querySelector('.t-cmd');
+          for (const ch of c.cmd) {
+            if (cancelled || !inView) return;
+            typed += ch;
+            cmdEl.textContent = typed;
+            await wait(46 + Math.random() * 40);
+          }
+          await wait(260);
+          // reveal output lines
+          let html = `${prompt}<span class="t-cmd">${c.cmd}</span>\n`;
+          const built = [];
+          for (const l of c.lines) {
+            if (cancelled || !inView) return;
+            built.push(`<span class="t-${l.c}">${l.t}</span>`);
+            termOut.innerHTML = html + built.join('\n');
+            await wait(240);
+          }
+          await wait(1900);
+        }
+      };
+      const termObs = new IntersectionObserver(
+        (entries) => {
+          inView = entries[0].isIntersecting;
+          if (inView) typeRun().catch(() => {});
+        },
+        { threshold: 0.2 }
+      );
+      termObs.observe(termOut);
+    }
   }
 
   // ---- Footer year ----

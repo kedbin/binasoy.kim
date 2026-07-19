@@ -784,10 +784,168 @@ strong { color: $text-primary; font-weight: 600; }
     .hero-grid { grid-template-columns: 1fr; }
 }
 
+// ============================================
+// Interactive layer: scroll-progress, hero canvas,
+// terminal, CI/CD pipeline
+// ============================================
+
+// ---- Scroll progress indicator ----
+.scroll-progress {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    z-index: 101;
+    background: transparent;
+    pointer-events: none;
+}
+.scroll-progress > span {
+    display: block;
+    height: 100%;
+    width: 100%;
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+    background: linear-gradient(90deg, $accent-emerald, $accent-slate);
+}
+
+// ---- Hero particle canvas sits behind content ----
+.hero { position: relative; }
+.hero > .container { position: relative; z-index: 1; }
+.hero-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    opacity: 0.9;
+    pointer-events: none;
+    mask-image: radial-gradient(120% 90% at 30% 30%, #000 35%, transparent 80%);
+    -webkit-mask-image: radial-gradient(120% 90% at 30% 30%, #000 35%, transparent 80%);
+}
+
+// ---- In Action: terminal + pipeline ----
+.action-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 18px;
+    align-items: stretch;
+}
+.terminal-card, .pipeline-card { display: flex; flex-direction: column; }
+
+.terminal {
+    border: 1px solid $border;
+    border-radius: $radius;
+    overflow: hidden;
+    background: #07090d;
+    box-shadow: $box-shadow-soft;
+    flex: 1;
+}
+.terminal-bar {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 14px;
+    background: $surface-raised;
+    border-bottom: 1px solid $border;
+}
+.term-dot { width: 11px; height: 11px; border-radius: 50%; }
+.term-red { background: #ff5f57; }
+.term-amber { background: #febc2e; }
+.term-green { background: #28c840; }
+.term-title { margin-left: 8px; font-family: $font-mono; font-size: 0.74rem; color: $text-muted; }
+.terminal-body {
+    margin: 0;
+    padding: 18px 18px 22px;
+    font-family: $font-mono;
+    font-size: 0.82rem;
+    line-height: 1.7;
+    color: $text-secondary;
+    white-space: pre-wrap;
+    word-break: break-word;
+    min-height: 196px;
+}
+.t-prompt { color: $accent-emerald; }
+.t-cwd { color: $accent-slate; }
+.t-cmd { color: $text-primary; }
+.t-ok { color: $accent-emerald; }
+.t-out { color: $text-secondary; }
+.t-muted { color: $text-muted; }
+
+// ---- CI/CD pipeline diagram ----
+.pipeline-card { justify-content: space-between; gap: 16px; }
+.pipeline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    padding: 30px 18px;
+    border: 1px solid $border;
+    border-radius: $radius;
+    background: linear-gradient(180deg, rgba(22,28,37,0.6), rgba(16,20,27,0.4));
+}
+.pipeline-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 0 0 auto;
+    width: 70px;
+    text-align: center;
+    color: $text-muted;
+    animation: nodePulse 4.2s infinite ease-in-out;
+}
+.pipeline-node svg { width: 30px; height: 30px; }
+.pipeline-node span { font-family: $font-mono; font-size: 0.74rem; }
+.pipeline-node:nth-child(1) { animation-delay: 0s; }
+.pipeline-node:nth-child(3) { animation-delay: 1.05s; }
+.pipeline-node:nth-child(5) { animation-delay: 2.1s; }
+.pipeline-node:nth-child(7) { animation-delay: 3.15s; }
+@keyframes nodePulse {
+    0%, 100% { color: $text-muted; }
+    18%, 42% { color: $accent-emerald; filter: drop-shadow(0 0 8px rgba(111,174,141,0.55)); }
+}
+.pipeline-connector {
+    flex: 1 1 auto;
+    height: 2px;
+    position: relative;
+    background: $border;
+    border-radius: 2px;
+    overflow: hidden;
+    min-width: 16px;
+}
+.pipeline-connector span {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, $accent-emerald, transparent);
+    background-size: 45% 100%;
+    background-repeat: no-repeat;
+    animation: flow 2.1s infinite linear;
+}
+@keyframes flow {
+    0% { background-position: -45% 0; }
+    100% { background-position: 145% 0; }
+}
+.pipeline-caption { text-align: center; font-size: 0.85rem; color: $text-muted; font-family: $font-mono; }
+
+@media (prefers-reduced-motion: reduce) {
+    .pipeline-node { animation: none !important; color: $accent-emerald; }
+    .pipeline-connector span { animation: none !important; opacity: 0.45; }
+}
+
 // Print: clean black-on-white for anyone printing the page
 @media print {
     .ambient-bg, .site-header, .back-to-top, .mobile-menu-btn, .hero-actions { display: none !important; }
     body { background: #fff; color: #111; }
     .section-alt { background: none; }
     a { color: #111; }
+}
+
+// ---- Responsive overrides for the interactive layer (after base rules) ----
+@media (max-width: $bp-md) {
+    .action-grid { grid-template-columns: 1fr; }
+    .terminal-card, .pipeline-card { min-width: 0; }
+    .pipeline { padding: 24px 8px; gap: 2px; }
+    .pipeline-node { width: 46px; }
+    .pipeline-node svg { width: 22px; }
+    .pipeline-node span { font-size: 0.66rem; }
+    .pipeline-connector { min-width: 8px; }
+    .terminal-body { font-size: 0.76rem; min-height: 160px; }
 }

@@ -25,6 +25,7 @@
     <link rel="manifest" href="./assets/images/favicon/site.webmanifest">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
     <!-- PostHog Analytics -->
     <script>
         !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_of_capturing has_opted_in_capturing has_opted_out_of_capturing clear_opt_in_out_capturing debug getPageViewId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
@@ -39,6 +40,7 @@
 </head>
 
 <body>
+    <div class="scroll-progress" aria-hidden="true"><span></span></div>
     <div class="ambient-bg" aria-hidden="true">
         <div class="ambient-orb ambient-orb-1"></div>
         <div class="ambient-orb ambient-orb-2"></div>
@@ -85,6 +87,7 @@
     <main id="main">
         <!-- Hero / About -->
         <section class="hero section" id="about">
+            <canvas class="hero-canvas" aria-hidden="true"></canvas>
             <div class="container hero-grid">
                 <div class="hero-copy reveal">
                     <p class="status-badge">
@@ -129,9 +132,9 @@
                         </a>
                     </div>
                     <ul class="hero-stats" aria-label="Career highlights">
-                        <li><strong>5×</strong><span>faster test authoring via AI agents</span></li>
-                        <li><strong>90%</strong><span>streamlined content distribution via relearn.ing</span></li>
-                        <li><strong>70%</strong><span>test-documentation time cut by automation</span></li>
+                        <li><strong data-count="5" data-suffix="×">5×</strong><span>faster test authoring via AI agents</span></li>
+                        <li><strong data-count="90" data-suffix="%">90%</strong><span>streamlined content distribution via relearn.ing</span></li>
+                        <li><strong data-count="70" data-suffix="%">70%</strong><span>test-documentation time cut by automation</span></li>
                     </ul>
                 </div>
                 <div class="hero-portrait reveal" aria-hidden="false">
@@ -139,7 +142,7 @@
                         <div class="portrait-glow" aria-hidden="true"></div>
                         <picture>
                             <source srcset="./assets/images/profile_v4.webp" type="image/webp">
-                            <img src="./assets/images/profile_v4.png" alt="Portrait of Kim Edrian Binasoy" class="portrait-img" width="640" height="800" loading="eager" decoding="async">
+                            <img src="./assets/images/profile_v4.png" alt="Portrait of Kim Edrian Binasoy" class="portrait-img" width="640" height="800" loading="eager" decoding="async" fetchpriority="high">
                         </picture>
                     </div>
                 </div>
@@ -350,6 +353,54 @@
                         </div>
                     </li>
                 </ol>
+            </div>
+        </section>
+
+        <!-- In Action: live automation showcase -->
+        <section class="section section-alt" id="in-action" aria-labelledby="in-action-title">
+            <div class="container">
+                <header class="section-head reveal">
+                    <span class="section-kicker">Live</span>
+                    <h2 class="section-title" id="in-action-title">Automation, in real time</h2>
+                    <p class="section-sub">A glimpse of the pipelines I build — infrastructure as code, AI-assisted test automation, and continuous delivery.</p>
+                </header>
+                <div class="action-grid">
+                    <div class="terminal-card reveal">
+                        <div class="terminal" role="img" aria-label="Animated terminal running infrastructure and test commands">
+                            <div class="terminal-bar">
+                                <span class="term-dot term-red"></span>
+                                <span class="term-dot term-amber"></span>
+                                <span class="term-dot term-green"></span>
+                                <span class="term-title">kim@cloud — zsh</span>
+                            </div>
+                            <pre class="terminal-body" id="terminal-output"></pre>
+                        </div>
+                    </div>
+                    <div class="pipeline-card reveal">
+                        <div class="pipeline" role="img" aria-label="Continuous delivery pipeline: source, build, test, deploy">
+                            <div class="pipeline-node">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="6" cy="6" r="2.2"/><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="8" r="2.2"/><path d="M6 8.2v7.6M8.2 18H13a4 4 0 0 0 4-4v-4"/></svg>
+                                <span>Source</span>
+                            </div>
+                            <div class="pipeline-connector"><span></span></div>
+                            <div class="pipeline-node">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M21 16V8l-9-5-9 5v8l9 5z"/><path d="M3.3 7L12 12l8.7-5M12 22V12"/></svg>
+                                <span>Build</span>
+                            </div>
+                            <div class="pipeline-connector"><span></span></div>
+                            <div class="pipeline-node">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+                                <span>Test</span>
+                            </div>
+                            <div class="pipeline-connector"><span></span></div>
+                            <div class="pipeline-node">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M17.5 19a4.5 4.5 0 0 0 .5-9 6 6 0 0 0-11.5-1A4 4 0 0 0 6.5 19z"/><path d="M12 13v6m-2-2l2 2 2-2"/></svg>
+                                <span>Deploy</span>
+                            </div>
+                        </div>
+                        <p class="pipeline-caption">Every commit runs the gauntlet — build, automated tests, then ship.</p>
+                    </div>
+                </div>
             </div>
         </section>
 

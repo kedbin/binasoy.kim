@@ -18,8 +18,8 @@ test.describe('Smoke', () => {
   test('main assets are served (css, js, portrait)', async ({ cleanPage }) => {
     const { page, failedLocal } = cleanPage;
     await page.goto('/');
-    // CSS + JS injected
-    await expect(page.locator('link[rel="stylesheet"]')).toHaveCount(1);
+    // Local CSS + JS injected (Google Fonts is an additional <link>)
+    await expect(page.locator('link[rel="stylesheet"][href$="main.css"]')).toHaveCount(1);
     await expect(page.locator('script[src$="main.js"]')).toHaveCount(1);
     // Portrait image actually loaded
     const img = page.locator('img.portrait-img');
