@@ -282,6 +282,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (prefersReducedMotion() || !('IntersectionObserver' in window)) {
       renderStatic();
     } else {
+      // Show fallback content immediately so the terminal is never an empty
+      // void before the typing animation triggers on scroll into view.
+      renderStatic();
       let cancelled = false;
       let inView = false;
       const typeRun = async () => {
