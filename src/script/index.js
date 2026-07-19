@@ -250,6 +250,96 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ---- Hero "automation orbit" (replaces the portrait) ----
+  const orbitCanvas = document.querySelector('.orbit-canvas');
+  const orbitStage = document.querySelector('.orbit-stage');
+  if (orbitCanvas && orbitStage && orbitCanvas.getContext) {
+    const octx = orbitCanvas.getContext('2d');
+    let ow = 0, oh = 0, oraf = null, olast = 0, ovisible = true;
+    const OFPS = 30, OFRAME = 1000 / OFPS;
+    const NODES = [
+      { label: 'Azure', color: '#5BA2E0', rad: 0.60, speed: 0.00038, phase: 0 },
+      { label: 'GCP', color: '#6FAE8D', rad: 0.60, speed: 0.00038, phase: Math.PI * 0.5 },
+      { label: 'AWS', color: '#C8A96B', rad: 0.60, speed: 0.00038, phase: Math.PI },
+      { label: 'CI/CD', color: '#7E97B8', rad: 0.60, speed: 0.00038, phase: Math.PI * 1.5 },
+      { label: 'AI', color: '#B58FE0', rad: 0.40, speed: -0.00060, phase: 0.7 },
+    ];
+
+    const oresize = () => {
+      const ratio = window.devicePixelRatio || 1;
+      const rect = orbitStage.getBoundingClientRect();
+      ow = Math.max(1, Math.floor(rect.width));
+      oh = Math.max(1, Math.floor(rect.height));
+      orbitCanvas.width = Math.floor(ow * ratio);
+      orbitCanvas.height = Math.floor(oh * ratio);
+      orbitCanvas.style.width = ow + 'px';
+      orbitCanvas.style.height = oh + 'px';
+      octx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    };
+
+    const drawOrbit = (t) => {
+      const cx = ow / 2, cy = oh / 2;
+      const R = Math.min(ow, oh) / 2;
+      octx.clearRect(0, 0, ow, oh);
+      // rings
+      octx.strokeStyle = 'rgba(35,42,51,0.9)';
+      octx.lineWidth = 1;
+      [0.60, 0.40].forEach((f) => {
+        octx.beginPath();
+        octx.arc(cx, cy, R * f, 0, Math.PI * 2); octx.stroke();
+      });
+      NODES.forEach((n) => {
+        const ang = n.phase + t * n.speed;
+        const nx = cx + R * n.rad * Math.cos(ang);
+        const ny = cy + R * n.rad * Math.sin(ang);
+        // link
+        octx.strokeStyle = 'rgba(111,174,141,0.18)';
+        octx.lineWidth = 1;
+        octx.beginPath(); octx.moveTo(cx, cy); octx.lineTo(nx, ny); octx.stroke();
+        // traveling pulse
+        const p = ((t * 0.0009 + n.phase * 0.2) % 1);
+        octx.fillStyle = n.color + 'cc';
+        octx.beginPath(); octx.arc(cx + (nx - cx) * p, cy + (ny - cy) * p, 2.2, 0, Math.PI * 2); octx.fill();
+        // node
+        octx.fillStyle = n.color;
+        octx.shadowColor = n.color;
+        octx.shadowBlur = 10;
+        octx.beginPath(); octx.arc(nx, ny, 5, 0, Math.PI * 2); octx.fill();
+        octx.shadowBlur = 0;
+        // label
+        octx.fillStyle = 'rgba(174,182,192,0.92)';
+        octx.font = '500 11px "JetBrains Mono", monospace';
+        octx.textAlign = Math.cos(ang) >= 0 ? 'left' : 'right';
+        octx.textBaseline = 'middle';
+        octx.fillText(n.label, nx + Math.cos(ang) * 13, ny + Math.sin(ang) * 13);
+      });
+    };
+
+    const oloop = (now) => { oraf = requestAnimationFrame(oloop); if (now - olast < OFRAME) return; olast = now; drawOrbit(now); };
+    const ostart = () => { if (!oraf) { olast = 0; oraf = requestAnimationFrame(oloop); } };
+    const ostop = () => { if (oraf) { cancelAnimationFrame(oraf); oraf = null; } };
+    const oReduced = prefersReducedMotion();
+
+    oresize();
+    let oresizeTimer;
+    window.addEventListener('resize', () => { clearTimeout(oresizeTimer); oresizeTimer = setTimeout(oresize, 200); });
+
+    if (oReduced) {
+      drawOrbit(0); // static frame
+    } else if ('IntersectionObserver' in window) {
+      const oObs = new IntersectionObserver((entries) => {
+        ovisible = entries[0].isIntersecting;
+        if (ovisible) ostart(); else ostop();
+      }, { threshold: 0 });
+      oObs.observe(orbitStage);
+    } else {
+      ostart();
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) ostop(); else if (ovisible && !oReduced) ostart();
+    });
+  }
+
   // ---- Typing terminal (on-brand automation showcase) ----
   const termOut = document.getElementById('terminal-output');
   if (termOut) {

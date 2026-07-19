@@ -5,10 +5,9 @@ test.describe('Accessibility basics', () => {
     const { page } = cleanPage;
     await page.goto('/');
     const imgs = await page.locator('img').all();
-    expect(imgs.length).toBeGreaterThan(0);
+    // No <img> elements is fine (hero visual is a canvas). If any exist, they need alt.
     for (const img of imgs) {
       const alt = (await img.getAttribute('alt')) ?? '';
-      // Decorative svg icons are not <img>; every <img> here is content.
       expect(alt.trim().length, 'img missing alt').toBeGreaterThan(0);
     }
   });

@@ -401,6 +401,51 @@ strong { color: $text-primary; font-weight: 600; }
     object-position: center top;
     filter: saturate(1.05) contrast(1.02);
 }
+// Portrait CSS retained (portrait removed in favor of the orbit widget below).
+
+// ---- Hero automation orbit (replaces the portrait) ----
+.hero-orbit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    justify-self: center;
+}
+.orbit-stage {
+    position: relative;
+    width: clamp(260px, 28vw, 360px);
+    aspect-ratio: 1;
+}
+.orbit-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+.orbit-hub {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    display: grid;
+    place-items: center;
+    width: 16%; height: 16%;
+    min-width: 46px; min-height: 46px;
+    border-radius: 50%;
+    background: linear-gradient(140deg, $accent-emerald, #4f8f70);
+    color: #06210f;
+    font-family: $font-mono;
+    font-weight: 700;
+    font-size: clamp(0.8rem, 1vw, 1rem);
+    box-shadow: 0 0 0 6px rgba(111, 174, 141, 0.12), 0 0 30px rgba(111, 174, 141, 0.35);
+    z-index: 2;
+}
+.orbit-caption {
+    font-family: $font-mono;
+    font-size: 0.8rem;
+    letter-spacing: 0.02em;
+    color: $text-muted;
+    text-align: center;
+}
 
 // ---- Certifications ----
 .cert-grid {

@@ -36,7 +36,7 @@ test.describe('Responsive layout', () => {
       await page.goto('/');
       await expect(page.locator('h1')).toBeVisible();
       await expect(page.locator('#contact')).toBeAttached();
-      await expect(page.locator('.portrait-img')).toBeVisible();
+      await expect(page.locator('.orbit-canvas')).toBeVisible();
     });
   }
 
@@ -74,9 +74,9 @@ test.describe('Responsive layout', () => {
       (el) => { const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom }; }
     );
     const h1 = await rectOf('h1');
-    const portrait = await rectOf('.portrait-img');
-    // Name / role / lead render BEFORE the portrait.
-    expect(h1.bottom).toBeLessThanOrEqual(portrait.top + 1);
+    const orbit = await rectOf('.orbit-stage');
+    // Name / role / lead render BEFORE the orbit visual.
+    expect(h1.bottom).toBeLessThanOrEqual(orbit.top + 1);
 
     // Both hero CTAs sit above the 844px fold.
     const ctaBottoms = await page.locator('.hero-actions .btn').evaluateAll((els) =>
