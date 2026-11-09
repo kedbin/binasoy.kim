@@ -33,13 +33,13 @@ export const ANCHORS = {
   photoWall: { pos: [-0.77, 1.2, -0.4] as const, rotY: Math.PI / 2 },   // left side panel
   stickers: { pos: [0.77, 1.05, -0.2] as const, rotY: -Math.PI / 2 },   // right side trim panel
   clipboard: { pos: [-0.5, VAN.bedTopY + 0.03, 0.75] as const, rotY: 0.4 },
-  raft: { pos: [-6, WORLD.waterY, 45] as const },
-  kayak: { pos: [4.5, 0.05, 10.5] as const },
+  raft: { pos: [-3, WORLD.waterY, 26] as const },
+  kayak: { pos: [3.6, -0.3, 11.2] as const }, // on the sand, nose toward the water
 } as const;
 
 /** Camera presets per view. position / target in world space. */
 export const CAMERA: Record<string, { pos: [number, number, number]; target: [number, number, number]; fov: number }> = {
-  intro:     { pos: [0.9, 1.65, 6.2], target: [0, 1.05, 0],   fov: 50 },  // outside, looking INTO the van
+  intro:     { pos: [2.6, 1.9, 7.4],  target: [0, 1.0, -0.6],  fov: 46 },  // outside, looking INTO the van
   seat:      { pos: [0, 1.22, -1.05], target: [0, 1.0, 6],     fov: 62 },  // lying against pillows, facing the lake
   laptop:    { pos: [0.12, 1.12, -0.05], target: [0.18, 0.92, 0.35], fov: 40 },
   outside:   { pos: [0, 1.45, 2.2],   target: [-2, 2.2, 60],   fov: 55 },  // at bumper looking at lake

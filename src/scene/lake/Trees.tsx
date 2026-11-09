@@ -23,7 +23,8 @@ function placements(count: number): T[] {
     const z = behind ? -10 - rand() * 30 : -14 + rand() * 24; // never reaches the beach
     if (z > WORLD.beachZ0 - 1.5) continue;
     if (z > WORLD.fenceZ - 1 && Math.abs(x) < 20) continue; // keep the view to the lake open
-    if (Math.abs(x) < 9 && z > -6) continue; // keep the clearing open around the van
+    if (Math.abs(x) < 14 && z > -9) continue; // keep the clearing open around the van
+    if (Math.hypot(x, z) < 13) continue;
     const kind: Kind = rand() < 0.45 ? 'pine' : 'maple';
     const s = 0.8 + rand() * 0.9 + (Math.abs(x) > 20 ? 0.4 : 0);
     const c = (kind === 'pine' ? pines[Math.floor(rand() * 3)] : maples[Math.floor(rand() * maples.length)]).clone();
