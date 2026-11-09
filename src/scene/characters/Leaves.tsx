@@ -3,21 +3,29 @@ import { useFrame } from '@react-three/fiber';
 import { Color, DoubleSide, Object3D, Shape, ShapeGeometry, type InstancedMesh } from 'three';
 import { useScene } from '../../state/store';
 
-const COUNT = { low: 20, mid: 60, high: 120 } as const;
+const COUNT = { low: 20, mid: 45, high: 120 } as const;
 
 function leafGeometry() {
   // simple stylised maple leaf: 5-pointed
   const s = new Shape();
-  const pts = 10;
+  const pts = 60;
+  // lobes at 5 angles (top, two side, two lower) with a smooth falloff -> rounded maple silhouette
+  const lobes: [number, number, number][] = [[90, 1, 22], [30, 0.82, 20], [150, 0.82, 20], [-35, 0.55, 18], [215, 0.55, 18]];
   for (let i = 0; i < pts; i++) {
-    const a = (i / pts) * Math.PI * 2 + Math.PI / 2;
-    const r = i % 2 === 0 ? 1 : 0.5;
+    const deg = (i / pts) * 360;
+    let r = 0.38;
+    for (const [a, h, w] of lobes) {
+      let da = Math.abs(((deg - a + 540) % 360) - 180);
+      da = Math.min(da, 360 - da);
+      r = Math.max(r, 0.38 + (h - 0.38) * Math.exp(-(da * da) / (w * w)));
+    }
+    const a = (deg * Math.PI) / 180;
     const x = Math.cos(a) * r, y = Math.sin(a) * r;
     if (i === 0) s.moveTo(x, y); else s.lineTo(x, y);
   }
   s.closePath();
   const g = new ShapeGeometry(s);
-  g.scale(0.065, 0.065, 0.065);
+  g.scale(0.09, 0.09, 0.09);
   return g;
 }
 

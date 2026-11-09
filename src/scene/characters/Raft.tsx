@@ -6,7 +6,7 @@ import { useScene } from '../../state/store';
 import { People } from './People';
 
 /** Drift loop: period (s) and half-extents (m). */
-const DRIFT = { period: 90, rx: 10, rz: 6 };
+const DRIFT = { period: 90, rx: 6, rz: 4 };
 const RINGS = 3;
 
 export function RaftScene() {
@@ -52,7 +52,7 @@ export function RaftScene() {
           <meshBasicMaterial ref={(m) => { ringMats[i] = m; }} color="#ffffff" transparent opacity={0.2} depthWrite={false} side={DoubleSide} />
         </mesh>
       ))}
-      <group ref={bob} scale={1.5}>
+      <group ref={bob} scale={1.2}>
         <Raft />
         <group position={[0, 0.12, 0]}><People /></group>
         {night && (
