@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Kim Binasoy · Van Camp</title>
+    <meta name="description" content="Kim Edrian Binasoy — Cloud, DevOps, QA Automation &amp; AI engineer. A cosy 3D camping scene inside the minivan Kim and Wingwing built, parked at a golden-hour lake. Open the laptop for his work." />
+    <meta name="theme-color" content="#1E1F22" />
+    <link rel="canonical" href="https://binasoy.kim/" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script>
+      // Progressive enhancement gate. 3D only when JS + WebGL + motion OK. Final tier decision in src/boot.ts.
+      document.documentElement.classList.add('js');
+    </script>
+  </head>
+  <body>
+    <main id="reader"><!--READER--></main>
+    <div id="app" aria-hidden="true"></div>
+    <script type="module" src="/src/boot.ts"></script>
+  </body>
+</html>
