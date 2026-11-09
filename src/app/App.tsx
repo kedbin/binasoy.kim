@@ -11,6 +11,7 @@ import { Hotspots } from '../scene/hotspots/Hotspots';
 import { Effects } from '../scene/Effects';
 import { Overlay } from '../ui/Overlay';
 import { Loader } from '../ui/Loader';
+import { AudioManager } from '../audio';
 
 const DPR: Record<Quality, [number, number]> = { low: [0.75, 1], mid: [1, 1.25], high: [1, 1.5] };
 
@@ -42,6 +43,7 @@ export function App({ initialQuality }: { initialQuality: Quality }) {
       </Canvas>
       <Overlay />
       <Loader />
+      <AudioManager />
     </>
   );
 }
