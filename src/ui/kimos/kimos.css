@@ -53,3 +53,4 @@
 .kos-modal .kos-desk{bottom:0}
 .kos-modal .kos-photos{grid-template-columns:repeat(2,1fr)}
 .kos-bar span,.kos-bar button{white-space:nowrap}.kos-modal .kos-bar{gap:8px;font-size:12px}.kos-modal .kos-bar .kos-brand{flex:none}
+.kos-term input:focus-visible{outline:0;box-shadow:none}
