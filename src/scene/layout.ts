@@ -24,7 +24,7 @@ export const WORLD = {
   waterY: -0.15,
   lakeFarZ: 260,         // far shore
   hillsZ: 220,
-  sunDir: [-0.35, 0.12, 1] as [number, number, number], // low sun, slightly left, beyond the lake
+  sunDir: [-0.45, 0.035, 1] as [number, number, number], // low sun, slightly left, beyond the lake
 } as const;
 
 /** Anchors for interactive props (hotspots). */
@@ -39,7 +39,7 @@ export const ANCHORS = {
 
 /** Camera presets per view. position / target in world space. */
 export const CAMERA: Record<string, { pos: [number, number, number]; target: [number, number, number]; fov: number }> = {
-  intro:     { pos: [0.6, 1.9, 9.5],  target: [0, 1.1, 0],    fov: 45 },  // outside, looking INTO the van
+  intro:     { pos: [0.9, 1.65, 6.2], target: [0, 1.05, 0],   fov: 50 },  // outside, looking INTO the van
   seat:      { pos: [0, 1.22, -1.05], target: [0, 1.0, 6],     fov: 62 },  // lying against pillows, facing the lake
   laptop:    { pos: [0.12, 1.12, -0.05], target: [0.18, 0.92, 0.35], fov: 40 },
   outside:   { pos: [0, 1.45, 2.2],   target: [-2, 2.2, 60],   fov: 55 },  // at bumper looking at lake

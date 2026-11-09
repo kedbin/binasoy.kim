@@ -7,7 +7,7 @@ export function Effects() {
   if (quality === 'low') return null;
   return (
     <EffectComposer multisampling={quality === 'high' ? 4 : 0}>
-      <Bloom intensity={0.6} luminanceThreshold={0.85} luminanceSmoothing={0.2} mipmapBlur />
+      <Bloom intensity={0.55} luminanceThreshold={1.0} luminanceSmoothing={0.2} mipmapBlur />
       <Vignette offset={0.25} darkness={0.55} />
     </EffectComposer>
   );

@@ -8,10 +8,10 @@ export function Lighting() {
   const [x, y, z] = WORLD.sunDir;
   return (
     <>
-      <hemisphereLight args={[night ? '#3a4466' : '#f7d2b0', night ? '#0d0f14' : '#4a5a3a', night ? 0.25 : 0.7]} />
+      <hemisphereLight args={[night ? '#3a4466' : '#f7d2b0', night ? '#0d0f14' : '#8a7a5a', night ? 0.25 : 1.15]} />
       <directionalLight
         position={[x * 80, y * 80 + 6, z * 80]}
-        intensity={night ? 0.15 : 2.2}
+        intensity={night ? 0.15 : 1.8}
         color={night ? '#8fa0d0' : '#ffb27a'}
         castShadow={quality !== 'low'}
         shadow-mapSize={[quality === 'high' ? 2048 : 1024, quality === 'high' ? 2048 : 1024]}
