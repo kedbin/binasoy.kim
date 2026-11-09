@@ -63,7 +63,7 @@ export function People() {
   });
   return (
     <group>
-      <group position={[-0.45, 0.2, -0.1]} rotation={[0, 0.35, 0]}>
+      <group position={[-0.45, 0.2, -0.1]} rotation={[0, 0.35, 0]} scale={1.2}>
         <Person hood="#2B2E36" hair="#1d1815" pants="#3b4256" glasses headRef={kHead} armRef={kArm} />
         <group ref={paddle} position={[0.45, 0.5, 0.25]} rotation={[-0.6, 0, 0.4]}>
           <mesh><cylinderGeometry args={[0.025, 0.025, 2.0, 6]} />{mat('#b89a6a')}</mesh>
@@ -72,7 +72,7 @@ export function People() {
           ))}
         </group>
       </group>
-      <group position={[0.5, 0.2, 0.0]} rotation={[0, -0.4, 0]}>
+      <group position={[0.5, 0.2, 0.0]} rotation={[0, -0.4, 0]} scale={1.2}>
         <Person hood="#CDB08A" hair="#6b4630" pants="#5a5a4a" long headRef={wHead} armRef={wArm} />
       </group>
     </group>
