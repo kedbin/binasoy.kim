@@ -1,0 +1,52 @@
+/* HUD polish — cosy paper pills */
+.hud { --pill: #fbf6eee8; }
+.hud__name { top: 16px; left: 18px; padding: 8px 16px; border-radius: 999px; background: #1e1f2299; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); text-shadow: none; }
+.hud__hint { position: absolute; top: 18px; left: 50%; transform: translateX(-50%); padding: 7px 16px; border-radius: 999px; background: #1e1f2288; backdrop-filter: blur(8px); font-size: 13px; color: var(--fairy); white-space: nowrap; max-width: 92vw; overflow: hidden; text-overflow: ellipsis; }
+.hud__bottom { position: absolute; left: 0; right: 0; bottom: 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 0 10px; }
+.hud__bottom .hud__controls, .hud__bottom .hud__nav { position: static; transform: none; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.hud button { background: var(--pill); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border: 1px solid #fff6; box-shadow: 0 4px 18px #0003; }
+.hud button.primary { background: var(--fairy); font-weight: 700; }
+.hud__nav button { background: #2a2420cc; color: var(--paper); font-size: 13px; padding: 7px 14px; }
+.hud__nav button.is-on { background: var(--gold); color: var(--ink); }
+.hud__nav button:hover { background: var(--maple); color: #fff; }
+.hotspot-label { font: 600 12px var(--font-ui); background: var(--paper); color: var(--ink); padding: 4px 10px; border-radius: 999px; box-shadow: 0 2px 10px #0005; white-space: nowrap; border: 1px solid var(--gold); }
+
+.panel { pointer-events: auto; position: absolute; right: 18px; top: 70px; width: min(380px, calc(100vw - 36px)); max-height: calc(100vh - 190px); display: flex; flex-direction: column; background: var(--paper); color: var(--ink); border-radius: 22px; box-shadow: 0 12px 40px #0006; animation: panel-in .35s cubic-bezier(.2,.8,.2,1); }
+.panel__head { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px 6px 20px; }
+.panel__head h2 { margin: 0; font-size: 18px; }
+.hud .panel__head button { padding: 4px 10px; box-shadow: none; background: #0001; }
+.panel__body { overflow: auto; padding: 4px 20px 20px; font-size: 14px; line-height: 1.45; }
+.panel h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; opacity: .6; margin: 16px 0 6px; }
+.certs, .jobs { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.certs li { display: flex; gap: 10px; align-items: flex-start; }
+.certs .dot { flex: none; width: 14px; height: 14px; border-radius: 50%; margin-top: 3px; background: #888; }
+.certs [data-vendor=gcp] .dot { background: conic-gradient(#EA4335 0 33%, #FBBC04 0 66%, #34A853 0); }
+.certs [data-vendor=azure] .dot { background: #0F6CBD; }
+.certs [data-vendor=aws] .dot { background: #FF9900; }
+.certs [data-vendor=google-ai] .dot { background: linear-gradient(135deg, #4285F4, #D96570); }
+.certs em, .jobs em { display: block; font-style: normal; opacity: .65; font-size: 12px; }
+.certs p, .jobs p { margin: 2px 0 0; }
+.certs--small { font-size: 13px; }
+.jobs > li { padding-bottom: 10px; border-bottom: 1px dashed #0002; }
+.jobs ul { margin: 4px 0 0; padding-left: 18px; }
+.btn { pointer-events: auto; display: inline-block; margin-top: 14px; padding: 10px 18px; border-radius: 999px; background: var(--maple); color: #fff; text-decoration: none; font-weight: 700; }
+.btn:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.caption { position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%); font-size: 13px; color: var(--paper); text-shadow: 0 1px 8px #000a; letter-spacing: .04em; white-space: nowrap; }
+.wall-hint { position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%); font-size: 12px; color: var(--paper); text-shadow: 0 1px 8px #000a; }
+
+.lightbox { pointer-events: auto; position: fixed; inset: 0; background: #1e1f22cc; backdrop-filter: blur(6px); display: grid; place-items: center; z-index: 30; padding: 16px; }
+.lightbox figure { margin: 0; background: #fff; padding: 12px 12px 16px; border-radius: 6px; max-width: min(900px, 94vw); box-shadow: 0 20px 60px #000a; transform: rotate(-.6deg); }
+.lightbox img { display: block; max-width: 100%; max-height: 64vh; margin: 0 auto; }
+.lightbox figcaption { color: var(--ink); text-align: center; padding: 12px 8px 8px; font-size: 15px; }
+.lightbox__nav { display: flex; gap: 8px; align-items: center; justify-content: center; color: var(--ink); font-size: 13px; }
+#kimos-modal-root { pointer-events: auto; }
+
+@keyframes panel-in { from { opacity: 0; transform: translateY(10px); } }
+@media (max-width: 700px) {
+  .panel { top: auto; right: 0; left: 0; bottom: 0; width: auto; max-height: 55vh; border-radius: 22px 22px 0 0; animation-name: sheet-in; padding-bottom: 8px; }
+  .hud__hint { top: 62px; font-size: 12px; }
+  .hud__bottom { bottom: 8px; }
+  .hud[data-view=stickers] .hud__bottom, .hud[data-view=clipboard] .hud__bottom { display: none; }
+  .caption, .wall-hint { bottom: 130px; }
+}
+@keyframes sheet-in { from { transform: translateY(100%); } }
