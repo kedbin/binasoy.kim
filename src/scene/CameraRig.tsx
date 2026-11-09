@@ -65,8 +65,11 @@ export function CameraRig() {
     );
     easing.damp3(target.current, look.current, smooth * 0.8, dt);
     cam.lookAt(target.current);
-    if (Math.abs(cam.fov - preset.fov) > 0.01) {
-      cam.fov = THREE.MathUtils.damp(cam.fov, preset.fov, 4, dt);
+    // Portrait screens: widen vertical FOV so the horizontal framing roughly matches a 16:10 desktop.
+    const portraitBoost = view === 'laptop' ? 1 : THREE.MathUtils.clamp(1.6 / cam.aspect, 1, 1.55);
+    const fov = Math.min(preset.fov * portraitBoost, 95);
+    if (Math.abs(cam.fov - fov) > 0.01) {
+      cam.fov = THREE.MathUtils.damp(cam.fov, fov, 4, dt);
       cam.updateProjectionMatrix();
     }
   });
