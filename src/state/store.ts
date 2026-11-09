@@ -38,3 +38,6 @@ export const useScene = create<SceneState>((set, get) => ({
   setLoaded: (loaded) => set({ loaded }),
   setHovered: (hovered) => set({ hovered }),
 }));
+
+// Dev/test hook: window.__scene.getState().goTo('seat')
+if (import.meta.env.DEV || new URLSearchParams(location.search).has('debug')) (window as unknown as { __scene: typeof useScene }).__scene = useScene;
