@@ -42,109 +42,152 @@ function makeShell() {
   const char: THREE.BufferGeometry[] = [];
   const char2: THREE.BufferGeometry[] = [];
   const glass: THREE.BufferGeometry[] = [];
+  const dglass: THREE.BufferGeometry[] = [];
   const red: THREE.BufferGeometry[] = [];
   const black: THREE.BufferGeometry[] = [];
+  const silver: THREE.BufferGeometry[] = [];
+  const lamp: THREE.BufferGeometry[] = [];
 
-  const pillars: [number, number][] = [[-3.0, -2.6], [-1.0, -0.85], [0.85, 1.2]];
+  const pillars: [number, number][] = [[-1.45, -1.25], [0.28, 0.36], [0.85, 1.2]];
   const sr = (s: number, a: number, b: number) => (s > 0 ? [a, b] : [-b, -a]);
+  const CAB = VAN.frontZ - 0.06; // cabin solid ends here
 
-  // white outer body (x from inner panel to OUT)
+  // ---- cabin + hood: extruded side profile (z,y) ----
+  const prof = new THREE.Shape();
+  prof.moveTo(-3.6, 0.34); prof.lineTo(-3.62, 0.84); prof.lineTo(-3.5, 0.97); prof.lineTo(-2.95, 1.0);
+  prof.lineTo(-2.25, 1.7); prof.lineTo(-1.95, 1.74); prof.lineTo(CAB, 1.74); prof.lineTo(CAB, 0.34); prof.closePath();
+  const bev = 0.04, wD = OUT * 2 - bev * 2;
+  const cab = new THREE.ExtrudeGeometry(prof, { depth: wD, bevelEnabled: true, bevelThickness: bev, bevelSize: bev, bevelSegments: 2, curveSegments: 4 });
+  cab.translate(0, 0, -wD / 2);
+  cab.rotateY(-Math.PI / 2); // world z = shape x, world x = -extrude z (symmetric)
+  white.push(cab);
+
+  // ---- cargo section sides (open interior) ----
   white.push(...both((s) => {
     const [a, b] = sr(s, W + 0.015, OUT);
-    const out = [bx(a, b, 0.25, 1.05, Z_FRONT - 0.2, Z_BACK, true)];
-    for (const [z0, z1] of pillars) out.push(bx(a, b, 1.0, 1.78, z0, z1, true));
-    out.push(bx(a, b, 1.62, 1.78, Z_FRONT, Z_BACK, true)); // roof rail
+    const [a2, b2] = sr(s, OUT - 0.03, OUT);
+    const out = [bx(a, b, 0.25, 1.05, CAB, Z_BACK, true)];
+    for (const [z0, z1] of pillars) out.push(bx(a2, b2, 1.0, 1.78, z0, z1, true));
+    out.push(bx(a, b, 1.62, 1.78, CAB, Z_BACK, true));
     return out;
   }));
-  // outer roof ring around sunroof hole
   const sr0 = VAN.sunroof.z0, sr1 = VAN.sunroof.z1, hw = VAN.sunroof.halfWidth;
   white.push(
-    bx(-OUT, -hw, 1.72, 1.79, Z_FRONT, Z_BACK, true), bx(hw, OUT, 1.72, 1.79, Z_FRONT, Z_BACK, true),
-    bx(-hw, hw, 1.72, 1.79, Z_FRONT, sr0, true), bx(-hw, hw, 1.72, 1.79, sr1, Z_BACK, true),
+    bx(-OUT, -hw, 1.72, 1.79, CAB, Z_BACK, true), bx(hw, OUT, 1.72, 1.79, CAB, Z_BACK, true),
+    bx(-hw, hw, 1.72, 1.79, CAB, sr0, true), bx(-hw, hw, 1.72, 1.79, sr1, Z_BACK, true),
     bx(-hw, hw, 1.72, 1.78, -0.28, -0.22), // sunroof divider
   );
-  // bumper + rear
+  // bumpers
   white.push(rbox(OUT * 2 + 0.04, 0.3, 0.3, 0, 0.42, Z_BACK + 0.2, 0.08));
-  white.push(bx(-OUT, OUT, 0.25, 0.5, Z_FRONT - 0.2, Z_BACK, true));
-  // hood / nose
-  white.push(rbox(OUT * 2, 0.45, 1.0, 0, 0.92, Z_FRONT - 0.5, 0.1));
+  white.push(rbox(OUT * 2 + 0.02, 0.26, 0.3, 0, 0.42, -3.62, 0.08));
+  black.push(bx(-0.5, 0.5, 0.45, 0.7, -3.74, -3.62)); // grille
+  black.push(bx(-OUT, OUT, 0.2, 0.3, CAB - 1.9, Z_BACK + 0.2)); // underbody
+  silver.push(bx(-0.4, 0.4, 0.57, 0.6, -3.755, -3.72)); // chrome grille bar
+  for (const s of [1, -1]) lamp.push(bx(s * 0.68 - 0.17, s * 0.68 + 0.17, 0.7, 0.8, -3.7, -3.55));
 
-  // charcoal interior
+  // ---- cargo interior (charcoal) ----
   char.push(
-    bx(-W, W, 0.5, VAN.floorY, VAN.frontZ, VAN.backZ), // floor
-    bx(-W, W, 0.54, 0.56, VAN.backZ - 0.18, VAN.backZ + 0.06), // sill
-    bx(-W, W, 0.55, 1.72, VAN.frontZ - 0.06, VAN.frontZ), // front wall
-    bx(-W, W, 1.7, 1.72, Z_FRONT, Z_BACK), // headliner base (under sunroof frame handled by glass)
-  );
-  char.push(...both((s) => {
-    const [a, b] = sr(s, W, W + 0.015);
-    const out = [bx(a, b, 0.55, 1.05, VAN.frontZ, Z_BACK)];
-    for (const [z0, z1] of pillars) out.push(bx(a, b, 1.0, 1.72, Math.max(z0, VAN.frontZ), z1));
-    out.push(bx(a, b, 1.62, 1.72, VAN.frontZ, Z_BACK));
-    return out;
-  }));
-  // remove the headliner centre (replace with ring around sunroof): rebuild below
-  char.splice(3, 1,
-    bx(-W, -hw, 1.7, 1.72, Z_FRONT, Z_BACK), bx(hw, W, 1.7, 1.72, Z_FRONT, Z_BACK),
+    bx(-W, W, 0.5, VAN.floorY, VAN.frontZ, VAN.backZ),
+    bx(-W, W, 0.54, 0.56, VAN.backZ - 0.18, VAN.backZ + 0.06),
+    bx(-W, W, 0.55, 1.72, VAN.frontZ - 0.06, VAN.frontZ),
+    bx(-W, -hw, 1.7, 1.72, CAB, Z_BACK), bx(hw, W, 1.7, 1.72, CAB, Z_BACK),
     bx(-hw, hw, 1.7, 1.72, VAN.frontZ, sr0), bx(-hw, hw, 1.7, 1.72, sr1, Z_BACK),
     bx(-hw, hw, 1.69, 1.72, -0.28, -0.22),
   );
+  char.push(...both((s) => {
+    const [a, b] = sr(s, W, W + 0.015);
+    const [a3, b3] = sr(s, W, OUT - 0.03);
+    const out = [bx(a, b, 0.55, 1.05, VAN.frontZ, Z_BACK)];
+    for (const [z0, z1] of pillars) out.push(bx(a3, b3, 1.0, 1.72, Math.max(z0, VAN.frontZ), z1));
+    out.push(bx(a, b, 1.62, 1.72, VAN.frontZ, Z_BACK));
+    return out;
+  }));
   // grab handles
   for (const s of [1, -1]) for (const z of [-0.7, 0.55]) {
     char2.push(bx(s * 0.72 - 0.015, s * 0.72 + 0.015, 1.64, 1.7, z - 0.1, z + 0.1));
     char2.push(bx(s * 0.72 - 0.015, s * 0.72 + 0.015, 1.6, 1.64, z - 0.1, z - 0.085));
     char2.push(bx(s * 0.72 - 0.015, s * 0.72 + 0.015, 1.6, 1.64, z + 0.085, z + 0.1));
   }
-  // front seat silhouettes (lighter charcoal)
+  // front seat silhouettes
   for (const sx of [-0.4, 0.4]) {
-    char2.push(rbox(0.5, 0.75, 0.16, sx, 0.95, VAN.frontZ - 0.16, 0.06)); // backrest
-    char2.push(rbox(0.26, 0.24, 0.12, sx, 1.45, VAN.frontZ - 0.16, 0.05)); // headrest
+    char2.push(rbox(0.5, 0.75, 0.16, sx, 0.95, VAN.frontZ - 0.16, 0.06));
+    char2.push(rbox(0.26, 0.24, 0.12, sx, 1.45, VAN.frontZ - 0.16, 0.05));
   }
-  // windows (dark tinted glass planes)
-  for (const s of [1, -1]) for (const [z0, z1] of [[-2.6, -1.0], [-0.85, 0.85]] as const) {
-    const g = new THREE.PlaneGeometry(z1 - z0, 0.57);
-    g.rotateY(s * Math.PI / 2);
-    g.translate(s * 0.86, 1.335, (z0 + z1) / 2);
-    glass.push(g);
-  }
-  // tail lights (vertical red clusters)
+
+  // ---- windows ----
   for (const s of [1, -1]) {
-    red.push(rbox(0.12, 0.62, 0.04, s * 0.86, 0.78, Z_BACK + 0.015, 0.015));
-    red.push(rbox(0.1, 0.18, 0.04, s * 0.86, 1.3, Z_BACK + 0.015, 0.015));
+    // cargo side window (recessed, see-through tinted)
+    const g = new THREE.PlaneGeometry(2.1, 0.57);
+    g.rotateY(s * Math.PI / 2);
+    g.translate(s * 0.86, 1.335, -0.2);
+    const gz = new THREE.PlaneGeometry(2.1, 0.57); gz.dispose();
+    glass.push(g);
+    // cabin side window (opaque-ish black), trapezoid on outer face
+    const sh = new THREE.Shape();
+    sh.moveTo(-2.55, 1.08); sh.lineTo(CAB - 0.04, 1.08); sh.lineTo(CAB - 0.04, 1.62); sh.lineTo(-2.2, 1.62); sh.closePath();
+    const cg = new THREE.ShapeGeometry(sh);
+    cg.rotateY(-Math.PI / 2);
+    cg.translate(s * (OUT + 0.003), 0, 0);
+    dglass.push(cg);
+    // chrome trim: beltline + window frame top
+    silver.push(bx(s * OUT - 0.008, s * OUT + 0.008, 1.045, 1.075, -2.6, 0.85));
+    silver.push(bx(s * OUT - 0.008, s * OUT + 0.008, 1.62, 1.64, -2.2, CAB - 0.04));
+    // sliding-door seams + handle
+    for (const z of [-1.25, 0.3]) black.push(bx(s * OUT - 0.006, s * OUT + 0.006, 0.3, 1.0, z - 0.006, z + 0.006));
+    silver.push(bx(s * OUT - 0.01, s * OUT + 0.01, 0.82, 0.86, -1.1, -0.95));
+    // front door seam
+    black.push(bx(s * OUT - 0.006, s * OUT + 0.006, 0.3, 1.1, -2.3, -2.29));
+    // roof rails
+    silver.push(bx(s * 0.8 - 0.02, s * 0.8 + 0.02, 1.8, 1.835, CAB, 1.1));
+    for (const z of [-1.3, -0.3, 0.7]) silver.push(bx(s * 0.8 - 0.02, s * 0.8 + 0.02, 1.775, 1.8, z - 0.03, z + 0.03));
+    // side mirrors
+    white.push(rbox(0.12, 0.13, 0.2, s * (OUT + 0.08), 1.2, -2.2, 0.04));
+    black.push(bx(s * (OUT + 0.0) - 0.02, s * (OUT + 0.0) + 0.02, 1.15, 1.2, -2.22, -2.18));
+    // wheels: tyre + rim + arch
+    for (const z of [-2.75, 0.3]) {
+      const t = new THREE.CylinderGeometry(0.35, 0.35, 0.22, 16); t.rotateZ(Math.PI / 2); t.translate(s * 0.84, 0.35, z); black.push(t);
+      const r = new THREE.CylinderGeometry(0.22, 0.22, 0.02, 12); r.rotateZ(Math.PI / 2); r.translate(s * 0.955, 0.35, z); silver.push(r);
+      const r2 = new THREE.CylinderGeometry(0.06, 0.06, 0.03, 8); r2.rotateZ(Math.PI / 2); r2.translate(s * 0.965, 0.35, z); black.push(r2);
+      const arch = new THREE.CylinderGeometry(0.43, 0.43, 0.012, 20); arch.rotateZ(Math.PI / 2); arch.translate(s * (OUT + 0.004), 0.38, z); black.push(arch);
+    }
+    // tail lights (tall vertical clusters, wrap onto D-pillar)
+    red.push(rbox(0.1, 0.7, 0.05, s * 0.89, 0.8, Z_BACK + 0.015, 0.02));
+    red.push(rbox(0.09, 0.45, 0.05, s * 0.9, 1.35, Z_BACK + 0.0, 0.02));
   }
-  // wheels
-  for (const s of [1, -1]) for (const z of [-2.3, 0.0]) {
-    const g = new THREE.CylinderGeometry(0.33, 0.33, 0.24, 14);
-    g.rotateZ(Math.PI / 2);
-    g.translate(s * 0.9, 0.33, z);
-    black.push(g);
-  }
-  black.push(bx(-OUT, OUT, 0.2, 0.28, Z_FRONT - 0.2, Z_BACK + 0.2)); // underbody
-  // windshield
-  const ws = new THREE.PlaneGeometry(1.7, 0.6);
-  ws.rotateX(-0.9);
-  ws.translate(0, 1.5, Z_FRONT - 0.15);
-  glass.push(ws);
+  // windshield (tinted, sloped) — tangent y -> (0, .71, .70)
+  const ws = new THREE.PlaneGeometry(1.62, 1.0);
+  ws.rotateX(0.79);
+  ws.translate(0, 1.37, -2.58);
+  ws.translate(0, 0.012, -0.012);
+  dglass.push(ws);
+  // roof strip behind windshield / wiper / cabin roof sunroof-ish line
+  // license plate + rear detail
+  silver.push(bx(-0.2, 0.2, 0.45, 0.5, Z_BACK + 0.34, Z_BACK + 0.36));
 
   return {
-    white: merge(white), char: merge(char), char2: merge(char2),
-    glass: merge(glass), red: merge(red), black: merge(black),
+    white: merge(white), char: merge(char), char2: merge(char2), glass: merge(glass), dglass: merge(dglass),
+    red: merge(red), black: merge(black), silver: merge(silver), lamp: merge(lamp),
   };
 }
 
 function makeGate() {
-  // local: hangs down along -y from hinge. +z = outer (closed: rear). -z = inner trim.
-  const white = [rbox(1.75, 1.0, 0.04, 0, -0.5, 0.02, 0.03)];
-  const char = [
-    bx(-0.85, 0.85, -1.0, 0, -0.04, 0),
-    // window frame bars on inner trim
+  // local: hangs down along -y from hinge. +z = outer paint, -z = inner trim. Window hole x±0.62, y -0.74..-0.30
+  const white = [
+    rbox(1.78, 0.38, 0.05, 0, -0.93, 0, 0.02), // bottom (closed-gate) strip, y -1.12..-0.74
+    rbox(1.78, 0.3, 0.05, 0, -0.15, 0, 0.02),  // top strip
+    rbox(0.26, 0.46, 0.05, 0.75, -0.52, 0, 0.02), rbox(0.26, 0.46, 0.05, -0.75, -0.52, 0, 0.02),
+    rbox(0.5, 0.025, 0.07, 0, -0.01, 0.03, 0.01), rbox(1.4, 0.03, 0.09, 0, -0.04, 0.06, 0.01), // spoiler lip
   ];
-  const glass = new THREE.PlaneGeometry(1.3, 0.38);
-  glass.rotateY(Math.PI);
-  glass.translate(0, -0.5, -0.043);
-  const trim = [bx(-0.7, 0.7, -0.98, -0.9, -0.06, -0.04), bx(-0.05, 0.05, -0.8, -0.2, -0.06, -0.04)];
-  const dome = [bx(-0.45, -0.3, -0.18, -0.12, -0.065, -0.04), bx(0.3, 0.45, -0.18, -0.12, -0.065, -0.04)];
-  return { white: merge(white), char: merge([...char, ...trim]), glass, dome: merge(dome) };
+  const char = [
+    bx(-0.8, 0.8, -1.08, -0.74, -0.062, -0.024), bx(-0.8, 0.8, -0.30, -0.04, -0.062, -0.024),
+    bx(0.62, 0.8, -0.74, -0.30, -0.062, -0.024), bx(-0.8, -0.62, -0.74, -0.30, -0.062, -0.024),
+    bx(-0.05, 0.05, -1.02, -0.8, -0.075, -0.06), // pull handle
+  ];
+  const black = [bx(-0.012, 0.012, -0.72, -0.4, 0.035, 0.045), bx(-0.3, 0.3, -0.745, -0.735, 0.03, 0.04)];
+  const glass = new THREE.PlaneGeometry(1.26, 0.46);
+  glass.translate(0, -0.52, 0);
+  const dome = [bx(-0.45, -0.3, -0.18, -0.12, -0.085, -0.062), bx(0.3, 0.45, -0.18, -0.12, -0.085, -0.062)];
+  return { white: merge(white), char: merge(char), glass, dome: merge(dome), black: merge(black) };
 }
 
 function makeMapleLeaves() {
@@ -193,11 +236,11 @@ function makeDuvet(segX: number, segZ: number) {
   for (let i = 0; i < p.count; i++) {
     const x = p.getX(i), z = p.getZ(i);
     let h = 0;
-    h += Math.sin(x * 5.1 + z * 2.3 + 1.0) * 0.012;
+    h += Math.sin(x * 5.1 + z * 2.3 + 1.0) * 0.006;
     h += Math.sin(x * 9.7 - z * 6.1 + 2.0) * 0.007;
-    h += Math.sin(z * 7.3 + x * 3.1 + 4.0) * 0.01;
+    h += Math.sin(z * 7.3 + x * 3.1 + 4.0) * 0.006;
     h += Math.sin(x * 14.0 + z * 12.0) * 0.003 * Math.sin(z * 3.0);
-    h += Math.sin((x + z * 0.7) * 3.3 + 0.5) * Math.cos(z * 2.1) * 0.014;
+    h += Math.sin((x + z * 0.7) * 3.3 + 0.5) * Math.cos(z * 2.1) * 0.008;
     const ex = Math.max(0, Math.abs(x) - 0.7) / (w / 2 - 0.7);
     const ez = Math.max(0, z - (d / 2 - 0.1)) / 0.1;
     const edge = Math.max(ex, ez);
@@ -298,25 +341,31 @@ export function Van() {
   const nLights = quality === 'low' ? 28 : quality === 'mid' ? 44 : 64;
   const fairy = useMemo(() => makeFairyPath(nLights), [nLights]);
   const wireGeo = useMemo(() => new THREE.TubeGeometry(fairy.curve, 240, 0.0028, 4), [fairy]);
-  const bulbGeo = useMemo(() => new THREE.IcosahedronGeometry(0.014, 1), []);
+  const bulbGeo = useMemo(() => new THREE.IcosahedronGeometry(0.0077, 1), []);
   const pillowGeo = useMemo(() => {
     const g = new THREE.SphereGeometry(1, 20, 14);
     g.scale(0.27, 0.085, 0.19);
     return g;
   }, []);
   const clothes = useMemo(() => {
-    const jacket = [
-      box(0.07, 0.5, 0.3, 0, 0, 0), box(0.07, 0.32, 0.1, 0, -0.05, 0.19), box(0.07, 0.32, 0.1, 0, -0.05, -0.19),
-      box(0.08, 0.06, 0.2, 0, 0.27, 0),
-    ];
-    jacket[1].rotateX(0.0); 
-    const hood = [
-      box(0.08, 0.46, 0.3, 0, 0, 0), box(0.08, 0.34, 0.1, 0, -0.04, 0.19), box(0.08, 0.34, 0.1, 0, -0.04, -0.19),
-    ];
-    const hoodTop = new THREE.SphereGeometry(0.11, 10, 8);
-    hoodTop.scale(0.6, 0.8, 1.2);
-    hoodTop.translate(0, 0.25, 0);
-    return { jacket: merge(jacket), hoodie: merge([...hood, hoodTop]) };
+    // soft tapered hanging cloth: lathe, flattened in x, with a gentle sway-free fold
+    const mk = (len: number, wTop: number, wBot: number, depth: number) => {
+      const pts: THREE.Vector2[] = [];
+      for (let i = 0; i <= 8; i++) {
+        const t = i / 8;
+        const r = (wTop + (wBot - wTop) * Math.pow(t, 0.8)) * (1 + 0.07 * Math.sin(t * 9));
+        pts.push(new THREE.Vector2(r, -t * len));
+      }
+      pts.push(new THREE.Vector2(0.001, -len - 0.02));
+      const g = new THREE.LatheGeometry(pts, 14);
+      g.scale(depth, 1, 1);
+      return g;
+    };
+    const sleeve = (x: number) => { const g = mk(0.3, 0.03, 0.045, 0.7); g.translate(x, -0.05, 0.0); return g; };
+    const jacket = merge([mk(0.5, 0.05, 0.11, 0.35), mk(0.3, 0.03, 0.05, 0.5).translate(0, -0.08, 0.1), mk(0.3, 0.03, 0.05, 0.5).translate(0, -0.08, -0.1)]);
+    const hoodie = merge([mk(0.46, 0.05, 0.1, 0.35), mk(0.3, 0.03, 0.05, 0.5).translate(0, -0.08, 0.09), mk(0.3, 0.03, 0.05, 0.5).translate(0, -0.08, -0.09)]);
+    void sleeve;
+    return { jacket, hoodie };
   }, []);
 
   const bulbs = useRef<THREE.InstancedMesh>(null);
@@ -337,7 +386,7 @@ export function Van() {
   }, [fairy]);
 
   useEffect(() => () => {
-    [shell.white, shell.char, shell.char2, shell.glass, shell.red, shell.black, leaves, duvet, blanket, wireGeo].forEach((g) => g.dispose());
+    [shell.white, shell.char, shell.char2, shell.glass, shell.red, shell.black, shell.silver, shell.dglass, shell.lamp, gate.black, leaves, duvet, blanket, wireGeo].forEach((g) => g.dispose());
   }, [shell, leaves, duvet, blanket, wireGeo]);
 
   useFrame((state, dt) => {
@@ -346,7 +395,7 @@ export function Van() {
     const k = nk.current;
     const m = bulbs.current;
     if (m && m.instanceColor) {
-      const gain = 2.2 + k * 2.2;
+      const gain = 1.5 + k * 2.0;
       const arr = m.instanceColor.array as Float32Array;
       for (let i = 0; i < nLights; i++) {
         const f = 0.78 + 0.22 * Math.sin(t * (1.3 + (i % 4) * 0.35) + phases[i]);
@@ -368,6 +417,9 @@ export function Van() {
       <mesh geometry={shell.char} receiveShadow><meshStandardMaterial color={PALETTE.charcoal} roughness={0.95} /></mesh>
       <mesh geometry={shell.char2}><meshStandardMaterial color={CHAR2} roughness={0.95} /></mesh>
       <mesh geometry={shell.black}><meshStandardMaterial color="#111214" roughness={0.9} /></mesh>
+      <mesh geometry={shell.silver}><meshStandardMaterial color="#C9CDD2" roughness={0.3} metalness={0.6} /></mesh>
+      <mesh geometry={shell.dglass}><meshStandardMaterial color="#0e1217" roughness={0.15} metalness={0.3} side={THREE.DoubleSide} /></mesh>
+      <mesh geometry={shell.lamp}><meshStandardMaterial color="#f4ead2" emissive="#ffe3a8" emissiveIntensity={0.3} roughness={0.3} /></mesh>
       <mesh geometry={shell.red}>
         <meshStandardMaterial color="#8c1414" emissive="#d01818" emissiveIntensity={0.8} roughness={0.4} />
       </mesh>
@@ -379,7 +431,7 @@ export function Van() {
       {[[VAN.sunroof.z0, -0.28], [-0.22, VAN.sunroof.z1]].map(([a, b], i) => (
         <mesh key={i} position={[0, 1.73, (a + b) / 2]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={2}>
           <planeGeometry args={[VAN.sunroof.halfWidth * 2, b - a]} />
-          <meshStandardMaterial color="#9db6c9" transparent opacity={0.22} roughness={0.05} side={THREE.DoubleSide} depthWrite={false} />
+          <meshStandardMaterial color="#4a5a68" transparent opacity={0.3} roughness={0.05} side={THREE.DoubleSide} depthWrite={false} />
         </mesh>
       ))}
       <mesh geometry={leaves}>
@@ -387,12 +439,13 @@ export function Van() {
       </mesh>
 
       {/* open liftgate */}
-      <group position={[0, VAN.tailgateHingeY, VAN.backZ + 0.05]} rotation={[-(160 * Math.PI) / 180, 0, 0]}>
+      <group position={[0, VAN.tailgateHingeY, VAN.backZ + 0.05]} rotation={[-(165 * Math.PI) / 180, 0, 0]}>
         <mesh geometry={gate.white}><meshStandardMaterial color={PALETTE.vanWhite} roughness={0.55} /></mesh>
-        <mesh geometry={gate.char}><meshStandardMaterial color="#25262a" roughness={0.95} /></mesh>
+        <mesh geometry={gate.char}><meshStandardMaterial color="#3a3b41" roughness={0.95} /></mesh>
         <mesh geometry={gate.glass} renderOrder={2}>
           <meshStandardMaterial color="#1b2530" transparent opacity={0.5} roughness={0.1} depthWrite={false} />
         </mesh>
+        <mesh geometry={gate.black}><meshStandardMaterial color="#111214" roughness={0.6} /></mesh>
         <mesh geometry={gate.dome}><meshBasicMaterial color="#FFE2B0" toneMapped={false} /></mesh>
       </group>
 
