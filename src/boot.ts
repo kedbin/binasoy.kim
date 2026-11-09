@@ -1,5 +1,6 @@
 // Decides between the static reader and the 3D van. The reader is always in the DOM (SEO, a11y, print).
 import './styles/global.css';
+import './styles/reader.css';
 
 function hasWebGL(): boolean {
   try {
