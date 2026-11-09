@@ -50,3 +50,10 @@
   .caption, .wall-hint { bottom: 130px; }
 }
 @keyframes sheet-in { from { transform: translateY(100%); } }
+
+/* Laptop view: get out of KimOS's way — only a compact back pill, top-right */
+.hud[data-view="laptop"] .hud__nav,
+.hud[data-view="laptop"] .hud__controls button:not(:first-child),
+.hud[data-view="laptop"] .hud__hint { display: none; }
+.hud[data-view="laptop"] .hud__bottom { top: 14px; right: 18px; bottom: auto; left: auto; transform: none; }
+@media (max-width: 819px), (max-height: 519px) { .hud[data-view="laptop"] { display: none; } }

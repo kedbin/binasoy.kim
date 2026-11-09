@@ -5,6 +5,27 @@ import * as THREE from 'three';
 import { easing } from 'maath';
 import { CAMERA } from './layout';
 import { useScene } from '../state/store';
+import { useLaptopStore, SCREEN_SIZE } from './hotspots/laptopStore';
+
+const _n = new THREE.Vector3();
+const _c = new THREE.Vector3();
+const _q = new THREE.Quaternion();
+const _lp = new THREE.Vector3();
+const _lt = new THREE.Vector3();
+
+/** Frame the laptop screen so it fills ~78% of the viewport height/width, looking straight at it. */
+function laptopPose(cam: THREE.PerspectiveCamera, screen: THREE.Object3D, out: { pos: THREE.Vector3; target: THREE.Vector3 }) {
+  screen.getWorldPosition(_c);
+  screen.getWorldQuaternion(_q);
+  _n.set(0, 0, 1).applyQuaternion(_q).normalize();
+  const fov = THREE.MathUtils.degToRad(CAMERA.laptop.fov);
+  const fill = 0.86;
+  const dH = (SCREEN_SIZE.h / fill) / (2 * Math.tan(fov / 2));
+  const dW = (SCREEN_SIZE.w / fill) / (2 * Math.tan(fov / 2) * cam.aspect);
+  const d = Math.max(dH, dW);
+  out.target.copy(_c);
+  out.pos.copy(_c).addScaledVector(_n, d);
+}
 
 const LOOK_VIEWS = new Set(['seat', 'outside', 'intro']);
 
@@ -24,8 +45,14 @@ export function CameraRig() {
   }, [back]);
 
   useFrame((_, dt) => {
-    const preset = CAMERA[view] ?? CAMERA.seat;
+    let preset = CAMERA[view] ?? CAMERA.seat;
     const cam = camera as THREE.PerspectiveCamera;
+    const screen = useLaptopStore.getState().screen;
+    if (view === 'laptop' && screen) {
+      const out = { pos: _lp, target: _lt };
+      laptopPose(cam, screen, out);
+      preset = { pos: [_lp.x, _lp.y, _lp.z], target: [_lt.x, _lt.y, _lt.z], fov: CAMERA.laptop.fov };
+    }
     const smooth = view === 'intro' ? 0.9 : 0.55;
     easing.damp3(cam.position, preset.pos, smooth, dt);
     // Look-around: offset the target by the pointer (yaw/pitch feel) in relaxed views.

@@ -1,6 +1,24 @@
 import { content } from '../../content';
 import { useScene } from '../../state/store';
 import { PhotoLightbox } from './PhotoLightbox';
+import { lazy, Suspense, useSyncExternalStore } from 'react';
+
+const KimOS = lazy(() => import('../kimos').then((m) => ({ default: m.KimOS })));
+const mq = typeof window !== 'undefined' ? window.matchMedia('(max-width: 819px), (max-height: 519px)') : null;
+function useCompact() {
+  return useSyncExternalStore((cb) => { mq?.addEventListener('change', cb); return () => mq?.removeEventListener('change', cb); }, () => !!mq?.matches);
+}
+
+function KimOSModal() {
+  const back = useScene((s) => s.back);
+  return (
+    <div className="kimos-modal" role="dialog" aria-modal="true" aria-label="KimOS — Kim's portfolio">
+      <Suspense fallback={<p className="kimos-modal__loading">Opening laptop…</p>}>
+        <KimOS mode="modal" onExit={back} />
+      </Suspense>
+    </div>
+  );
+}
 
 function Sheet({ title, children, label }: { title: string; children: React.ReactNode; label: string }) {
   const back = useScene((s) => s.back);
@@ -53,11 +71,12 @@ export function WallPanel() {
 
 export function Panels() {
   const view = useScene((s) => s.view);
+  const compact = useCompact();
   switch (view) {
     case 'stickers': return <StickersPanel />;
     case 'clipboard': return <ClipboardPanel />;
     case 'wall': return <WallPanel />;
-    case 'laptop': return <div id="kimos-modal-root" />; // mobile KimOS mount point (S7)
+    case 'laptop': return compact ? <KimOSModal /> : null; // desktop: KimOS lives on the 3D screen (LaptopScreen)
     case 'outside': return <div className="caption">Algonquin, golden hour · Kim &amp; Wingwing</div>;
     default: return null;
   }

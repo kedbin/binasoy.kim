@@ -28,3 +28,13 @@ html:not(.mode-3d) #app { display: none; }
 .loader { position: fixed; inset: 0; display: grid; place-items: center; background: var(--charcoal); color: var(--fairy); z-index: 20; font-family: var(--font-mono); }
 
 @media print { #app, .hud, .loader { display: none !important; } html.mode-3d #reader { position: static; width: auto; height: auto; clip-path: none; white-space: normal; } }
+
+/* KimOS mounted on the 3D laptop screen */
+.kimos-3d { transition: filter .4s cubic-bezier(.4,0,.2,1); }
+.kimos-3d:not(.is-active) { filter: saturate(.9) brightness(.92); }
+.kimos-3d__frame { overflow: hidden; border-radius: 6px; background: #1E1F22; }
+/* KimOS full-screen modal (mobile / short viewports) */
+.kimos-modal { position: fixed; inset: 0; z-index: 30; pointer-events: auto; background: #1E1F22; animation: kimosIn .35s cubic-bezier(.4,0,.2,1); }
+.kimos-modal__loading { color: var(--fairy); font-family: var(--font-mono); display: grid; place-items: center; height: 100%; margin: 0; }
+@keyframes kimosIn { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .kimos-modal { animation: none; } }

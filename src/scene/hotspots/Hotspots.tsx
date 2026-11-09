@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { ANCHORS, VAN } from '../layout';
 import { useScene } from '../../state/store';
 import { Laptop } from './Laptop';
+import { LaptopScreen } from './LaptopScreen';
 import { PhotoWall } from './PhotoWall';
 import { Stickers } from './Stickers';
 import { Clipboard } from './Clipboard';
@@ -31,6 +32,7 @@ export function Hotspots() {
   return (
     <group name="hotspots">
       <Laptop />
+      <LaptopScreen />
       <Clipboard />
       <Stickers />
       <Suspense fallback={null}><PhotoWall /></Suspense>
