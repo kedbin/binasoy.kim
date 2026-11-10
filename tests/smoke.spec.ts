@@ -62,7 +62,11 @@ test.describe('3D smoke', () => {
     // 2 → photos; open a photo, arrows step through, Esc closes only the lightbox
     await page.keyboard.press('2');
     await expect(hud).toHaveAttribute('data-view', 'wall');
-    await page.locator('.thumb').first().click({ timeout: 10_000 });
+    // keyboard activation (SwiftShader starves CSS animations, so pointer "stability" checks are flaky)
+    const thumb = page.getByRole('button', { name: /Open photo 1:/ });
+    await expect(thumb).toBeVisible({ timeout: 10_000 });
+    await thumb.focus();
+    await page.keyboard.press('Enter');
     const box = page.getByRole('dialog', { name: /Photo 1 of/ });
     await expect(box).toBeVisible();
     await page.keyboard.press('ArrowRight');
