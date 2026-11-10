@@ -14,8 +14,9 @@ const LINES = [
   'Warming up the laptop…',
 ];
 
-/** Seconds without progress before we assume WebGL is stuck and fall back to the reader. */
-const STALL_S = 40;
+/** Seconds without any progress before we assume WebGL is stuck and fall back to the reader.
+ *  Generous: software GL (SwiftShader) can spend ~30s compiling shaders synchronously. */
+const STALL_S = 90;
 
 export function Loader() {
   const { active, progress } = useProgress();
@@ -79,7 +80,7 @@ export function Loader() {
       document.documentElement.classList.add('mode-reader');
     }, STALL_S * 1000);
     return () => clearTimeout(t);
-  }, [ready]);
+  }, [ready, progress]);
 
   if (phase === 'gone') return null;
   const pct = Math.round(shown.current);

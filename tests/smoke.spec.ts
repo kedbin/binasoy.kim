@@ -1,11 +1,14 @@
 import { test, expect, type Page } from '@playwright/test';
 
+// SwiftShader compiles every shader on the CPU (~30–50s) before the loader can reveal.
+test.describe.configure({ timeout: 150_000 });
+
 async function enterVan(page: Page) {
   await page.goto('/?q=low');
   await expect(page.locator('html')).toHaveClass(/mode-3d/);
   // stage (a) static loader → stage (b) React loader → reveal
   await expect(page.locator('canvas').first()).toBeVisible({ timeout: 45_000 });
-  await expect(page.locator('.hud.is-revealed')).toBeAttached({ timeout: 45_000 });
+  await expect(page.locator('.hud.is-revealed')).toBeAttached({ timeout: 100_000 });
   await expect(page.locator('#boot-loader')).toHaveCount(0);
   // intro auto-advances into the van (no dead-end button)
   await expect(page.locator('.hud')).toHaveAttribute('data-view', 'seat', { timeout: 15_000 });
