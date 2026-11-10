@@ -21,7 +21,7 @@ async function run(device) {
   await p.waitForTimeout(250); await shot('boot');
   await p.waitForSelector('.loader', { timeout: 30000 }).catch(() => {});
   await p.waitForTimeout(600); await shot('loader');
-  await p.waitForSelector('.hud.is-revealed', { timeout: 60000 });
+  await p.waitForSelector('html[data-ready]', { timeout: 60000 });
   console.log(device, 'revealed after', Date.now() - t0, 'ms');
   await p.waitForTimeout(500); await shot('reveal');
   await p.waitForSelector('.hud[data-view=seat]', { timeout: 10000 });
