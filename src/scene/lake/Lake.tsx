@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import * as THREE from 'three';
 import { Sky } from './Sky';
 import { Hills } from './Hills';
+import { FarForest } from './FarForest';
 import { Water } from './Water';
 import { Shore } from './Shore';
 import { Trees } from './Trees';
@@ -25,6 +26,7 @@ export function Lake() {
       <Atmosphere />
       <Sky />
       <Hills />
+      <FarForest />
       <Water />
       <Shore />
       <Trees />
