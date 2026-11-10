@@ -78,7 +78,7 @@ export function Overlay() {
     <div className={'hud' + (revealed ? ' is-revealed' : '') + (moving ? ' is-moving' : '')} data-view={view}>
       <div className="hud__pulse" aria-hidden="true" />
       <header className="hud__name">
-        <strong>Kim Binasoy</strong> <span>&amp; Wingwing's van</span>
+        <strong>Kim &amp; Wing's</strong> <span>MiniVan</span>
       </header>
       <Settings />
       {away && (

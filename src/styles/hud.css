@@ -158,7 +158,6 @@
 /* ---------- compact / mobile ---------- */
 @media (max-width: 700px) {
   .hud__name { font-size: 13px; padding: 7px 13px; }
-  .hud__name span { display: none; }
   .hud__back { top: calc(62px + var(--sat)); font-size: 13px; }
   .hud__back kbd { display: none; }
   .dock { bottom: calc(10px + var(--sab)); }
