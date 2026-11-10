@@ -13,6 +13,7 @@ import { makeMattress, makeDuvet, makePillow, makeBlanket } from './bed';
 import { makeTumbler, makeBook, makePlant, makeGarment, makeHook } from './decor';
 import { fabricTex, floralTex, ginghamTex, plateTex } from './textures';
 import { FairyLights } from './FairyLights';
+import { rbox } from './util';
 
 /** Liftgate rotation about the hinge (rad). 0 = closed; the panel swings up and out. */
 const GATE_OPEN = -(105 * Math.PI) / 180;
@@ -39,6 +40,7 @@ export function Van() {
   const hoodie = useMemo(() => makeGarment({ len: 0.42, width: 0.3, hood: true, seed: 1 }), []);
   const jacket = useMemo(() => makeGarment({ len: 0.5, width: 0.32, hood: false, seed: 4 }), []);
   const hook = useMemo(makeHook, []);
+  const tailGeo = useMemo(() => rbox(0.13, 0.62, 0.06, 0, 0, 0, 0.025, 3), []);
 
   const tex = useMemo(() => {
     const duv = fabricTex(); duv.repeat.set(4, 4);
@@ -70,10 +72,12 @@ export function Van() {
       {/* tail-light clusters on the body D-pillars (vertical, wrap the corner) */}
       {[1, -1].map((s) => (
         <group key={s} position={[s * (OUT - 0.07), 0.98, Z_BACK - 0.02]}>
-          <mesh material={M.tail}><boxGeometry args={[0.13, 0.5, 0.06]} /></mesh>
-          <mesh position={[0, 0.08, 0.032]} material={tailGlow}><boxGeometry args={[0.09, 0.03, 0.004]} /></mesh>
-          <mesh position={[0, -0.04, 0.032]} material={tailGlow}><boxGeometry args={[0.09, 0.03, 0.004]} /></mesh>
-          <mesh position={[0, -0.16, 0.031]} material={M.amber}><boxGeometry args={[0.09, 0.06, 0.004]} /></mesh>
+          <mesh geometry={tailGeo} material={M.tail} />
+          {[0.15, 0.07, -0.01].map((y) => (
+            <mesh key={y} position={[0, y, 0.034]} material={tailGlow}><boxGeometry args={[0.085, 0.014, 0.004]} /></mesh>
+          ))}
+          <mesh position={[0, -0.14, 0.033]} material={M.amber}><boxGeometry args={[0.085, 0.05, 0.004]} /></mesh>
+          <mesh position={[0, -0.24, 0.033]}><boxGeometry args={[0.085, 0.04, 0.004]} /><meshStandardMaterial color="#ddd" roughness={0.1} metalness={0.6} /></mesh>
         </group>
       ))}
       {/* headlights */}
@@ -101,9 +105,9 @@ export function Van() {
       </group>
       {/* gas struts */}
       {[1, -1].map((s) => {
-        const a = new THREE.Vector3(s * 0.72, 1.1, Z_BACK - 0.06);
+        const a = new THREE.Vector3(s * 0.74, 1.42, Z_BACK - 0.08);
         const hinge = new THREE.Vector3(0, VAN.tailgateHingeY, Z_BACK);
-        const b = new THREE.Vector3(s * 0.72, -0.55, 0).applyAxisAngle(new THREE.Vector3(1, 0, 0), GATE_OPEN).add(hinge);
+        const b = new THREE.Vector3(s * 0.74, -0.42, -0.05).applyAxisAngle(new THREE.Vector3(1, 0, 0), GATE_OPEN).add(hinge);
         const mid = a.clone().add(b).multiplyScalar(0.5);
         const len = a.distanceTo(b);
         const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize());
@@ -124,9 +128,9 @@ export function Van() {
       <mesh position={[0, VAN.roofY - 0.03, VAN.frontZ + 0.18]}><boxGeometry args={[0.16, 0.006, 0.07]} /><meshBasicMaterial color={new THREE.Color('#FFF1D6').multiplyScalar(night ? 1.4 : 1.0)} toneMapped={false} /></mesh>
 
       {/* ---------- bed ---------- */}
-      <mesh geometry={mattress} castShadow receiveShadow><meshStandardMaterial color="#DCD5CA" roughness={1} /></mesh>
+      <mesh geometry={mattress} castShadow receiveShadow><meshStandardMaterial color="#B9AE9C" roughness={1} map={tex.duvet} /></mesh>
       <mesh geometry={duvet} castShadow receiveShadow>
-        <meshStandardMaterial color={PALETTE.duvet} map={tex.duvet} roughness={1} side={THREE.DoubleSide} />
+        <meshStandardMaterial color="#F4EFE6" map={tex.duvet} roughness={1} side={THREE.DoubleSide} />
       </mesh>
       {[[-0.36, 0.2, 0.06], [0.37, -0.25, -0.05]].map(([x, ry, rz], i) => (
         <mesh key={i} geometry={pillow} position={[x, top + 0.075, -1.08]} rotation={[0.28, ry, rz]} castShadow receiveShadow>
