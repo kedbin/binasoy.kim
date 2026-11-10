@@ -16,7 +16,7 @@ export const LOOK_LIMITS: Record<string, { yaw: number; pitch: number }> = {
   intro: { yaw: 0.25, pitch: 0.1 },
 };
 
-const SENS = 0.0042; // rad per css px
+const SENS = 0.0030; // rad per css px
 
 export function lookLimits() {
   return LOOK_LIMITS[useScene.getState().view] ?? null;
@@ -45,6 +45,8 @@ export function resetLook() { look.yaw = look.pitch = look.vYaw = look.vPitch = 
 /** Attach to the canvas container. Returns a cleanup. */
 export function attachLook(el: HTMLElement) {
   let id = -1, lx = 0, ly = 0, lt = 0;
+  // any new gesture (canvas, marker, HUD) resets the drag distance used to suppress clicks
+  const anyDown = () => { look.moved = 0; };
   const down = (e: PointerEvent) => {
     if (e.button !== 0 && e.pointerType === 'mouse') return;
     id = e.pointerId; lx = e.clientX; ly = e.clientY; lt = performance.now();
@@ -79,12 +81,14 @@ export function attachLook(el: HTMLElement) {
     else if (e.key === 'ArrowUp') look.vPitch = step * 0.6;
     else if (e.key === 'ArrowDown') look.vPitch = -step * 0.6;
   };
+  window.addEventListener('pointerdown', anyDown, true);
   el.addEventListener('pointerdown', down);
   window.addEventListener('pointermove', move);
   window.addEventListener('pointerup', up);
   window.addEventListener('pointercancel', up);
   window.addEventListener('keydown', key);
   return () => {
+    window.removeEventListener('pointerdown', anyDown, true);
     el.removeEventListener('pointerdown', down);
     window.removeEventListener('pointermove', move);
     window.removeEventListener('pointerup', up);
