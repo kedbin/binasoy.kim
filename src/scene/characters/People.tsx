@@ -1,6 +1,6 @@
-// OWNER: O3. Kim & Wingwing — chunky stylised figures sitting side by side on the raft thwart, facing the bow (+Z local).
-// Kim (right, +x) rows his oar in bursts with a proper catch → drive → finish → recovery arc (2-bone IK arms).
-// Wingwing (left, −x) has her oar shipped; while Kim rows she points at the sunset, while he rests she leans
+// OWNER: O3. Kim & Wingwing â€” chunky stylised figures sitting side by side on the raft thwart, facing the bow (+Z local).
+// Kim (right, +x) rows his oar in bursts with a proper catch â†’ drive â†’ finish â†’ recovery arc (2-bone IK arms).
+// Wingwing (left, âˆ’x) has her oar shipped; while Kim rows she points at the sunset, while he rests she leans
 // her head on his shoulder and they glance at each other. Both breathe. A little thermos sits between them.
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
@@ -29,7 +29,7 @@ const LOOK = {
   wing: { hoodie: '#C9A27A', pants: '#4A473F', hair: '#5B3A26', shoes: '#F0ECE4', skin: '#EDC3A2' },
 };
 
-// fill: characters are seen against the sunset (backlit) � a soft albedo fill keeps their colours readable.
+// fill: characters are seen against the sunset (backlit) — a soft albedo fill keeps their colours readable.
 const FILL = 0.3;
 const cloth = (c: string, tint = '#ffffff') => natureMaterial({ color: c, tint, roughness: 0.88, fill: FILL });
 
@@ -101,7 +101,7 @@ function poseArm(limb: Limb, S: THREE.Vector3, target: THREE.Vector3, pole: THRE
   limb.hand.quaternion.setFromUnitVectors(Y, _dir);
 }
 
-/** oar pose for stroke phase p ∈ [0,1): drive 0..0.42, recovery after. Returns direction (outboard) + grip. */
+/** oar pose for stroke phase p âˆˆ [0,1): drive 0..0.42, recovery after. Returns direction (outboard) + grip. */
 function oarPose(p: number, side: number, active: number, dir: THREE.Vector3, grip: THREE.Vector3) {
   let yaw: number, pitch: number;
   if (p < 0.42) { const t = smooth01(p, 0, 0.42); yaw = 0.62 - 1.0 * t; pitch = 0.42; }
@@ -157,7 +157,7 @@ export function People({ yaw }: Shared) {
     kim.head.rotation.set(-0.08 * active + 0.05 * glance, -0.55 * glance + 0.15 * active * Math.sin(t * 0.3), 0.1 * glance);
     oarPose(p, 1, active, _dir, _grip);
     oars[0].position.copy(_grip); oars[0].quaternion.setFromUnitVectors(Y, _dir);
-    // both hands on the handle (person-local = raft-local − seat)
+    // both hands on the handle (person-local = raft-local âˆ’ seat)
     _pole.set(0.6, -0.3, -0.5);
     _tg.copy(_grip).addScaledVector(_dir, 0.02).sub(kim.root.position);
     poseArm(kim.arms[1], shoulder(kim.torso, 1, _sh), _tg, _pole);
@@ -172,7 +172,7 @@ export function People({ yaw }: Shared) {
     const point = active * smooth01(Math.sin(t * 0.55 - 0.6), 0.15, 0.55);
     wing.torso.rotation.set(0.08 + 0.05 * point, 0.12 * point, -0.3 * lean);
     wing.torso.scale.set(1, 1 + Math.sin(t * 1.55 + 1) * 0.012, 1);
-    // sun direction in raft-local: rotate world dir by −yaw
+    // sun direction in raft-local: rotate world dir by âˆ’yaw
     const cy = Math.cos(-yaw.value), sy = Math.sin(-yaw.value);
     const sx = _sun.x * cy + _sun.z * sy, sz = -_sun.x * sy + _sun.z * cy;
     const sunYaw = Math.atan2(sx, sz);

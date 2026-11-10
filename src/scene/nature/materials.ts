@@ -22,7 +22,7 @@ export interface NatureMatOpts {
   /** subtle back-light wrap so thin foliage glows when the sun is behind it. */
   translucency?: number;
   flatShading?: boolean;
-  /** cheap stylised fill: adds albedo × fill as emission so backlit subjects (characters vs sunset) stay readable. */
+  /** cheap stylised fill: adds albedo Ã— fill as emission so backlit subjects (characters vs sunset) stay readable. */
   fill?: number;
 }
 
