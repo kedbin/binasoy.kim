@@ -8,7 +8,8 @@ const files = [];
 for (const v of list.split(',')) {
   const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
   const errs = []; p.on('pageerror', (e) => errs.push(e.message));
-  await p.goto(base + (base.includes('?') ? '&' : '?') + 'q=high');
+  // ?still: no intro auto-advance (O5), so the intro shot stays on the intro
+  await p.goto(base + (base.includes('?') ? '&' : '?') + 'q=high' + (v === 'intro' ? '&still' : ''));
   await p.waitForTimeout(2500);
   await p.evaluate((v) => { const s = window.__scene.getState(); if (v === 'night') { s.goTo('seat'); s.setTimeOfDay('night'); } else s.goTo(v); }, v);
   await p.waitForTimeout(6000);
