@@ -73,7 +73,7 @@ export function Clipboard() {
   useEffect(() => () => Object.values(geo).forEach((g) => g.dispose()), [geo]);
 
   return (
-    <Hotspot id="clipboard" label="Pick up the résumé" view="clipboard" position={ANCHORS.clipboard.pos} rotY={ANCHORS.clipboard.rotY} labelPos={[0, 0.2, 0]}>
+    <Hotspot id="clipboard" label="Pick up the résumé" view="clipboard" position={ANCHORS.clipboard.pos} rotY={ANCHORS.clipboard.rotY} labelPos={[0, 0.16, 0]} hit={[0.34, 0.12, 0.42]} hitPos={[0.03, 0.03, 0]}>
       <mesh geometry={geo.board} castShadow receiveShadow>
         <meshStandardMaterial map={wood} roughness={0.7} />
       </mesh>

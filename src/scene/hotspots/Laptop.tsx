@@ -80,7 +80,7 @@ export function Laptop() {
   }, [keys]);
 
   return (
-    <Hotspot id="laptop" label="Open laptop" view="laptop" position={ANCHORS.laptop.pos} rotY={ANCHORS.laptop.rotY} labelPos={[0, 0.3, 0]}>
+    <Hotspot id="laptop" label="Open laptop" view="laptop" position={ANCHORS.laptop.pos} rotY={ANCHORS.laptop.rotY} labelPos={[0, 0.3, -0.05]} hit={[0.4, 0.3, 0.32]} hitPos={[0, 0.12, 0]}>
       <group name="laptop">
         <mesh geometry={geo.deck} castShadow receiveShadow>
           <meshStandardMaterial color={ALU} roughness={0.38} metalness={0.75} />

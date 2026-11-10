@@ -85,7 +85,7 @@ export function PhotoWall() {
   const texs = useTexture(urls);
   const rots = [0.05, -0.04, 0.03, -0.05, 0.04, -0.03];
   return (
-    <Hotspot id="wall" label="Look at the photos" view="wall" position={ANCHORS.photoWall.pos} rotY={ANCHORS.photoWall.rotY} labelPos={[0, 0.38, 0.05]} lift={0.03} scale={0.78}>
+    <Hotspot id="wall" label="Look at the photos" view="wall" position={ANCHORS.photoWall.pos} rotY={ANCHORS.photoWall.rotY} labelPos={[0, 0.36, 0.05]} lift={0.03} scale={0.78} hit={[0.86, 0.62, 0.06]} hitPos={[0, 0, 0.02]}>
       {/* invisible hit backing so gaps between polaroids still click */}
       <mesh position={[0, 0, 0.005]} visible={false}><planeGeometry args={[0.8, 0.55]} /></mesh>
       {texs.map((t, i) => (

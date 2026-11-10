@@ -50,7 +50,7 @@ export function Stickers() {
   useEffect(() => () => texs.forEach((t) => t.dispose()), [texs]);
   const rots = [0.1, -0.08, 0.05, -0.12, 0.07, -0.04, 0.12, -0.07];
   return (
-    <Hotspot id="stickers" label="See the certifications" view="stickers" position={ANCHORS.stickers.pos} rotY={ANCHORS.stickers.rotY} labelPos={[0, 0.3, 0.05]} lift={0.03} scale={0.6}>
+    <Hotspot id="stickers" label="See the certifications" view="stickers" position={ANCHORS.stickers.pos} rotY={ANCHORS.stickers.rotY} labelPos={[0, 0.3, 0.05]} lift={0.03} scale={0.6} hit={[0.9, 0.5, 0.08]} hitPos={[0, 0, 0.02]}>
       <mesh position={[0, 0, 0.004]} visible={false}><planeGeometry args={[0.8, 0.4]} /></mesh>
       {texs.map((t, i) => {
         const feat = certs[i].featured;
