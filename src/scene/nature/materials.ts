@@ -2,7 +2,7 @@
 // without touching geometry. All materials read vertex colours (painted AO/shade) and an `aTint` attribute
 // that blends toward `uTint` (sun-kissed highlight). Foliage materials additionally sway in the wind.
 import * as THREE from 'three';
-import { timeUniform } from '../lake/timeOfDay';
+import { timeUniform, nightUniform } from '../lake/timeOfDay';
 
 export const windUniform = { value: 1 };
 
@@ -41,7 +41,7 @@ export function natureMaterial(o: NatureMatOpts = {}) {
   m.userData.uniforms = { uTint, uWind, uWindY, uFreq, uTrans, uFill };
   m.customProgramCacheKey = () => `nature${o.wind ? 'w' : ''}${o.translucency ? 't' : ''}`;
   m.onBeforeCompile = (s) => {
-    Object.assign(s.uniforms, { uTint, uWind, uWindY, uFreq, uTrans, uFill, uTime: timeUniform, uWindGlobal: windUniform });
+    Object.assign(s.uniforms, { uTint, uWind, uWindY, uFreq, uTrans, uFill, uTime: timeUniform, uWindGlobal: windUniform, uNight: nightUniform });
     s.vertexShader = s.vertexShader
       .replace('#include <common>', `#include <common>
 attribute float aTint; varying float vTint;
@@ -66,11 +66,12 @@ if (uWind > 0.0) {
 }`);
     s.fragmentShader = s.fragmentShader
       .replace('#include <common>', `#include <common>
-varying float vTint; uniform vec3 uTint; uniform float uTrans; uniform float uFill;`)
+varying float vTint; uniform vec3 uTint; uniform float uTrans; uniform float uFill; uniform float uNight;`)
       .replace('#include <color_fragment>', `#include <color_fragment>
 diffuseColor.rgb = mix(diffuseColor.rgb, uTint * (0.75 + 0.25 * vColor.rgb), clamp(vTint, 0.0, 1.0));`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-totalEmissiveRadiance += diffuseColor.rgb * (uTrans * 0.18 * vTint + uFill);`);
+// sun-driven glow (translucency) vanishes at night; the readability fill drops to a faint moonlit lift
+totalEmissiveRadiance += diffuseColor.rgb * (uTrans * 0.18 * vTint * (1.0 - uNight) + uFill * (1.0 - 0.75 * uNight));`);
   };
   return m;
 }
