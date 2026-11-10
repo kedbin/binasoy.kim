@@ -1,0 +1,201 @@
+{
+  "profile": {
+    "name": "Kim Edrian Binasoy",
+    "shortName": "Kim",
+    "partner": "Wingwing",
+    "location": "Toronto, Canada",
+    "status": "Open to work",
+    "roles": ["Cloud & DevOps Engineer", "QA Automation", "AI"],
+    "tagline": "I build automated systems that ship faster, test themselves, and learn.",
+    "bio": [
+      "Four-plus years across cloud platforms, quality engineering, and AI-assisted automation at Accenture — backed by a full Google Cloud Professional certification trio."
+    ],
+    "stats": [
+      { "value": "5×", "label": "faster test authoring via AI agents" },
+      { "value": "90%", "label": "streamlined content distribution via relearn.ing" },
+      { "value": "70%", "label": "test-documentation time cut by automation" }
+    ],
+    "links": [
+      { "label": "GitHub", "href": "https://github.com/kedbin", "kind": "github" },
+      { "label": "LinkedIn", "href": "https://linkedin.com/in/kedbin", "kind": "linkedin" },
+      { "label": "relearn.ing", "href": "https://relearn.ing", "kind": "site" },
+      { "label": "hello@binasoy.kim", "href": "mailto:hello@binasoy.kim", "kind": "email" },
+      { "label": "Résumé", "href": "/Kim_Binasoy_Resume.pdf", "kind": "resume" }
+    ],
+    "resumePdf": "/Kim_Binasoy_Resume.pdf"
+  },
+  "certs": [
+    {
+      "id": "gcp-devops",
+      "issuer": "Google Cloud",
+      "name": "Professional Cloud DevOps Engineer",
+      "blurb": "CI/CD, SRE, reliability & delivery on GCP.",
+      "vendor": "gcp",
+      "featured": true
+    },
+    {
+      "id": "gcp-security",
+      "issuer": "Google Cloud",
+      "name": "Professional Cloud Security Engineer",
+      "blurb": "Zero-trust, IAM, compliance & secure operations.",
+      "vendor": "gcp",
+      "featured": true
+    },
+    {
+      "id": "gcp-architect",
+      "issuer": "Google Cloud",
+      "name": "Professional Cloud Architect",
+      "blurb": "Designing scalable, resilient cloud architectures.",
+      "vendor": "gcp",
+      "featured": true
+    },
+    {
+      "id": "azure-az-204",
+      "issuer": "Microsoft Azure",
+      "name": "AZ-204 · Developer Associate",
+      "blurb": "Building cloud-native apps on Azure.",
+      "vendor": "azure",
+      "featured": true
+    },
+    {
+      "id": "aws-cloud-practitioner",
+      "issuer": "Amazon Web Services",
+      "name": "Cloud Practitioner",
+      "blurb": "Foundational AWS cloud fluency.",
+      "vendor": "aws",
+      "featured": true
+    },
+    {
+      "id": "google-ai-leader-gemini",
+      "issuer": "Google",
+      "name": "AI Leader (Gemini)",
+      "blurb": "Applied generative AI & agents.",
+      "vendor": "google-ai",
+      "featured": true
+    },
+    {
+      "id": "azure-ai-900",
+      "issuer": "Microsoft Azure",
+      "name": "Azure AI-900",
+      "blurb": "",
+      "vendor": "azure",
+      "featured": false
+    },
+    {
+      "id": "azure-az-900",
+      "issuer": "Microsoft Azure",
+      "name": "Azure Fundamentals (AZ-900)",
+      "blurb": "",
+      "vendor": "azure",
+      "featured": false
+    }
+  ],
+  "skills": [
+    { "title": "Cloud Platforms", "items": ["Microsoft Azure", "Google Cloud", "Amazon Web Services"] },
+    { "title": "DevOps & IaC", "items": ["CI/CD", "GitHub Actions", "Azure DevOps", "Terraform", "Docker"] },
+    { "title": "Automation & QA", "items": ["Playwright", "Test Automation", "E2E & Regression Testing", "Incident & DR Response"] },
+    { "title": "Languages", "items": ["Python", "TypeScript", "JavaScript", "SQL", "Bash"] },
+    { "title": "AI & Low-Code", "items": ["Generative AI", "LLM Agents", "AI-Assisted Automation", "Power Automate", "Power Apps"] },
+    { "title": "Reliability & Ops", "items": ["Incident Response", "Disaster Recovery", "Runbooks", "Monitoring"] }
+  ],
+  "experience": [
+    {
+      "id": "accenture-ai-automation-engineer",
+      "role": "AI Automation Engineer",
+      "company": "Accenture",
+      "start": "2026",
+      "end": "Present",
+      "bullets": [
+        "Architected an AI-assisted Playwright pipeline that automates high-value regression cases, cutting per-script authoring from 15–30 min to ~5 min (5× faster).",
+        "Built and optimized CI/CD pipelines to lift team delivery velocity."
+      ]
+    },
+    {
+      "id": "accenture-cloud-ops-qa-automation",
+      "role": "Cloud Operations & Quality Automation Engineer",
+      "company": "Accenture",
+      "start": "2023",
+      "end": "2026",
+      "bullets": [
+        "Administered 3 Azure environments (test, pre-prod, prod) for a transportation platform; executed and mapped 800+ test cases.",
+        "Led incident triage and disaster-recovery exercises; authored 10+ operational runbooks.",
+        "Built an automation tool that cut test-documentation time by 70% and raised testing efficiency by 40%.",
+        "Shipped an MVP Gen-AI Knowledge Transfer bot to accelerate new-joiner onboarding."
+      ]
+    },
+    {
+      "id": "accenture-pmo",
+      "role": "Project Management Officer",
+      "company": "Accenture",
+      "start": "2022",
+      "end": "2023",
+      "bullets": [
+        "Owned onboarding / offboarding for a 200+ resource engagement at peak.",
+        "Built Power Automate / Power Apps tooling that streamlined PMO workflows by 50–75%."
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "id": "relearn-ing",
+      "name": "relearn.ing",
+      "tagline": "Founder & Engineer",
+      "description": "A digital learning platform and R&D lab focused on AI-era work and continuous improvement — with cloud-native content delivery and automation-driven engagement workflows.",
+      "tags": ["Cloud-native", "Automation", "Web platform"],
+      "href": "https://relearn.ing"
+    },
+    {
+      "id": "ai-assisted-test-automation-pipeline",
+      "name": "AI-Assisted Test Automation Pipeline",
+      "tagline": "Automation · AI",
+      "description": "Playwright + LLM pipeline that turns manual regression cases into maintainable automated tests 5× faster — integrated into CI.",
+      "tags": ["Playwright", "Python", "CI/CD", "LLM Agents"],
+      "metric": "5× faster"
+    },
+    {
+      "id": "gen-ai-knowledge-transfer-bot",
+      "name": "Gen-AI Knowledge Transfer Bot",
+      "tagline": "Generative AI",
+      "description": "A conversational onboarding assistant that surfaces runbooks and team knowledge, reducing ramp-up time for new engineers.",
+      "tags": ["Generative AI", "MVP delivery", "Knowledge Ops"]
+    }
+  ],
+  "photos": [
+    {
+      "id": "van-01",
+      "src": "/photos/van-01.webp",
+      "caption": "Tailgate open, Wingwing tucked in the bed, surrounded by autumn forest.",
+      "alt": "White minivan with its tailgate open, Wingwing tucked in the bed, autumn forest behind"
+    },
+    {
+      "id": "van-02",
+      "src": "/photos/van-02.webp",
+      "caption": "The bed all set up inside the van for a cozy night in.",
+      "alt": "The bed set up inside the van at night"
+    },
+    {
+      "id": "van-03",
+      "src": "/photos/van-03.webp",
+      "caption": "Fairy lights on the ceiling and a happy giggle from Wingwing in bed.",
+      "alt": "Fairy lights strung across the van ceiling, Wingwing laughing in bed"
+    },
+    {
+      "id": "van-04",
+      "src": "/photos/van-04.webp",
+      "caption": "Working from the van, with autumn leaves drifting onto the sunroof.",
+      "alt": "Kim working on a laptop inside the van, autumn leaves on the sunroof"
+    },
+    {
+      "id": "van-05",
+      "src": "/photos/van-05.webp",
+      "caption": "A golden-hour lake framed by fall hills and a split-rail fence.",
+      "alt": "Golden-hour lake with fall hills and a split-rail fence"
+    },
+    {
+      "id": "van-06",
+      "src": "/photos/van-06.webp",
+      "caption": "Inflating the raft together on the beach as the sun goes down.",
+      "alt": "Kim and Wingwing inflating a raft on the beach at sunset"
+    }
+  ]
+}

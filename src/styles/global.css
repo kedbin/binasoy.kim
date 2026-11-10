@@ -1,0 +1,31 @@
+/* Base: the reader is the real page; 3D mode overlays the canvas. */
+:root {
+  --peach: #F4C7A1; --lavender: #B9A7C9; --lake: #8FA3B8; --maple: #D9682B; --gold: #E3A63B;
+  --pine: #2F4A3A; --charcoal: #1E1F22; --fairy: #FFD58A; --paper: #FBF6EE; --ink: #2A2420;
+  --font-ui: ui-rounded, "SF Pro Rounded", "Nunito", system-ui, sans-serif;
+  --font-mono: ui-monospace, "JetBrains Mono", Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-ui); }
+
+html.mode-3d, html.mode-3d body { height: 100%; overflow: hidden; background: var(--charcoal); }
+html.mode-3d #reader { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+html:not(.mode-3d) #app { display: none; }
+
+#app, .scene-canvas { position: fixed; inset: 0; }
+
+.hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; font-family: var(--font-ui); color: var(--paper); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* .loader styles live inline in index.html (shared with the static pre-JS loader). */
+@media print { #app, .hud, .loader { display: none !important; } html.mode-3d #reader { position: static; width: auto; height: auto; clip-path: none; white-space: normal; } }
+
+/* KimOS mounted on the 3D laptop screen */
+.kimos-3d { transition: filter .4s cubic-bezier(.4,0,.2,1); }
+.kimos-3d:not(.is-active) { filter: saturate(.9) brightness(.92); }
+.kimos-3d__frame { overflow: hidden; border-radius: 6px; background: #1E1F22; }
+/* KimOS full-screen modal (mobile / short viewports) */
+.kimos-modal { position: fixed; inset: 0; z-index: 30; pointer-events: auto; background: #1E1F22; animation: kimosIn .35s cubic-bezier(.4,0,.2,1); }
+.kimos-modal__loading { color: var(--fairy); font-family: var(--font-mono); display: grid; place-items: center; height: 100%; margin: 0; }
+@keyframes kimosIn { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .kimos-modal { animation: none; } }

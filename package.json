@@ -1,43 +1,37 @@
 {
-  "name": "portfolio",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "binasoy-kim-van",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
   "scripts": {
-    "start": "npx webpack serve",
-    "dev": "npx webpack serve",
-    "watch": "webpack  --mode development --watch",
-    "build": "webpack --mode production",
-    "test:serve": "node tests/server.mjs",
-    "pretest": "npm run build",
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --port 4173",
     "test": "playwright test",
-    "test:headed": "playwright test --headed"
+    "typecheck": "tsc --noEmit"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/nerkat/portfolio.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/nerkat/portfolio/issues"
-  },
-  "homepage": "https://github.com/nerkat/portfolio#readme",
   "dependencies": {
-    "clean-webpack-plugin": "^4.0.0",
-    "css-loader": "^6.7.3",
-    "mini-css-extract-plugin": "^2.7.2",
-    "sass": "^1.57.1",
-    "sass-loader": "^13.2.0",
-    "webpack-dev-server": "^4.11.1"
+    "@react-three/drei": "^10.7.9",
+    "@react-three/fiber": "^9.8.2",
+    "@react-three/postprocessing": "^3.2.2",
+    "detect-gpu": "^5.0.70",
+    "howler": "^2.2.4",
+    "maath": "^0.10.8",
+    "postprocessing": "^6.39.6",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "three": "^0.187.0",
+    "zustand": "^5.1.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.61.1",
-    "copy-webpack-plugin": "^13.0.1",
-    "html-loader": "^4.2.0",
-    "html-webpack-plugin": "^5.5.0",
-    "image-webpack-loader": "^8.1.0",
-    "webpack": "^5.75.0",
-    "webpack-cli": "^5.0.1"
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.65.0",
+    "@types/howler": "^2.2.13",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@types/three": "^0.187.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.7"
   }
 }

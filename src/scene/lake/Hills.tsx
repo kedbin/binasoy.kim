@@ -1,0 +1,242 @@
+// OWNER: Opus O1. Far shore: three layered forested ridges + their mirror under the glassy lake.
+// - Silhouette: big soft rolls + a row of individual tree crowns (rounded maples, pointed conifers).
+// - Canopy shader: cellular crowns (per-crown colour from SEASONS[season], fake dome normal, dark gaps),
+//   sun-side warm / shade-side cool from LIGHTS[timeOfDay].hillLit/hillShade, warm backlit rims on the crests,
+//   aerial haze per layer + low mist at the waterline, a darker shoreline band.
+// - Reflection: same geometry mirrored about the water plane with ripple distortion, darker + hazier.
+import { useEffect, useMemo } from 'react';
+import * as THREE from 'three';
+import { WORLD } from '../layout';
+import { SEASONS } from '../env/presets';
+import { envUniforms } from '../env/live';
+import { useScene } from '../../state/store';
+import { fbm1, mulberry32 } from './noise';
+
+export interface LayerOpts { z: number; width: number; height: number; depth: number; seed: number; haze: number; crown: number }
+
+/** The three ridge layers (far → mid → near). FarForest samples the same surfaces. */
+export const RIDGES: LayerOpts[] = [
+  { z: WORLD.hillsZ + 150, width: 1500, height: 72, depth: 40, seed: 3, haze: 0.62, crown: 11 },
+  { z: WORLD.hillsZ + 50, width: 1100, height: 44, depth: 30, seed: 7, haze: 0.3, crown: 8 },
+  { z: WORLD.hillsZ - 40, width: 760, height: 24, depth: 24, seed: 11, haze: 0.06, crown: 6 },
+];
+
+export interface Ridge {
+  opts: LayerOpts;
+  /** conifer mask 0..1 at u */
+  conif(u: number): number;
+  /** world position of the ridge surface at (u, v); v = 0 waterline → 1 crest. */
+  sample(u: number, v: number, out: THREE.Vector3): THREE.Vector3;
+}
+
+export function makeRidge(opts: LayerOpts): Ridge {
+  const { z, width, height, depth, seed, crown } = opts;
+  const rand = mulberry32(seed);
+  const off = rand() * 100;
+  // pre-compute the crown row (independent trees along x)
+  const nC = Math.ceil(width / crown) + 2;
+  const cH = new Float32Array(nC), cW = new Float32Array(nC), cK = new Uint8Array(nC), cO = new Float32Array(nC);
+  for (let i = 0; i < nC; i++) {
+    cH[i] = crown * (0.35 + rand() * 0.5);
+    cW[i] = 0.75 + rand() * 0.6;
+    cO[i] = (rand() - 0.5) * 0.4;
+    cK[i] = 0;
+  }
+  const crownAt = (x: number, conif: number) => {
+    const fx = (x + width / 2) / crown;
+    const i0 = Math.floor(fx);
+    let best = 0;
+    for (let k = -1; k <= 1; k++) {
+      const i = THREE.MathUtils.clamp(i0 + k, 0, nC - 1);
+      const t = (fx - (i + 0.5 + cO[i])) / (0.5 * cW[i]);
+      if (Math.abs(t) >= 1) continue;
+      const dome = Math.sqrt(1 - t * t);
+      const spire = Math.pow(1 - Math.abs(t), 1.4) * 1.5;
+      const v = cH[i] * THREE.MathUtils.lerp(dome, spire, conif);
+      if (v > best) best = v;
+    }
+    return best;
+  };
+  const conif = (u: number) => THREE.MathUtils.smoothstep(fbm1(u * 9.0 - off, 2), 0.5, 0.62);
+  const sample = (u: number, v: number, out: THREE.Vector3) => {
+    const x = (u - 0.5) * width;
+    const ridge = height * (0.5 + 0.5 * fbm1(u * 3.2 + off, 3)) + crownAt(x, conif(u));
+    const prof = Math.sin(v * Math.PI * 0.5); // rounded front face
+    const y = WORLD.waterY + ridge * prof;
+    const zz = z + depth * (1 - Math.cos(v * Math.PI * 0.5)) + Math.sin(u * 5.0 + off) * depth * 0.35;
+    return out.set(x, y, zz);
+  };
+  return { opts, conif, sample };
+}
+
+function hillGeometry(opts: LayerOpts) {
+  const { width, haze, crown } = opts;
+  const ridge = makeRidge(opts);
+  const segX = Math.round(width / (crown * 0.22)), segY = 14;
+  const p = new THREE.Vector3();
+  const pos: number[] = [], uvs: number[] = [], idx: number[] = [], extra: number[] = [];
+  for (let j = 0; j <= segY; j++) {
+    const v = j / segY;
+    for (let i = 0; i <= segX; i++) {
+      const u = i / segX;
+      const conif = ridge.conif(u);
+      ridge.sample(u, v, p);
+      pos.push(p.x, p.y, p.z);
+      uvs.push(u, v);
+      extra.push(haze, conif);
+    }
+  }
+  for (let j = 0; j < segY; j++) for (let i = 0; i < segX; i++) {
+    const a = j * (segX + 1) + i, b = a + 1, d = a + segX + 1, e = d + 1;
+    idx.push(a, d, b, b, d, e);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  g.setAttribute('aHill', new THREE.Float32BufferAttribute(extra, 2));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  return g;
+}
+
+const vert = /* glsl */ `
+uniform float uReflect; uniform float uTime; uniform float uWaterY;
+attribute vec2 aHill;
+varying vec3 vW; varying vec3 vN; varying vec2 vUv; varying vec2 vHill; varying float vCrest;
+void main(){
+  vUv = uv; vHill = aHill;
+  vCrest = uv.y;
+  vec3 p = position;
+  vec4 w = modelMatrix * vec4(p, 1.0);
+  if (uReflect > 0.5) {
+    // ripple distortion grows with depth below the waterline (further from the shore in the reflection)
+    float dy = max(uWaterY - w.y, 0.0);
+    w.x += sin(w.y * 1.3 + uTime * 0.6) * dy * 0.006 + sin(w.y * 3.1 - uTime * 0.9) * dy * 0.003;
+  }
+  vW = (modelMatrix * vec4(p, 1.0)).xyz;   // undistorted for canopy lookup
+  vN = normalize(mat3(modelMatrix) * normal);
+  if (uReflect > 0.5) vN.y = -vN.y; // light the mirror as the original
+  gl_Position = projectionMatrix * viewMatrix * w;
+}`;
+
+const frag = /* glsl */ `
+uniform vec3 uFol[6]; uniform vec3 uCon[3];
+uniform vec3 uKeyDir, uHillLit, uHillShade, uHillRim, uHaze; uniform float uHazeAmt, uMist, uNight, uReflect, uWaterY, uTime;
+varying vec3 vW; varying vec3 vN; varying vec2 vUv; varying vec2 vHill; varying float vCrest;
+vec2 hash2(vec2 p){ p = vec2(dot(p, vec2(127.1,311.7)), dot(p, vec2(269.5,183.3))); return fract(sin(p) * 43758.5453); }
+float h1(vec2 p){ return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }
+// returns (dist to crown centre, crown id, local dx, local dy)
+vec4 cells(vec2 p){
+  vec2 i = floor(p), f = fract(p); float md = 9.0; vec2 mo = vec2(0); vec2 mid = vec2(0);
+  for (int y=-1; y<=1; y++) for (int x=-1; x<=1; x++){
+    vec2 g = vec2(float(x), float(y)); vec2 o = hash2(i + g) * 0.8 + 0.1;
+    vec2 r = g + o - f; float d = dot(r, r);
+    if (d < md){ md = d; mo = r; mid = i + g; }
+  }
+  return vec4(sqrt(md), h1(mid), -mo);
+}
+vec3 pick6(float t){
+  float s = t * 5.999; int i = int(s);
+  vec3 a = uFol[0];
+  for (int k = 0; k < 6; k++) if (k == i) a = uFol[k];
+  return a;
+}
+void main(){
+  float hy = abs(vW.y - uWaterY);
+  // canopy cells: crowns ~5-6 m; elongated vertically on conifer patches
+  float conif = vHill.y;
+  vec2 cp = vec2(vW.x * 0.13 + vW.z * 0.04, hy * mix(0.16, 0.1, conif));
+  vec4 c = cells(cp);
+  vec3 fol = pick6(c.y);
+  vec3 con = c.y < 0.33 ? uCon[0] : c.y < 0.66 ? uCon[1] : uCon[2];
+  // scattered evergreens inside deciduous patches + solid conifer stands
+  float isCon = max(conif, step(0.82, fract(c.y * 7.13)));
+  vec3 base = mix(fol, con, isCon);
+  // night: desaturate
+  float lum = dot(base, vec3(0.299, 0.587, 0.114));
+  base = mix(base, vec3(lum), uNight * 0.7);
+
+  // fake crown dome normal: crowns catch light on their sun-facing upper edge; dark gaps between crowns
+  vec2 cd = c.zw;
+  float dome = 1.0 - smoothstep(0.1, 0.5, c.x);
+  float gap = smoothstep(0.38, 0.7, c.x);
+  float topLit = clamp(0.5 + cd.y * 1.4 + cd.x * sign(-uKeyDir.x) * 0.6, 0.0, 1.0);
+  // the hills face the camera with the sun BEHIND them → front faces sit in cool shade;
+  // only up-facing slopes / crest crowns pick up warm light (photo #5/#6)
+  vec3 Nn = normalize(vN);
+  float up = smoothstep(0.35, 0.95, Nn.y);
+  float crest = smoothstep(0.7, 1.0, vCrest);
+  float lit = clamp(up * 0.45 + crest * 0.45 + topLit * dome * 0.22 - gap * 0.18, 0.0, 1.0);
+  vec3 col = base * mix(uHillShade, uHillLit, lit);
+  col *= 1.0 - gap * 0.14;
+  // AO toward the waterline (dense understory)
+  col *= mix(0.6, 1.0, smoothstep(0.0, 10.0, hy));
+  // backlit rim on the very top crowns
+  col += uHillRim * smoothstep(0.9, 1.0, vCrest) * dome * 0.18;
+
+  // aerial perspective
+  float haze = clamp(vHill.x * uHazeAmt, 0.0, 1.0);
+  col = mix(col, uHaze, haze);
+  // low mist only on the far (hazy) ridges; the near treeline meets the water crisply
+  float mist = (1.0 - smoothstep(0.0, 8.0, hy)) * uMist * smoothstep(0.1, 0.6, vHill.x);
+  col = mix(col, uHaze, mist * 0.55);
+
+  if (uReflect > 0.5) {
+    // darker, softer, hazier mirror (still lake: ~80% reflectance at grazing)
+    col = mix(col, uHaze * 0.85, 0.12 + haze * 0.2);
+    col *= vec3(0.78, 0.8, 0.86);
+    // darker band right at the shoreline (shadowed undergrowth + its reflection)
+    col *= mix(0.7, 1.0, smoothstep(0.0, 4.0, hy));
+  } else {
+    // dark shoreline band (shadowed understory) — strongest on the near ridge
+    col *= mix(mix(0.45, 0.8, vHill.x), 1.0, smoothstep(0.0, 4.0, hy));
+  }
+  gl_FragColor = vec4(col, 1.0);
+  #include <tonemapping_fragment>
+  #include <colorspace_fragment>
+}`;
+
+function makeMat(reflect: boolean) {
+  return new THREE.ShaderMaterial({
+    vertexShader: vert, fragmentShader: frag, side: THREE.DoubleSide, fog: false,
+    uniforms: {
+      uReflect: { value: reflect ? 1 : 0 },
+      uWaterY: { value: WORLD.waterY },
+      uFol: { value: Array.from({ length: 6 }, () => new THREE.Color()) },
+      uCon: { value: Array.from({ length: 3 }, () => new THREE.Color()) },
+      uTime: envUniforms.uTime, uKeyDir: envUniforms.uKeyDir, uHillLit: envUniforms.uHillLit,
+      uHillShade: envUniforms.uHillShade, uHillRim: envUniforms.uHillRim, uHaze: envUniforms.uHaze,
+      uHazeAmt: envUniforms.uHazeAmt, uMist: envUniforms.uMist, uNight: envUniforms.uNight,
+    },
+  });
+}
+
+export function Hills() {
+  const season = useScene((s) => s.season);
+  const quality = useScene((s) => s.quality);
+  const { geos, mat, rmat } = useMemo(() => {
+    const geos = RIDGES.map(hillGeometry);
+    return { geos, mat: makeMat(false), rmat: makeMat(true) };
+  }, []);
+  useEffect(() => {
+    const pal = SEASONS[season];
+    for (const m of [mat, rmat]) {
+      const f = m.uniforms.uFol.value as THREE.Color[];
+      const c = m.uniforms.uCon.value as THREE.Color[];
+      f.forEach((col, i) => col.set(pal.foliage[i % pal.foliage.length]));
+      c.forEach((col, i) => col.set(pal.conifer[i % pal.conifer.length]));
+    }
+  }, [season, mat, rmat]);
+  useEffect(() => () => { geos.forEach((g) => g.dispose()); mat.dispose(); rmat.dispose(); }, [geos, mat, rmat]);
+  return (
+    <group name="hills">
+      {geos.map((g, i) => <mesh key={i} geometry={g} material={mat} renderOrder={-5 + i} />)}
+      {/* Mirror about y = waterY: y' = 2w - y. 'low' only — mid/high get a real Reflector (Water.tsx). */}
+      {quality === 'low' && (
+        <group position-y={WORLD.waterY * 2} scale-y={-1} name="hills-reflection">
+          {geos.map((g, i) => <mesh key={i} geometry={g} material={rmat} renderOrder={-5 + i} />)}
+        </group>
+      )}
+    </group>
+  );
+}
