@@ -12,10 +12,25 @@ import { envUniforms } from '../env/live';
 import { useScene } from '../../state/store';
 import { fbm1, mulberry32 } from './noise';
 
-interface LayerOpts { z: number; width: number; height: number; depth: number; seed: number; haze: number; crown: number }
+export interface LayerOpts { z: number; width: number; height: number; depth: number; seed: number; haze: number; crown: number }
 
-function hillGeometry({ z, width, height, depth, seed, haze, crown }: LayerOpts) {
-  const segX = Math.round(width / (crown * 0.22)), segY = 14;
+/** The three ridge layers (far → mid → near). FarForest samples the same surfaces. */
+export const RIDGES: LayerOpts[] = [
+  { z: WORLD.hillsZ + 150, width: 1500, height: 72, depth: 40, seed: 3, haze: 0.62, crown: 11 },
+  { z: WORLD.hillsZ + 50, width: 1100, height: 44, depth: 30, seed: 7, haze: 0.3, crown: 8 },
+  { z: WORLD.hillsZ - 40, width: 760, height: 24, depth: 24, seed: 11, haze: 0.06, crown: 6 },
+];
+
+export interface Ridge {
+  opts: LayerOpts;
+  /** conifer mask 0..1 at u */
+  conif(u: number): number;
+  /** world position of the ridge surface at (u, v); v = 0 waterline → 1 crest. */
+  sample(u: number, v: number, out: THREE.Vector3): THREE.Vector3;
+}
+
+export function makeRidge(opts: LayerOpts): Ridge {
+  const { z, width, height, depth, seed, crown } = opts;
   const rand = mulberry32(seed);
   const off = rand() * 100;
   // pre-compute the crown row (independent trees along x)
@@ -42,18 +57,31 @@ function hillGeometry({ z, width, height, depth, seed, haze, crown }: LayerOpts)
     }
     return best;
   };
+  const conif = (u: number) => THREE.MathUtils.smoothstep(fbm1(u * 9.0 - off, 2), 0.5, 0.62);
+  const sample = (u: number, v: number, out: THREE.Vector3) => {
+    const x = (u - 0.5) * width;
+    const ridge = height * (0.5 + 0.5 * fbm1(u * 3.2 + off, 3)) + crownAt(x, conif(u));
+    const prof = Math.sin(v * Math.PI * 0.5); // rounded front face
+    const y = WORLD.waterY + ridge * prof;
+    const zz = z + depth * (1 - Math.cos(v * Math.PI * 0.5)) + Math.sin(u * 5.0 + off) * depth * 0.35;
+    return out.set(x, y, zz);
+  };
+  return { opts, conif, sample };
+}
+
+function hillGeometry(opts: LayerOpts) {
+  const { width, haze, crown } = opts;
+  const ridge = makeRidge(opts);
+  const segX = Math.round(width / (crown * 0.22)), segY = 14;
+  const p = new THREE.Vector3();
   const pos: number[] = [], uvs: number[] = [], idx: number[] = [], extra: number[] = [];
   for (let j = 0; j <= segY; j++) {
     const v = j / segY;
     for (let i = 0; i <= segX; i++) {
       const u = i / segX;
-      const x = (u - 0.5) * width;
-      const conif = THREE.MathUtils.smoothstep(fbm1(u * 9.0 - off, 2), 0.5, 0.62);
-      const ridge = height * (0.5 + 0.5 * fbm1(u * 3.2 + off, 3)) + crownAt(x, conif);
-      const prof = Math.sin(v * Math.PI * 0.5); // rounded front face
-      const y = WORLD.waterY + ridge * prof;
-      const zz = z + depth * (1 - Math.cos(v * Math.PI * 0.5)) + Math.sin(u * 5.0 + off) * depth * 0.35;
-      pos.push(x, y, zz);
+      const conif = ridge.conif(u);
+      ridge.sample(u, v, p);
+      pos.push(p.x, p.y, p.z);
       uvs.push(u, v);
       extra.push(haze, conif);
     }
@@ -149,8 +177,8 @@ void main(){
   // aerial perspective
   float haze = clamp(vHill.x * uHazeAmt, 0.0, 1.0);
   col = mix(col, uHaze, haze);
-  // low mist band hugging the far shore
-  float mist = (1.0 - smoothstep(0.0, 10.0, hy)) * uMist;
+  // low mist only on the far (hazy) ridges; the near treeline meets the water crisply
+  float mist = (1.0 - smoothstep(0.0, 8.0, hy)) * uMist * smoothstep(0.1, 0.6, vHill.x);
   col = mix(col, uHaze, mist * 0.55);
 
   if (uReflect > 0.5) {
@@ -160,7 +188,8 @@ void main(){
     // darker band right at the shoreline (shadowed undergrowth + its reflection)
     col *= mix(0.7, 1.0, smoothstep(0.0, 4.0, hy));
   } else {
-    col *= mix(0.75, 1.0, smoothstep(0.0, 3.0, hy));
+    // dark shoreline band (shadowed understory) — strongest on the near ridge
+    col *= mix(mix(0.45, 0.8, vHill.x), 1.0, smoothstep(0.0, 4.0, hy));
   }
   gl_FragColor = vec4(col, 1.0);
   #include <tonemapping_fragment>
@@ -184,12 +213,9 @@ function makeMat(reflect: boolean) {
 
 export function Hills() {
   const season = useScene((s) => s.season);
+  const quality = useScene((s) => s.quality);
   const { geos, mat, rmat } = useMemo(() => {
-    const geos = [
-      hillGeometry({ z: WORLD.hillsZ + 150, width: 1500, height: 72, depth: 40, seed: 3, haze: 0.62, crown: 11 }),
-      hillGeometry({ z: WORLD.hillsZ + 50, width: 1100, height: 44, depth: 30, seed: 7, haze: 0.3, crown: 8 }),
-      hillGeometry({ z: WORLD.hillsZ - 40, width: 760, height: 24, depth: 24, seed: 11, haze: 0.06, crown: 6 }),
-    ];
+    const geos = RIDGES.map(hillGeometry);
     return { geos, mat: makeMat(false), rmat: makeMat(true) };
   }, []);
   useEffect(() => {
@@ -205,10 +231,12 @@ export function Hills() {
   return (
     <group name="hills">
       {geos.map((g, i) => <mesh key={i} geometry={g} material={mat} renderOrder={-5 + i} />)}
-      {/* Mirror about y = waterY: y' = 2w - y */}
-      <group position-y={WORLD.waterY * 2} scale-y={-1} name="hills-reflection">
-        {geos.map((g, i) => <mesh key={i} geometry={g} material={rmat} renderOrder={-5 + i} />)}
-      </group>
+      {/* Mirror about y = waterY: y' = 2w - y. 'low' only — mid/high get a real Reflector (Water.tsx). */}
+      {quality === 'low' && (
+        <group position-y={WORLD.waterY * 2} scale-y={-1} name="hills-reflection">
+          {geos.map((g, i) => <mesh key={i} geometry={g} material={rmat} renderOrder={-5 + i} />)}
+        </group>
+      )}
     </group>
   );
 }
