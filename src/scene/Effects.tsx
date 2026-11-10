@@ -39,14 +39,14 @@ export function Effects() {
   if (quality === 'low') return null;
   const high = quality === 'high';
   return (
-    <EffectComposer multisampling={0} enableNormalPass={false}>
+    <EffectComposer multisampling={high ? 4 : 0} enableNormalPass={false}>
       <Bloom ref={bloom} intensity={0.5} luminanceThreshold={0.95} luminanceSmoothing={0.25} mipmapBlur radius={0.72} />
       {high ? <DepthOfField ref={dof} focusDistance={45} focusRange={420} bokehScale={0} /> : <></>}
       <ToneMapping mode={ToneMappingMode.AGX} />
       <HueSaturation ref={hs} saturation={0.2} />
       <BrightnessContrast ref={bc} contrast={0.1} />
       <Vignette ref={vig} offset={0.3} darkness={0.42} />
-      <FXAA />
+      {!high ? <FXAA /> : <></>}
     </EffectComposer>
   );
 }

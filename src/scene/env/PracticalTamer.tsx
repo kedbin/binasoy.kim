@@ -12,7 +12,9 @@ export function PracticalTamer() {
   const lights = useRef<THREE.PointLight[] | null>(null);
   const tick = useRef(0);
   useFrame(() => {
-    if (!lights.current || ++tick.current % 300 === 0) {
+    // rescan often until the van has mounted, then occasionally (O2 may swap meshes/lights)
+    const every = lights.current && lights.current.length ? 240 : 10;
+    if (!lights.current || ++tick.current % every === 0) {
       const van = scene.getObjectByName('van');
       const found: THREE.PointLight[] = [];
       van?.traverse((o) => { if ((o as THREE.PointLight).isPointLight) found.push(o as THREE.PointLight); });
