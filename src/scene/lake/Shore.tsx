@@ -46,7 +46,7 @@ function scatter(seed: number, n: number, gen: (r: () => number) => Inst | null)
 }
 
 function Grass({ count, palette, shadows }: { count: number; palette: string[]; shadows: boolean }) {
-  const geo = useMemo(() => grassTuft(5, 9, 0.42), []);
+  const geo = useMemo(() => grassTuft(5, 11, 0.3), []);
   const tint = useMemo(() => brightest(palette).clone().lerp(new THREE.Color('#E8D58A'), 0.35), [palette]);
   const mat = useMemo(() => MAT.grass(tint), [tint]);
   useEffect(() => () => mat.dispose(), [mat]);
@@ -54,10 +54,10 @@ function Grass({ count, palette, shadows }: { count: number; palette: string[]; 
   const items = useMemo(() => scatter(11, count, (r) => {
     // dense near the camera views: along the fence, the bank, around the van; sparse further out
     const band = r();
-    const x = band < 0.35 ? -13 + r() * 24 : (r() - 0.5) * 44;
-    const z = band < 0.35 ? 5 + r() * 4.3 : -12 + r() * 21;
+    const x = band < 0.25 ? -13 + r() * 24 : (r() - 0.5) * 44;
+    const z = band < 0.25 ? 6.4 + r() * 1.3 : -12 + r() * 21;
     if (beachMask(x, z) > 0.35 || inVan(x, z, 0.15) || onTrack(x, z)) return null;
-    return { x, z, s: 0.6 + r() * 0.8 + (z > 6 ? 0.3 : 0), r: r() * 6.28, tilt: (r() - 0.5) * 0.2, c: Math.floor(r() * 9) };
+    return { x, z, s: 0.55 + r() * 0.6 - (z > 5 ? 0.15 : 0), r: r() * 6.28, tilt: (r() - 0.5) * 0.2, c: Math.floor(r() * 9) };
   }), [count]);
   const ref = useRef<THREE.InstancedMesh>(null);
   useInstances(ref, items, colors, -0.02);
