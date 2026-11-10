@@ -96,3 +96,19 @@ Each Sonnet worker gets its own git worktree and branch. Opus reviews and merges
 2. **Build-out**: 3, 4, 6, 7, 8 (Sonnet, in parallel worktrees), and 5 (Opus core).
 3. **Integration**: 9 (Opus), 10, 11.
 4. **Ship**: 12, 13.
+
+## Status log
+- **Phase 1–2 (done):** scaffold, content, reader, van/lake/characters, KimOS on the 3D laptop, hotspots, audio, tests/CI (13 green).
+- **Polish pass (done, Opus ×3):** O1 light/shadow/atmosphere, O2 van + props rebuild, O3 trees/grass/characters/raft/kayak.
+- **Phase 3 (in progress, Opus ×2):** O4 detailed fall hills + real planar lake reflection (raft reflected); O5 loading screen + interaction/UX revamp (markers, dock, transitions, mobile).
+
+## Next: time of day × seasons
+Contract already exists in `src/scene/env/presets.ts` (`LIGHTS[timeOfDay]`, `SEASONS[season]`, store `setSeason/setTimeOfDay`).
+| Step | Work | Model |
+|---|---|---|
+| D1 | Art-direct `day` light preset (midday sun, blue sky in Sky shader, cloud puffs) | Opus |
+| S1 | Summer: green canopy, wildflowers in grass, no leaf fall, swimming-ready lake, dragonflies | Opus |
+| S2 | Spring: fresh greens + pink blossoms, blossom particles, puddles, birds more active | Sonnet (on O-built systems) |
+| S3 | Winter: snow cover (ground/roof/tree-top shader mask), bare deciduous trees, partial ice on lake, snowfall, breath fog, warm van glow | Opus |
+| U1 | Settings menu: season picker + time slider (golden/day/night), optional "auto" = real local season/time | Sonnet |
+| A1 | Seasonal ambience audio (summer cicadas, winter wind) | Haiku sources → Sonnet wires |
