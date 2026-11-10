@@ -83,7 +83,7 @@ void main(){
   if (uReflect > 0.5) {
     // ripple distortion grows with depth below the waterline (further from the shore in the reflection)
     float dy = max(uWaterY - w.y, 0.0);
-    w.x += sin(w.y * 0.9 + uTime * 0.7) * dy * 0.012 + sin(w.y * 2.3 - uTime * 1.1) * dy * 0.006;
+    w.x += sin(w.y * 1.3 + uTime * 0.6) * dy * 0.006 + sin(w.y * 3.1 - uTime * 0.9) * dy * 0.003;
   }
   vW = (modelMatrix * vec4(p, 1.0)).xyz;   // undistorted for canopy lookup
   vN = normalize(mat3(modelMatrix) * normal);
@@ -140,7 +140,7 @@ void main(){
   float crest = smoothstep(0.7, 1.0, vCrest);
   float lit = clamp(up * 0.45 + crest * 0.45 + topLit * dome * 0.22 - gap * 0.18, 0.0, 1.0);
   vec3 col = base * mix(uHillShade, uHillLit, lit);
-  col *= 1.0 - gap * 0.22;
+  col *= 1.0 - gap * 0.14;
   // AO toward the waterline (dense understory)
   col *= mix(0.6, 1.0, smoothstep(0.0, 10.0, hy));
   // backlit rim on the very top crowns

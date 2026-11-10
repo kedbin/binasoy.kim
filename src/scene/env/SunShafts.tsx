@@ -44,7 +44,7 @@ void main(){
   vec3 p = vWorld * 38.0 + vec3(0.0, uTime * 0.6, uTime * 0.25);
   float d = step(0.985, h(floor(p.x) + floor(p.y) * 57.0 + floor(p.z) * 113.0));
   float a = ex * ey * ez * s * uStrength;
-  gl_FragColor = vec4(uColor * (a * 0.11 + d * a * 0.6), 1.0);
+  gl_FragColor = vec4(uColor * (a * 0.22 + d * a * 0.9), 1.0);
 }`;
 
 export function SunShafts() {

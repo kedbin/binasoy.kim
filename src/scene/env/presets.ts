@@ -92,21 +92,21 @@ export const SEASONS: Record<Season, SeasonPalette> = {
 export const LIGHTS: Record<TimeOfDay, LightPreset> = {
   golden: {
     // Key sits ~12° up so shadows are long but readable; the sky disk itself hugs the horizon.
-    sunDir: [-0.5, 0.21, 1], sunColor: '#FFB070', sunIntensity: 3.4,
-    hemiSky: '#C9B8DA', hemiGround: '#5E4A34', hemiIntensity: 0.6,
+    sunDir: [-0.5, 0.2, 1], sunColor: '#FFA460', sunIntensity: 4.2,
+    hemiSky: '#B9A8D8', hemiGround: '#5A3E2C', hemiIntensity: 0.5,
     fog: '#E7C2B4', fogNear: 60, fogFar: 1100, interior: 1, exposure: 0.9,
     skySun: [-0.45, 0.035, 1],
-    rimDir: [0.35, 0.55, -1], rimColor: '#A9A3E0', rimIntensity: 0.9,
-    envIntensity: 0.55, envHorizon: '#FFB27A', envTop: '#9C9AC8',
+    rimDir: [0.35, 0.55, -1], rimColor: '#9C98E0', rimIntensity: 0.7,
+    envIntensity: 0.45, envHorizon: '#FFA868', envTop: '#9C9AC8',
     bounce: 0.45, bounceColor: '#FFB98A',
     shaft: 1, shaftColor: '#FFC48A',
     practicalColor: '#FFC27A',
-    sky: { horizon: '#FFD2A0', low: '#F7B9A8', mid: '#BFAFD6', zenith: '#8DA6D6', cloud: '#F2A9A0', cloudLit: '#FFD7AE', glow: '#FF9050' },
+    sky: { horizon: '#FFCC94', low: '#F8B4A0', mid: '#C4AFD4', zenith: '#8DA6D6', cloud: '#F2A9A0', cloudLit: '#FFD7AE', glow: '#FF9050' },
     stars: 0, moon: 0,
-    haze: '#E9BFB4', hazeAmount: 1, mist: 0.55,
+    haze: '#E6B8B0', hazeAmount: 1, mist: 0.3,
     hillLit: '#F4C9A0', hillShade: '#6F5C78', hillRim: '#FFB070',
     water: { deep: '#5C6680', shine: '#FFE0C0', glitter: 1 },
-    bloom: 0.5, bloomThreshold: 0.95, ao: 1, vignette: 0.42, saturation: 0.22, contrast: 0.1,
+    bloom: 0.55, bloomThreshold: 0.92, ao: 1, vignette: 0.45, saturation: 0.28, contrast: 0.12,
   },
   // Placeholder for the Day phase.
   day: {
@@ -129,7 +129,7 @@ export const LIGHTS: Record<TimeOfDay, LightPreset> = {
   night: {
     sunDir: [0.45, 0.55, 0.75], sunColor: '#8FA6E0', sunIntensity: 0.55,   // moonlight key
     hemiSky: '#34406A', hemiGround: '#0A0C12', hemiIntensity: 0.28,
-    fog: '#0E1220', fogNear: 40, fogFar: 900, interior: 1.6, exposure: 0.72,
+    fog: '#0E1220', fogNear: 40, fogFar: 900, interior: 1.6, exposure: 0.8,
     skySun: [0.42, 0.32, 1],
     rimDir: [-0.3, 0.5, -1], rimColor: '#4A5A9A', rimIntensity: 0.25,
     envIntensity: 0.18, envHorizon: '#2A3458', envTop: '#141A30',
@@ -141,6 +141,6 @@ export const LIGHTS: Record<TimeOfDay, LightPreset> = {
     haze: '#151B30', hazeAmount: 0.7, mist: 0.35,
     hillLit: '#3A4670', hillShade: '#121828', hillRim: '#6F86C8',
     water: { deep: '#070B16', shine: '#8FA6E0', glitter: 0.35 },
-    bloom: 0.9, bloomThreshold: 0.6, ao: 0.8, vignette: 0.55, saturation: 0.05, contrast: 0.08,
+    bloom: 0.8, bloomThreshold: 0.92, ao: 0.9, vignette: 0.55, saturation: 0.05, contrast: 0.08,
   },
 };
