@@ -56,9 +56,12 @@ void main() {
   col = mix(col, uSunColor * 3.0 + vec3(0.6), disk * (1.0 - uMoon));
 
   // moon: crisp pale disk + halo
-  float moon = smoothstep(0.99935, 0.9996, sd);
-  col += vec3(0.75, 0.82, 1.0) * pow(sd, 400.0) * 0.25 * uMoon;
-  col = mix(col, vec3(1.6, 1.65, 1.8), moon * uMoon * (1.0 - below * 0.5));
+  float moon = smoothstep(0.99984, 0.9999, sd);
+  col += vec3(0.55, 0.65, 0.95) * pow(sd, 900.0) * 0.18 * uMoon;
+  col += vec3(0.25, 0.32, 0.55) * pow(sd, 40.0) * 0.12 * uMoon;
+  // subtle maria so it reads as a moon, not a lamp
+  float mar = 0.85 + 0.15 * n2(m.xz * 900.0);
+  col = mix(col, vec3(1.15, 1.18, 1.25) * mar, moon * uMoon * (1.0 - below * 0.5));
 
   // stars — larger cells sparse + twinkle, fade toward the horizon and in clouds
   vec2 sg = floor(m.xz / (y + 0.35) * 260.0);
