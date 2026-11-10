@@ -12,7 +12,7 @@ const AUTO_ENTER_MS = 900;
 let autoDone = new URLSearchParams(location.search).has('still');
 
 function announce(v: View) {
-  if (v === 'seat') return 'Inside the van, facing the lake. Click an item to explore, or press 1 to 5.';
+  if (v === 'seat') return `Inside the van, facing the lake. Click an item to explore, or press 1 to ${PLACES.length}.`;
   if (v === 'intro') return '';
   return placeOf(v)?.announce ?? '';
 }
@@ -31,13 +31,16 @@ function useIntroAutoEnter() {
     const t = setTimeout(go, useScene.getState().reducedMotion ? 400 : AUTO_ENTER_MS);
     const opts = { once: true } as const;
     const arm = setTimeout(() => {
-      window.addEventListener('pointerdown', go, opts);
+      // 'click', not 'pointerdown': a click on a 3D prop (e.g. the laptop) during the intro must go straight to
+      // that prop. With pointerdown the camera first started flying to the seat, then retargeted to the prop
+      // (the "opens twice" feel). R3F handles the canvas click before it bubbles here, so go() sees view !== 'intro'.
+      window.addEventListener('click', go, opts);
       window.addEventListener('wheel', go, opts);
       window.addEventListener('keydown', go, opts);
     }, 200);
     return () => {
       clearTimeout(t); clearTimeout(arm);
-      window.removeEventListener('pointerdown', go); window.removeEventListener('wheel', go); window.removeEventListener('keydown', go);
+      window.removeEventListener('click', go); window.removeEventListener('wheel', go); window.removeEventListener('keydown', go);
     };
   }, [revealed, view]);
 }
@@ -79,9 +82,15 @@ export function Overlay() {
       <Settings />
       {away && (
         <button type="button" className="hud__back" onClick={back} aria-keyshortcuts="Escape">
-          <span aria-hidden="true">←</span> Back to the van <kbd aria-hidden="true">Esc</kbd>
+          <span aria-hidden="true">←</span> {view === 'outside' || view === 'van' ? 'Climb back in' : 'Back to the van'} <kbd aria-hidden="true">Esc</kbd>
         </button>
       )}
+      {(view === 'outside' || view === 'van') && (
+        <button type="button" className="hud__turn" onClick={() => goTo(view === 'outside' ? 'van' : 'outside')} aria-keyshortcuts={placeOf(view === 'outside' ? 'van' : 'outside')!.key}>
+          {view === 'outside' ? <><span aria-hidden="true">↺</span> Look back at the van</> : <><span aria-hidden="true">🌅</span> Look at the lake</>}
+        </button>
+      )}
+      {view === 'van' && <p className="hud__hint" aria-hidden="true">Drag or use ← → to walk around · click anything inside</p>}
       {view === 'intro' && revealed && (
         <button type="button" className="hud__enter" onClick={() => goTo('seat')}>Climb in</button>
       )}

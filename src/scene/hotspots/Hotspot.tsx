@@ -32,8 +32,10 @@ type Mat = THREE.MeshStandardMaterial;
 /** Can this hotspot be activated right now? */
 export function canActivate(view: View) {
   const s = useScene.getState();
-  // mid-flight clicks are allowed: the rig retargets from wherever the camera is, so nothing feels swallowed
-  return s.revealed && s.view !== view && s.view !== 'intro' && s.view !== 'laptop' && look.moved < look.slop;
+  // Mid-flight clicks are ignored: retargeting mid-air read as a second "open" (e.g. a click while the camera
+  // was still backing away from the laptop re-opened it). From the intro a click goes straight to the prop;
+  // the intro auto-enter listens to 'click' (not pointerdown) so it no longer races the hotspot.
+  return s.revealed && !s.transitioning && s.view !== view && s.view !== 'laptop' && look.moved < look.slop;
 }
 
 export function Hotspot({ id, label, view, position, rotY = 0, labelPos = [0, 0.22, 0], lift = 0.05, scale = 1, hit, hitPos = [0, 0, 0], children }: Props) {

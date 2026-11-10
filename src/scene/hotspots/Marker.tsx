@@ -5,7 +5,7 @@ import type * as THREE from 'three';
 import { useScene, type View } from '../../state/store';
 
 type V3 = readonly [number, number, number];
-const SHOW_IN = new Set<View>(['seat']);
+const SHOW_IN = new Set<View>(['seat', 'van']);
 
 export function Marker({ id, label, view, position }: { id: string; label: string; view: View; position: V3 }) {
   const active = useScene((s) => s.revealed && SHOW_IN.has(s.view) && !s.transitioning && s.view !== view && s.hovered === id);

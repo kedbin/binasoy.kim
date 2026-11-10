@@ -13,6 +13,8 @@ import { look, stepLook, resetLook, attachLook } from './look';
 const _n = new THREE.Vector3();
 const _c = new THREE.Vector3();
 const _q = new THREE.Quaternion();
+const _o = new THREE.Vector3();
+const _s = new THREE.Spherical();
 const Y = new THREE.Vector3(0, 1, 0);
 
 /** Frame the laptop screen so it fills ~86% of the viewport, looking straight at it. */
@@ -53,6 +55,8 @@ function wallPose(w: number, h: number, pos: THREE.Vector3, target: THREE.Vector
 }
 
 const INSIDE = new Set<View>(['seat', 'laptop', 'wall', 'stickers', 'clipboard']);
+/** Views where drag-to-look orbits around the target instead of turning the head. */
+const ORBIT = new Set<View>(['van']);
 /** Pre-reveal camera: pulled back from the intro shot so the reveal can dolly in. */
 const INTRO_START = new THREE.Vector3(...CAMERA.intro.target).lerp(new THREE.Vector3(...CAMERA.intro.pos), 1.32).add(new THREE.Vector3(0, 0.25, 0));
 /** Through the middle of the tailgate opening, a bit outside. */
@@ -95,6 +99,12 @@ export function CameraRig() {
       const crossing = INSIDE.has(view) !== INSIDE.has(prev) && !reveal;
       if (crossing) s.ctrl.copy(HATCH);
       else if (INSIDE.has(view) && INSIDE.has(prev)) s.ctrl.copy(s.from).lerp(s.to, 0.5).lerp(CABIN, 0.6);
+      else if (view === 'van' || prev === 'van') {
+        // turning round on the grass (outside ↔ van): step sideways in an arc and pull the start target close,
+        // so the look direction sweeps round instead of lerping through the camera (a 180° whip)
+        s.ctrl.copy(s.from).lerp(s.to, 0.5).add(_c.set(1.4, 0.05, 0));
+        s.fromT.copy(s.from).addScaledVector(_n, 2.5);
+      }
       else s.ctrl.copy(s.from).lerp(s.to, 0.5);
       const dist = s.from.distanceTo(s.ctrl) + s.ctrl.distanceTo(s.to);
       s.dur = st.reducedMotion ? 0 : reveal ? 2.6 : THREE.MathUtils.clamp(0.75 + dist * 0.16, 0.9, 2.1);
@@ -137,8 +147,18 @@ export function CameraRig() {
       }
       stepLook(dt);
       cam.position.copy(s.pos);
-      cam.lookAt(s.tgt);
-      if (look.yaw || look.pitch) { cam.rotateOnWorldAxis(Y, look.yaw); cam.rotateX(look.pitch); }
+      if (ORBIT.has(s.view) && (look.yaw || look.pitch)) {
+        // walk around the van: orbit the preset position about its target (drag right → walk left round it)
+        _s.setFromVector3(_o.copy(s.pos).sub(s.tgt));
+        _s.theta -= look.yaw;
+        _s.phi = THREE.MathUtils.clamp(_s.phi - look.pitch, 0.9, 1.5);
+        cam.position.copy(s.tgt).add(_o.setFromSpherical(_s));
+        cam.position.y = Math.max(cam.position.y, 0.5);
+        cam.lookAt(s.tgt);
+      } else {
+        cam.lookAt(s.tgt);
+        if (look.yaw || look.pitch) { cam.rotateOnWorldAxis(Y, look.yaw); cam.rotateX(look.pitch); }
+      }
     }
     // Portrait screens: widen vertical FOV so the horizontal framing roughly matches a 16:10 desktop.
     const portraitBoost = s.view === 'laptop' || s.view === 'wall' ? 1 : THREE.MathUtils.clamp(1.6 / cam.aspect, 1, 1.55);

@@ -1,0 +1,6 @@
+# Copy to .dev.vars for `npm run cf:dev` (wrangler dev). Never commit .dev.vars.
+# Turnstile test secret that always passes (pair with the test site key 1x00000000000000000000AA in .env.local):
+TURNSTILE_SECRET=1x0000000000000000000000000000000AA
+TURNSTILE_HOSTNAMES=
+CONTACT_TO=you@example.com
+ALLOWED_ORIGINS=http://localhost:8787,http://127.0.0.1:8787

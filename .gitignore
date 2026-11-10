@@ -9,3 +9,6 @@ playwright-report
 playwright-report/
 test-results
 test-results/
+.dev.vars
+.env.local
+.wrangler/

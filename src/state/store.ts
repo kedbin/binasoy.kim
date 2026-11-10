@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 /** Camera / UI state machine. All interactive objects call goTo(view). */
-export type View = 'intro' | 'seat' | 'laptop' | 'outside' | 'wall' | 'stickers' | 'clipboard';
+export type View = 'intro' | 'seat' | 'laptop' | 'outside' | 'van' | 'wall' | 'stickers' | 'clipboard';
 export type Quality = 'low' | 'mid' | 'high';
 export type { TimeOfDay, Season } from '../scene/env/presets';
 import type { TimeOfDay, Season } from '../scene/env/presets';

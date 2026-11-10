@@ -1,0 +1,29 @@
+// Cloudflare Worker: static site (dist/) + POST /api/contact (worker/index.ts).
+// Deploy: npm run deploy   ·   Local (assets + API): npm run cf:dev   (needs .dev.vars, see .dev.vars.example)
+// Secrets (not in git): npx wrangler secret put TURNSTILE_SECRET ; npx wrangler secret put CONTACT_TO
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "binasoy-kim",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-11-01",
+  "workers_dev": true,
+  "preview_urls": false,
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*"]
+  },
+  // Sends only to verified Email Routing destinations on this account; the actual recipient is the CONTACT_TO secret.
+  "send_email": [{ "name": "MAILER", "allowed_sender_addresses": ["campmail@binasoy.kim"] }],
+  // 5 messages per minute per IP (period must be 10 or 60).
+  "ratelimits": [{ "name": "CONTACT_LIMIT", "namespace_id": "1001", "simple": { "limit": 5, "period": 60 } }],
+  "vars": {
+    "CONTACT_FROM": "campmail@binasoy.kim",
+    "ALLOWED_ORIGINS": "https://binasoy.kim,https://www.binasoy.kim,https://binasoy-kim.kedbin.workers.dev",
+    "TURNSTILE_HOSTNAMES": "binasoy.kim,www.binasoy.kim,binasoy-kim.kedbin.workers.dev"
+  },
+  // Production domain (Workers Custom Domains: Cloudflare manages the DNS records + certificates).
+  "routes": [{ "pattern": "binasoy.kim", "custom_domain": true }, { "pattern": "www.binasoy.kim", "custom_domain": true }],
+  "observability": { "enabled": true }
+}

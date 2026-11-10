@@ -1,13 +1,14 @@
-import { useProgress } from '@react-three/drei';
 import { useEffect, useState } from 'react';
 import { useScene } from '../state/store';
 import { VanArt } from './VanArt';
+import { useLoad, MOUNT_STEPS } from '../app/loadState';
 
+/** Checklist rows; a row is done once the mount step passes `stage` (the last one once shaders are compiled). */
 const STEPS = [
-  { stage: 2, label: 'Algonquin lake & 8,000 autumn trees' },
-  { stage: 3, label: 'Pacifica camper bed & fairy lights' },
-  { stage: 4, label: 'Inflating Kim & Wingwing’s raft' },
-  { stage: 5, label: 'Booting KimOS & lake reflections' },
+  { stage: 4, label: 'Algonquin lake & 8,000 autumn trees' },
+  { stage: 5, label: 'Pacifica camper bed & fairy lights' },
+  { stage: 6, label: 'Inflating Kim & Wingwing’s raft' },
+  { stage: MOUNT_STEPS + 1, label: 'Booting KimOS & lake reflections' },
 ] as const;
 
 const HONKS = [
@@ -16,8 +17,15 @@ const HONKS = [
   '🎺 Beep! Don’t forget to check CampMail on the laptop!',
 ];
 
-/** Hard cap so the loader never stalls even if WebGL shader compilation is slow. */
-const MAX_WAIT_MS = 4500;
+/**
+ * Last resort only. WarmUp reveals as soon as the shaders are built and has its own stall detection; revealing
+ * earlier than that shows a scene that freezes while it compiles, which is worse than a moving loader.
+ */
+const MAX_WAIT_MS = 45000;
+/** Bar range owned by the React loader (the static boot loader covers the JS download before it). */
+const PCT_MIN = 22;
+/** While real progress is between updates the bar creeps ahead by at most this much, so it never sits still. */
+const CREEP = 5;
 const HOLD_MS = 160;
 
 function markReady() {
@@ -25,16 +33,15 @@ function markReady() {
   (window as unknown as { __ready?: boolean }).__ready = true;
 }
 
-const STAGE_TARGET: Record<number, number> = { 1: 30, 2: 54, 3: 76, 4: 91, 5: 98 };
-
 export function Loader() {
-  const { progress } = useProgress();
-  const loadStage = useScene((s) => s.loadStage);
+  const progress = useLoad((s) => s.progress);
+  const compiled = useLoad((s) => s.phase === 'warm' || s.phase === 'ready');
+  const loadStage = useLoad((s) => (compiled ? MOUNT_STEPS + 1 : s.step));
   const sceneReady = useScene((s) => s.sceneReady);
   const reduced = useScene((s) => s.reducedMotion);
   const [phase, setPhase] = useState<'loading' | 'ready' | 'reveal' | 'gone'>('loading');
   const [timedOut, setTimedOut] = useState(false);
-  const [displayPct, setDisplayPct] = useState(22);
+  const [displayPct, setDisplayPct] = useState(PCT_MIN);
   const [honkIdx, setHonkIdx] = useState<number | null>(null);
   const [honkAnim, setHonkAnim] = useState(false);
 
@@ -47,16 +54,17 @@ export function Loader() {
 
   const done = sceneReady || timedOut;
 
-  // Target percentage from real mount stage + drei asset progress
-  const stageGoal = STAGE_TARGET[loadStage] ?? 95;
-  const assetBonus = Math.min(6, Math.round(progress * 0.06));
-  const targetPct = phase !== 'loading' || done ? 100 : Math.min(99, Math.max(stageGoal, 22 + assetBonus));
+  // Real progress: mounted scene groups, then the share of shader programs the GPU has finished building.
+  const realPct = Math.round(PCT_MIN + (99 - PCT_MIN) * progress);
+  const targetPct = phase !== 'loading' || done ? 100 : Math.min(99, realPct);
 
-  // Smoothly tick displayPct upward every 45ms so the number and bar are ALWAYS visibly moving
+  // Ease toward the target; once there, creep slowly (bounded) so the bar and number keep moving between updates.
   useEffect(() => {
-    if (displayPct >= targetPct) return;
-    const step = targetPct === 100 ? Math.max(3, Math.ceil((100 - displayPct) * 0.35)) : Math.max(1, Math.ceil((targetPct - displayPct) * 0.18));
-    const t = setTimeout(() => setDisplayPct((p) => Math.min(targetPct, p + step)), 45);
+    if (displayPct >= 100) return;
+    const behind = displayPct < targetPct;
+    if (!behind && displayPct >= Math.min(99, targetPct + CREEP)) return;
+    const step = targetPct === 100 ? Math.max(3, Math.ceil((100 - displayPct) * 0.35)) : behind ? Math.max(1, Math.ceil((targetPct - displayPct) * 0.18)) : 1;
+    const t = setTimeout(() => setDisplayPct((p) => Math.min(behind ? targetPct : Math.min(99, targetPct + CREEP), p + step)), behind ? 45 : 700);
     return () => clearTimeout(t);
   }, [displayPct, targetPct]);
 

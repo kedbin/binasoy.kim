@@ -12,6 +12,8 @@ export function Settings() {
   const toggleTime = useScene((s) => s.toggleTime);
   const toggleSound = useScene((s) => s.toggleSound);
   const setQuality = useScene((s) => s.setQuality);
+  const view = useScene((s) => s.view);
+  const goTo = useScene((s) => s.goTo);
   const root = useRef<HTMLDivElement>(null);
   const btn = useRef<HTMLButtonElement>(null);
 
@@ -43,6 +45,11 @@ export function Settings() {
           <button type="button" role="menuitem" onClick={() => setQuality(NEXT_Q[quality])}>
             <span aria-hidden="true">✦</span> Graphics: {quality.toUpperCase()}<small>{Q_LABEL[quality]}</small>
           </button>
+          {view !== 'van' && view !== 'intro' && (
+            <button type="button" role="menuitem" aria-keyshortcuts="6" onClick={() => { setOpen(false); goTo('van'); }}>
+              <span aria-hidden="true">↺</span> Step outside<small>Look back at the van</small>
+            </button>
+          )}
           <button type="button" role="menuitem" onClick={quick}>
             <span aria-hidden="true">≡</span> Quick view<small>Plain page, no 3D</small>
           </button>

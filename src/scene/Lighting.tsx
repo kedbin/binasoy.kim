@@ -7,10 +7,40 @@ import * as THREE from 'three';
 import { useScene } from '../state/store';
 import { live } from './env/live';
 import { VAN } from './layout';
+import { LIGHTS } from './env/presets';
 
 /** Shadow frustum is fitted around the van + clearing (light-space ortho box, metres). */
 const SHADOW_TARGET = new THREE.Vector3(0, 0.6, -1.2);
 const SHADOW_BOX = { x: 7.5, y: 4.5, dist: 40 };
+
+/**
+ * Conservative test: can a bounding sphere ever land in the key light's shadow map, for any preset sun
+ * direction (golden / day / night)? Objects that never can may skip castShadow with zero visual change.
+ * Mirrors the ortho box set up below (camera at target + dir*dist, looking at target, near 1, far 2*dist).
+ */
+const _f = new THREE.Vector3(), _r = new THREE.Vector3(), _u = new THREE.Vector3(), _d = new THREE.Vector3();
+const _UP = new THREE.Vector3(0, 1, 0);
+const SPILL_POS = new THREE.Vector3(0, 1.6, VAN.backZ - 0.35), SPILL_RANGE = 10;
+/** Preset sun directions plus samples along every preset→preset blend (live.ts lerps + normalises). */
+const SUN_DIRS: THREE.Vector3[] = (() => {
+  const ds = Object.values(LIGHTS).map((p) => new THREE.Vector3(...p.sunDir).normalize());
+  const out: THREE.Vector3[] = [];
+  for (const a of ds) for (const b of ds) for (let t = 0; t <= 1.0001; t += 0.05) out.push(a.clone().lerp(b, t).normalize());
+  return out;
+})();
+export function canCastIntoShadowMap(center: THREE.Vector3, radius: number): boolean {
+  const pad = radius + 0.5;
+  if (center.distanceTo(SPILL_POS) <= SPILL_RANGE + pad) return true; // night hatch spill (spot shadow)
+  for (const dir of SUN_DIRS) {
+    _f.copy(dir);                                         // toward the light
+    _r.crossVectors(_UP, _f).normalize(); _u.crossVectors(_f, _r);
+    _d.copy(center).sub(SHADOW_TARGET);
+    const depth = _d.dot(_f);                             // +dist..-dist within the box
+    if (Math.abs(_d.dot(_r)) <= SHADOW_BOX.x + pad && Math.abs(_d.dot(_u)) <= SHADOW_BOX.y + pad
+      && depth <= SHADOW_BOX.dist - 1 + pad && depth >= -SHADOW_BOX.dist - pad) return true;
+  }
+  return false;
+}
 
 export function Lighting() {
   const quality = useScene((s) => s.quality);

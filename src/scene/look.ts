@@ -15,6 +15,8 @@ export const look = {
 export const LOOK_LIMITS: Record<string, { yaw: number; pitch: number }> = {
   seat: { yaw: 0.85, pitch: 0.38 },
   outside: { yaw: 0.7, pitch: 0.28 },
+  // 'van' orbits around the tailgate instead of turning the head (CameraRig): ~±45° around, a little up/down
+  van: { yaw: 0.8, pitch: 0.2 },
   intro: { yaw: 0.25, pitch: 0.1 },
 };
 

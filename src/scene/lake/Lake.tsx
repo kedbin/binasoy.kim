@@ -20,16 +20,18 @@ function Atmosphere() {
   return null;
 }
 
-export function Lake() {
-  return (
-    <group name="lake">
-      <Atmosphere />
-      <Sky />
-      <Hills />
-      <FarForest />
-      <Water />
-      <Shore />
-      <Trees />
-    </group>
-  );
+/** Mounted in three parts (App's MountStepper) so none of them blocks the loader for long. */
+export function Lake({ part }: { part: 'far' | 'shore' | 'trees' }) {
+  if (part === 'far') {
+    return (
+      <group name="lake">
+        <Atmosphere />
+        <Sky />
+        <Hills />
+        <FarForest />
+        <Water />
+      </group>
+    );
+  }
+  return <group name={'lake-' + part}>{part === 'shore' ? <Shore /> : <Trees />}</group>;
 }

@@ -10,6 +10,7 @@ import { natureMaterial } from '../nature/materials';
 import { People } from './People';
 import { raftGeometry, ropeGeometry, fittingsGeometry } from './raftGeo';
 import { timeUniform, nightUniform } from '../lake/timeOfDay';
+import { live } from '../env/live';
 
 /** Drift loop: period (s) and half-extents (m). */
 const DRIFT = { period: 110, rx: 6, rz: 3.5 };
@@ -87,7 +88,13 @@ export function RaftScene() {
       bob.current.rotation.x = Math.sin(t * 0.9) * 0.022;
       bob.current.rotation.z = Math.sin(t * 0.7 + 1) * 0.028;
     }
-    if (light.current) light.current.intensity = 1.8 + Math.sin(t * 7) * 0.08 + Math.sin(t * 3.1) * 0.12;
+    if (light.current) {
+      // Always mounted, and shown on the same threshold as the van's night practicals (Lighting.tsx), so the
+      // scene only ever has two light set-ups (day / night). Each distinct set-up needs its own shader
+      // programs; WarmUp precompiles both, so toggling day/night never stalls on a third combination.
+      light.current.visible = live.n.interior * live.night > 0.02;
+      light.current.intensity = night ? 1.8 + Math.sin(t * 7) * 0.08 + Math.sin(t * 3.1) * 0.12 : 0;
+    }
   });
 
   return (
@@ -105,9 +112,9 @@ export function RaftScene() {
             <mesh position={[0, 0.09, 0]}><cylinderGeometry args={[0.055, 0.065, 0.16, 12]} /><meshBasicMaterial color="#ffd58a" toneMapped={false} /></mesh>
             <mesh position={[0, 0.19, 0]}><cylinderGeometry args={[0.04, 0.07, 0.04, 12]} /><meshStandardMaterial color="#2a2a2e" roughness={0.6} /></mesh>
             <mesh position={[0, 0.0, 0]}><cylinderGeometry args={[0.07, 0.07, 0.02, 12]} /><meshStandardMaterial color="#2a2a2e" roughness={0.6} /></mesh>
-            <pointLight ref={light} position={[0, 0.1, 0]} color="#ffb85a" intensity={1.8} distance={quality === 'low' ? 6 : 12} decay={2} />
           </group>
         )}
+        <pointLight ref={light} visible={false} position={[0.05, 0.4, 0.75]} color="#ffb85a" intensity={0} distance={quality === 'low' ? 6 : 12} decay={2} />
       </group>
     </group>
   );

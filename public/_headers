@@ -1,0 +1,5 @@
+# Static asset caching (Cloudflare Workers assets). Hashed Vite chunks never change.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+/photos/*
+  Cache-Control: public, max-age=604800

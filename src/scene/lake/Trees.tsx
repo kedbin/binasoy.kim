@@ -12,6 +12,7 @@ import { maple, spruce, birch, bush, type TreeGeo } from '../nature/treeGeo';
 import { MAT, setTint } from '../nature/materials';
 import { brightest } from '../nature/util';
 import { groundHeight } from '../nature/terrain';
+import { canCastIntoShadowMap } from '../Lighting';
 
 type Kind = 'spruce' | 'maple';
 interface T { x: number; y: number; z: number; s: number; r: number; v: number; ci: number; kind: Kind; lum: number }
@@ -56,10 +57,29 @@ function Variant({ geo, items, palette, leafMat, woodMat, shadows }: {
   geo: TreeGeo; items: T[]; palette: string[]; leafMat: THREE.Material; woodMat: THREE.Material; shadows: boolean;
 }) {
   const wood = useRef<THREE.InstancedMesh>(null!), leaf = useRef<THREE.InstancedMesh>(null!);
+  // Perf: instances that can never reach a shadow map (most of the forest) are sorted last and dropped from
+  // the shadow passes by shrinking `count` around the depth draw. The colour pass still draws every tree.
+  const { sorted, casters } = useMemo(() => {
+    geo.wood.computeBoundingSphere(); geo.leaf.computeBoundingSphere();
+    const reach = Math.max(...[geo.wood, geo.leaf].map((g) => g.boundingSphere!.center.length() + g.boundingSphere!.radius));
+    const c = new THREE.Vector3();
+    const can = (t: T) => canCastIntoShadowMap(c.set(t.x, t.y, t.z), reach * t.s);
+    const yes = items.filter(can), no = items.filter((t) => !can(t));
+    return { sorted: [...yes, ...no], casters: yes.length };
+  }, [geo, items]);
+  useLayoutEffect(() => {
+    for (const r of [wood, leaf]) {
+      const m = r.current;
+      if (!m) continue;
+      if (casters === 0) { m.castShadow = false; m.userData.noShadow = true; continue; }
+      m.onBeforeShadow = () => { m.count = casters; };
+      m.onAfterShadow = () => { m.count = sorted.length; };
+    }
+  }, [casters, sorted]);
   useLayoutEffect(() => {
     const m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), p = new THREE.Vector3(), s = new THREE.Vector3();
     const c = new THREE.Color();
-    items.forEach((t, i) => {
+    sorted.forEach((t, i) => {
       e.set(0, t.r, 0); q.setFromEuler(e); p.set(t.x, t.y, t.z); s.setScalar(t.s);
       m.compose(p, q, s);
       wood.current.setMatrixAt(i, m); leaf.current.setMatrixAt(i, m);
@@ -68,7 +88,7 @@ function Variant({ geo, items, palette, leafMat, woodMat, shadows }: {
     });
     for (const r of [wood, leaf]) { r.current.instanceMatrix.needsUpdate = true; r.current.computeBoundingSphere(); }
     if (leaf.current.instanceColor) leaf.current.instanceColor.needsUpdate = true;
-  }, [items, palette]);
+  }, [sorted, palette]);
   if (!items.length) return null;
   return (
     <>

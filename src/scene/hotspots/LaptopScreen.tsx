@@ -20,15 +20,18 @@ export function useIsCompact() {
 export function LaptopScreen() {
   const mount = useLaptopStore((s) => s.mount);
   const view = useScene((s) => s.view);
+  // Go live only once the camera has landed: no DOM layer swap mid-flight, and clicks during the dolly-in
+  // fall through to the canvas (where they are ignored) instead of hitting KimOS icons by accident.
+  const landed = useScene((s) => s.view === 'laptop' && s.arrived === 'laptop' && !s.transitioning);
   const back = useScene((s) => s.back);
   const compact = useIsCompact();
   const [warm, setWarm] = useState(false);
   // Mount KimOS once the user gets near the laptop (or on idle) so the first dolly-in is instant.
   useEffect(() => {
-    if (view === 'laptop' || view === 'seat') setWarm(true);
+    if (view === 'laptop' || view === 'seat' || view === 'van') setWarm(true);
   }, [view]);
   if (!mount || compact || !warm) return null;
-  const active = view === 'laptop';
+  const active = landed;
   // drei Html transform: 1 CSS px = 1/40 world units at distanceFactor 1 (scale = factor / 400 * 10).
   // We want DESIGN_W css px to span SCREEN_SIZE.w metres.
   const scale = SCREEN_SIZE.w / DESIGN_W;
@@ -39,6 +42,10 @@ export function LaptopScreen() {
       position={[0, 0, 0.0005]}
       zIndexRange={[5, 0]}
       wrapperClass={'kimos-3d' + (active ? ' is-active' : '')}
+      // Inactive: the whole DOM layer must be click-through. drei's inner transform div defaults to
+      // pointer-events:auto; if it catches the click, R3F raycasts with offsetX/Y relative to that div
+      // and misses the laptop, so clicking the screen did nothing (only the bezel/edges worked).
+      pointerEvents={active ? 'auto' : 'none'}
       style={{ width: DESIGN_W, height: DESIGN_H, pointerEvents: active ? 'auto' : 'none' }}
       occlude={active ? undefined : 'blending'}
     >

@@ -2,7 +2,7 @@
 // - A generated Lightformer environment (no HDR download): warm sun-side band, lavender dome, dark ground.
 // - Shadow flags: van/props from other workers don't set castShadow/receiveShadow, so we flag opaque lit
 //   meshes globally (cheap traversal at a few frames after load). Opt out with `userData.noShadow = true`.
-// - ContactShadows baked once (~40 frames after mount, so the van exists) under the van + kayak (works on every tier, incl. low with no realtime shadows).
+// - ContactShadows baked once (on the first drawn frames, so the van exists) under the van + kayak (works on every tier, incl. low with no realtime shadows).
 import { useFrame, useThree } from '@react-three/fiber';
 import { ContactShadows } from '@react-three/drei';
 import { useEffect, useRef, useState } from 'react';
@@ -11,6 +11,7 @@ import { useScene } from '../../state/store';
 import { LIGHTS } from './presets';
 import { live, useEnvDriver } from './live';
 import { ANCHORS } from '../layout';
+import { useLoad } from '../../app/loadState';
 
 /** Drives the damped env + scene-wide env intensity, fog and exposure. Mount once. */
 export function EnvDriver() {
@@ -78,7 +79,8 @@ export function EnvMap() {
 
 const SKIP = /hills|sky|water|leaves|birds|fireflies|shaft|hotspot|contact/i;
 
-function flag(root: THREE.Object3D, quality: string) {
+/** Exported so WarmUp can flag shadow casters before the first drawn frame (their depth programs build with it). */
+export function flagShadows(root: THREE.Object3D, quality: string) {
   root.traverse((o) => {
     const m = o as THREE.Mesh;
     if (!m.isMesh || o.userData.noShadow) return;
@@ -106,16 +108,16 @@ export function ShadowFlags() {
   useFrame(() => {
     if (lastQ.current !== quality) { lastQ.current = quality; frame.current = 0; }
     const f = ++frame.current;
-    if (f === 2 || f === 45 || f === 200 || f === 600) flag(scene, quality);
+    if (f === 2 || f === 45 || f === 200 || f === 600) flagShadows(scene, quality);
   });
   return null;
 }
 
 export function GroundContact() {
   const quality = useScene((s) => s.quality);
-  const [ready, setReady] = useState(false);
-  const n = useRef(0);
-  useFrame(() => { if (!ready && ++n.current > 40) setReady(true); });
+  // Baked from one frame of the real scene, so wait until it is actually being drawn (see WarmUp).
+  const warm = useLoad((s) => s.phase === 'warm' || s.phase === 'ready');
+  const ready = useScene((s) => s.sceneReady) || warm;
   const [kx, , kz] = ANCHORS.kayak.pos;
   const res = quality === 'high' ? 512 : 256;
   if (!ready) return null;

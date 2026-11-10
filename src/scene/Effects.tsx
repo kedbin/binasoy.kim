@@ -7,7 +7,8 @@
 import { EffectComposer, Bloom, Vignette, ToneMapping, DepthOfField, FXAA, HueSaturation, BrightnessContrast } from '@react-three/postprocessing';
 import { ToneMappingMode, type BloomEffect, type VignetteEffect, type DepthOfFieldEffect, type HueSaturationEffect, type BrightnessContrastEffect } from 'postprocessing';
 import { useFrame } from '@react-three/fiber';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
+import { setLoad } from '../app/loadState';
 import { useScene } from '../state/store';
 import { live } from './env/live';
 
@@ -35,6 +36,9 @@ export function Effects() {
       dof.current.bokehScale = dofK.current * 1.4;
     }
   });
+
+  // tells WarmUp the composer exists, so shaders are compiled for its render target
+  useEffect(() => { setLoad({ effects: true }); }, []);
 
   if (quality === 'low') return null;
   const high = quality === 'high';

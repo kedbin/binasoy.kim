@@ -12,7 +12,7 @@
 .kos-bar button{background:none;border:0;cursor:pointer;padding:3px 8px;border-radius:8px;font-weight:700}
 .kos-bar button:hover{background:rgba(217,104,43,.18)}
 .kos-desk{position:absolute;top:32px;left:0;right:0;bottom:0}
-.kos-icons{position:absolute;top:18px;left:18px;display:grid;grid-auto-flow:column;grid-template-rows:repeat(4,96px);grid-auto-columns:96px;gap:10px 8px}
+.kos-icons{position:absolute;top:18px;left:18px;display:grid;grid-auto-flow:column;grid-template-rows:repeat(5,96px);grid-auto-columns:96px;gap:10px 8px}
 .kos-icon{display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:0;cursor:pointer;padding:6px 2px;border-radius:12px;font-size:12px;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6)}
 .kos-icon:hover,.kos-icon:focus-visible{background:rgba(255,255,255,.2)}
 .kos-icon i{font-style:normal;width:52px;height:52px;border-radius:15px;display:grid;place-items:center;font-size:28px;background:var(--c,#f4c7a1);box-shadow:0 3px 0 rgba(0,0,0,.25),inset 0 2px 0 rgba(255,255,255,.4)}
@@ -54,6 +54,63 @@
 .kos-modal .kos-photos{grid-template-columns:repeat(2,1fr)}
 .kos-bar span,.kos-bar button{white-space:nowrap}.kos-modal .kos-bar{gap:8px;font-size:12px}.kos-modal .kos-bar .kos-brand{flex:none}
 .kos-term input:focus-visible{outline:0;box-shadow:none}
+.kos-icon i.is-term{color:#9be59b;font-size:20px;font-family:ui-monospace,Menlo,Consolas,monospace}
+.kos-win:focus{outline:0}
+.kos-sp{flex:1}
+.kos-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+.kos-link--ghost{background:#fff;color:var(--kos-ink)!important;box-shadow:inset 0 0 0 1.5px rgba(43,35,32,.25)}
+.kos-inline{background:none;border:0;padding:0;color:var(--kos-accent)!important;font-weight:800;text-decoration:underline;cursor:pointer}
+.kos-h3gap{margin:16px 0 8px!important}
+.kos-h2gap{margin:22px 0 8px!important}
+.kos-chip--link{text-decoration:none;color:var(--kos-accent)!important;font-weight:800}
+.kos-chip--link:hover{background:#fbf0e0}
+.kos-next{display:block;margin:22px 0 4px auto;border:0;background:var(--kos-pine);color:#fff!important;padding:7px 14px;border-radius:99px;font-weight:800;font-size:13px;cursor:pointer}
+.kos-next:hover{filter:brightness(1.15)}
+.kos-warn{color:#9e2a22;font-weight:800}
+
+/* Trailhead (browser) */
+.kos-br{display:flex;flex-direction:column;height:100%;background:#fff;position:relative}
+.kos-br__bar{display:flex;align-items:center;gap:4px;padding:6px 10px;background:#f3e7d3;border-bottom:1px solid rgba(43,35,32,.12)}
+.kos-br__btn{width:30px;height:28px;border:0;border-radius:8px;background:transparent;font-size:15px;font-weight:800;cursor:pointer}
+.kos-br__btn:hover:not(:disabled){background:rgba(217,104,43,.16)}
+.kos-br__btn:disabled{opacity:.35;cursor:default}
+.kos-br__url{flex:1;margin-left:6px;background:#fff;border-radius:99px;padding:5px 14px;font-size:13px;font-weight:600;box-shadow:inset 0 0 0 1px rgba(43,35,32,.15);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;user-select:text}
+.kos-br__marks{display:flex;gap:4px;padding:5px 10px;background:#fbf4e8;border-bottom:1px solid rgba(43,35,32,.12);overflow-x:auto;flex:none}
+.kos-br__mark{border:0;background:transparent;padding:4px 10px;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+.kos-br__mark:hover{background:#efe1cb}
+.kos-br__mark.is-on{background:var(--kos-ink);color:#ffd58a!important}
+.kos-br__progress{position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,var(--kos-accent),#ffd58a);transform-origin:left;animation:kos-load .45s ease-out forwards;z-index:2}
+@keyframes kos-load{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.kos-br__page{flex:1;overflow:auto;padding:18px 24px 22px;user-select:text;background:var(--kos-paper)}
+.kos-br__page h2{margin:0 0 6px}
+.kos-br__page h3{margin:8px 0 4px}
+.kos-resume .kos-doc{float:right;width:84px;height:108px;border-radius:8px;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.15),inset 0 0 0 1.5px rgba(43,35,32,.2);display:grid;place-items:end center;padding-bottom:12px;margin:0 0 10px 14px}
+.kos-resume .kos-doc span{background:#b8483e;color:#fff;font-weight:900;font-size:12px;padding:2px 8px;border-radius:4px}
+.kos-resume ul{padding-left:18px;margin:4px 0}
+.kos-modal .kos-br__page{padding:14px 14px 18px}
+.kos-modal .kos-br__url .kos-muted{display:none}
+
+/* CampMail send flow */
+.kos-mail__lock{font-size:12px;opacity:.7}
+.kos-mail__trap{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
+.kos-mail__stage{flex:1;display:flex;flex-direction:column;min-height:0;background:#fff}
+.kos-mail__sending{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;font-weight:700;color:#6b5d54}
+.kos-mail__trail{position:relative;width:70%;height:34px;border-bottom:3px dashed #e3a63b}
+.kos-mail__trail span{position:absolute;left:0;bottom:2px;font-size:26px;animation:kos-carry 1.6s ease-in-out infinite}
+.kos-mail__trail.is-still span{animation:none;left:calc(50% - 13px)}
+@keyframes kos-carry{0%{left:0;transform:translateY(0)}25%{transform:translateY(-6px)}50%{transform:translateY(0)}75%{transform:translateY(-6px)}100%{left:calc(100% - 30px);transform:translateY(0)}}
+.kos-mail__result{flex:1;display:flex;flex-direction:column;justify-content:center;gap:8px;padding:18px 22px;outline:0;overflow:auto}
+.kos-mail__result h3{margin:0;font-size:17px}
+.kos-mail__result p{margin:0}
+.kos-mail__big{font-size:40px;line-height:1}
+.kos-mail__fallback{margin-top:6px;padding:10px 12px;border-radius:12px;background:#fbf4e8;box-shadow:inset 0 0 0 1.5px rgba(217,104,43,.35)}
+.kos-mail__fallback-lbl{font-weight:800;font-size:12px;color:#6b5d54}
+.kos-mail__captcha{flex:none;display:flex;justify-content:center;background:#fff}
+.kos-mail__captcha:empty{display:none}
+.kos-mail__privacy{flex:1;text-align:center;min-width:180px}
+.kos-mail__row input:disabled{opacity:.6}
+.kos-mail__pill:disabled,.kos-mail__send:disabled{opacity:.55;cursor:default}
+@media (prefers-reduced-motion: reduce){.kos-br__progress{display:none}.kos-mail__trail span{animation:none;left:calc(50% - 13px)}}
 
 /* CampMail (MouseMail-inspired email client) */
 .kos-mail{display:flex;flex-direction:column;height:100%;background:var(--kos-paper);font-size:13px}
