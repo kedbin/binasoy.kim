@@ -15,18 +15,9 @@ html:not(.mode-3d) #app { display: none; }
 #app, .scene-canvas { position: fixed; inset: 0; }
 
 .hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; font-family: var(--font-ui); color: var(--paper); }
-.hud__name { position: absolute; top: 18px; left: 20px; text-shadow: 0 1px 8px #0008; font-size: 15px; }
-.hud__name span { opacity: .8; }
-.hud__controls { position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
-.hud button {
-  pointer-events: auto; font: inherit; font-size: 14px; color: var(--ink); background: #fbf6eee6; border: 0;
-  border-radius: 999px; padding: 9px 16px; cursor: pointer; box-shadow: 0 4px 18px #0004; transition: transform .2s cubic-bezier(.4,0,.2,1);
-}
-.hud button:hover { transform: translateY(-2px); }
-.hud button:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
-.loader { position: fixed; inset: 0; display: grid; place-items: center; background: var(--charcoal); color: var(--fairy); z-index: 20; font-family: var(--font-mono); }
-
+/* .loader styles live inline in index.html (shared with the static pre-JS loader). */
 @media print { #app, .hud, .loader { display: none !important; } html.mode-3d #reader { position: static; width: auto; height: auto; clip-path: none; white-space: normal; } }
 
 /* KimOS mounted on the 3D laptop screen */

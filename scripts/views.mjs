@@ -8,8 +8,11 @@ const files = [];
 for (const v of list.split(',')) {
   const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
   const errs = []; p.on('pageerror', (e) => errs.push(e.message));
-  await p.goto(base + (base.includes('?') ? '&' : '?') + 'q=high');
-  await p.waitForTimeout(2500);
+  // ?still: no intro auto-advance (O5), so the intro shot stays on the intro
+  await p.goto(base + (base.includes('?') ? '&' : '?') + 'q=high' + (v === 'intro' ? '&still' : ''));
+  // wait for the loader hand-off (Loader sets <html data-ready="1"> + window.__ready on reveal)
+  await p.waitForFunction(() => window.__ready === true, null, { timeout: 90000 }).catch(() => console.log(v, 'WARN: never ready'));
+  await p.waitForTimeout(1500); // iris + intro dolly finish
   await p.evaluate((v) => { const s = window.__scene.getState(); if (v === 'night') { s.goTo('seat'); s.setTimeOfDay('night'); } else s.goTo(v); }, v);
   await p.waitForTimeout(6000);
   const f = `${prefix}-${v}.png`; await p.screenshot({ path: f }); files.push(f);
