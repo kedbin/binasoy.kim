@@ -254,7 +254,6 @@ function ReflectiveWater({ quality }: { quality: Exclude<Quality, 'low'> }) {
   }, [quality]);
   useEffect(() => () => { mirror.geometry.dispose(); mirror.dispose(); }, [mirror]);
 
-  useEffect(() => { if (import.meta.env.DEV) (window as unknown as { __three: THREE.Scene }).__three = scene; }, [scene]);
   useFrame(({ gl }) => {
     if (!raft.current && tries.current++ % 30 === 0) raft.current = scene.getObjectByName('raft') ?? null;
     if (raft.current) ((mirror.material as THREE.ShaderMaterial).uniforms.uRaft.value as THREE.Vector3).copy(raft.current.position);
