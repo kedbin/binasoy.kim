@@ -130,7 +130,7 @@ export const LIGHTS: Record<TimeOfDay, LightPreset> = {
     bloom: 0.3, bloomThreshold: 1.0, ao: 1, vignette: 0.35, saturation: 0.15, contrast: 0.06,
   },
   night: {
-    sunDir: [0.45, 0.55, 0.75], sunColor: '#8FA6E0', sunIntensity: 0.85,   // moonlight key
+    sunDir: [0.75, 0.85, 0.25], sunColor: '#8FA6E0', sunIntensity: 0.85,   // high + side: roof shades the bed   // moonlight key
     hemiSky: '#3C4A7A', hemiGround: '#0E1018', hemiIntensity: 0.42,
     fog: '#0E1220', fogNear: 40, fogFar: 900, interior: 1.6, exposure: 0.8,
     skySun: [0.42, 0.24, 1],
@@ -138,7 +138,7 @@ export const LIGHTS: Record<TimeOfDay, LightPreset> = {
     envIntensity: 0.18, envHorizon: '#2A3458', envTop: '#141A30',
     bounce: 0, bounceColor: '#FFB98A',
     shaft: 0, shaftColor: '#FFC48A',
-    practicalColor: '#FFB566', practicalGain: 0.38, practicalDistance: 2.4,
+    practicalColor: '#FFB566', practicalGain: 0.3, practicalDistance: 2.2,
     sky: { horizon: '#1C2340', low: '#141B33', mid: '#0C1226', zenith: '#05081A', cloud: '#161C30', cloudLit: '#2A3352', glow: '#3A4A80' },
     stars: 1, moon: 1,
     haze: '#1E2744', hazeAmount: 0.8, mist: 0.4,
