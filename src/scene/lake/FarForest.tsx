@@ -54,9 +54,9 @@ void main(){
   // warm emissive (cabin window at night)
   col += uPractical * uGlow * uNight * 2.5;
   float hy = vW.y - uWaterY;
-  col *= mix(0.72, 1.0, smoothstep(0.0, 4.0, hy));                        // understory at the waterline
+  col *= mix(0.5, 1.0, smoothstep(0.0, 3.5, hy));                         // dark understory at the waterline
   col = mix(col, uHaze, clamp(uLayerHaze * uHazeAmt, 0.0, 1.0));          // aerial perspective (matches Hills)
-  col = mix(col, uHaze, (1.0 - smoothstep(0.0, 10.0, hy)) * uMist * 0.5); // low mist band
+  col = mix(col, uHaze, (1.0 - smoothstep(0.0, 8.0, hy)) * uMist * 0.55 * smoothstep(0.1, 0.6, uLayerHaze)); // mist: far layers only
   gl_FragColor = vec4(col, 1.0);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
@@ -76,9 +76,9 @@ function makeMat(layerHaze: number, glow = 0) {
 
 /** Unit geometries, base at y = 0, height 1, width 1. */
 function clumpGeo() {
-  const g = new THREE.IcosahedronGeometry(0.5, 1);
+  const g = new THREE.IcosahedronGeometry(0.5, 0);
   g.translate(0, 0.5, 0);
-  return g.toNonIndexed();
+  return g;
 }
 function spireGeo() {
   const g = new THREE.ConeGeometry(0.5, 1, 6, 1, true);
@@ -176,16 +176,16 @@ function buildShoreProps(ridge: Ridge, mat: THREE.ShaderMaterial, glowMat: THREE
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), e = new THREE.Euler();
   const rockGeo = new THREE.DodecahedronGeometry(1, 0);
   rockGeo.translate(0, 0.35, 0);
-  const N = 46;
+  const N = 26;
   const rocks = new THREE.InstancedMesh(rockGeo, mat, N);
-  const granite = ['#BDB4A8', '#A9A196', '#CFC6B8', '#8E877F'];
+  const granite = ['#9C948A', '#867F77', '#ADA497', '#6E6862'];
   const col = new THREE.Color();
   for (let i = 0; i < N; i++) {
     // clustered: pick a few outcrops along the shore
     const centre = [0.3, 0.41, 0.47, 0.53, 0.6, 0.68][i % 6];
     const u = centre + (rand() - 0.5) * 0.03;
     ridge.sample(u, 0, p);
-    const r = 0.9 + rand() * 2.4;
+    const r = 0.7 + rand() * 1.6;
     e.set(rand() * 0.6, rand() * 6.28, rand() * 0.4);
     q.setFromEuler(e);
     s.set(r * (1.2 + rand() * 0.6), r * (0.45 + rand() * 0.3), r);

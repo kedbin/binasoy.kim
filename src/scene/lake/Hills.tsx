@@ -177,8 +177,8 @@ void main(){
   // aerial perspective
   float haze = clamp(vHill.x * uHazeAmt, 0.0, 1.0);
   col = mix(col, uHaze, haze);
-  // low mist band hugging the far shore
-  float mist = (1.0 - smoothstep(0.0, 10.0, hy)) * uMist;
+  // low mist only on the far (hazy) ridges; the near treeline meets the water crisply
+  float mist = (1.0 - smoothstep(0.0, 8.0, hy)) * uMist * smoothstep(0.1, 0.6, vHill.x);
   col = mix(col, uHaze, mist * 0.55);
 
   if (uReflect > 0.5) {
@@ -188,7 +188,8 @@ void main(){
     // darker band right at the shoreline (shadowed undergrowth + its reflection)
     col *= mix(0.7, 1.0, smoothstep(0.0, 4.0, hy));
   } else {
-    col *= mix(0.75, 1.0, smoothstep(0.0, 3.0, hy));
+    // dark shoreline band (shadowed understory) — strongest on the near ridge
+    col *= mix(mix(0.45, 0.8, vHill.x), 1.0, smoothstep(0.0, 4.0, hy));
   }
   gl_FragColor = vec4(col, 1.0);
   #include <tonemapping_fragment>
@@ -212,6 +213,7 @@ function makeMat(reflect: boolean) {
 
 export function Hills() {
   const season = useScene((s) => s.season);
+  const quality = useScene((s) => s.quality);
   const { geos, mat, rmat } = useMemo(() => {
     const geos = RIDGES.map(hillGeometry);
     return { geos, mat: makeMat(false), rmat: makeMat(true) };
@@ -229,10 +231,12 @@ export function Hills() {
   return (
     <group name="hills">
       {geos.map((g, i) => <mesh key={i} geometry={g} material={mat} renderOrder={-5 + i} />)}
-      {/* Mirror about y = waterY: y' = 2w - y */}
-      <group position-y={WORLD.waterY * 2} scale-y={-1} name="hills-reflection">
-        {geos.map((g, i) => <mesh key={i} geometry={g} material={rmat} renderOrder={-5 + i} />)}
-      </group>
+      {/* Mirror about y = waterY: y' = 2w - y. 'low' only — mid/high get a real Reflector (Water.tsx). */}
+      {quality === 'low' && (
+        <group position-y={WORLD.waterY * 2} scale-y={-1} name="hills-reflection">
+          {geos.map((g, i) => <mesh key={i} geometry={g} material={rmat} renderOrder={-5 + i} />)}
+        </group>
+      )}
     </group>
   );
 }
