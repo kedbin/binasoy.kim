@@ -10,7 +10,7 @@ for (const v of list.split(',')) {
   const errs = []; p.on('pageerror', (e) => errs.push(e.message));
   await p.goto(base + (base.includes('?') ? '&' : '?') + 'q=high');
   await p.waitForTimeout(2500);
-  await p.evaluate((v) => { const s = window.__scene.getState(); if (v === 'night') { s.goTo('seat'); s.setTimeOfDay?.('night') ?? s.toggleTime(); } else s.goTo(v); }, v);
+  await p.evaluate((v) => { const s = window.__scene.getState(); if (v === 'night') { s.goTo('seat'); s.setTimeOfDay('night'); } else s.goTo(v); }, v);
   await p.waitForTimeout(6000);
   const f = `${prefix}-${v}.png`; await p.screenshot({ path: f }); files.push(f);
   if (errs.length) console.log(v, 'ERR', errs.slice(0, 3).join(' | '));
