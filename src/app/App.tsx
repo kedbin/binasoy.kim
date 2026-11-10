@@ -4,6 +4,7 @@ import { AdaptiveDpr, Preload } from '@react-three/drei';
 import * as THREE from 'three';
 import { EnvDriver, EnvMap, ShadowFlags, GroundContact } from '../scene/env/EnvLighting';
 import { SunShafts } from '../scene/env/SunShafts';
+import { PracticalTamer } from '../scene/env/PracticalTamer';
 import { useScene, type Quality } from '../state/store';
 import { CameraRig } from '../scene/CameraRig';
 import { Lighting } from '../scene/Lighting';
@@ -48,6 +49,7 @@ export function App({ initialQuality }: { initialQuality: Quality }) {
           <SunShafts />
           <Lake />
           <Van />
+          <PracticalTamer />
           <Characters />
           <Hotspots />
           <Effects />

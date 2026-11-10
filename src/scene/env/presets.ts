@@ -50,6 +50,9 @@ export interface LightPreset {
   shaftColor: string;
   /** Warm practical colour inside the van at night (scaled by `interior`). */
   practicalColor: string;
+  /** Gain + falloff applied to the van's own practical point lights (warm pools with darker edges). */
+  practicalGain: number;
+  practicalDistance: number;
   /** Sky gradient (horizon → zenith) + clouds. */
   sky: { horizon: string; low: string; mid: string; zenith: string; cloud: string; cloudLit: string; glow: string };
   stars: number;           // 0..1
@@ -100,7 +103,7 @@ export const LIGHTS: Record<TimeOfDay, LightPreset> = {
     envIntensity: 0.45, envHorizon: '#FFA868', envTop: '#9C9AC8',
     bounce: 0.45, bounceColor: '#FFB98A',
     shaft: 1, shaftColor: '#FFC48A',
-    practicalColor: '#FFC27A',
+    practicalColor: '#FFC27A', practicalGain: 1, practicalDistance: 4,
     sky: { horizon: '#FFCC94', low: '#F8B4A0', mid: '#C4AFD4', zenith: '#8DA6D6', cloud: '#F2A9A0', cloudLit: '#FFD7AE', glow: '#FF9050' },
     stars: 0, moon: 0,
     haze: '#E6B8B0', hazeAmount: 1, mist: 0.3,
@@ -118,7 +121,7 @@ export const LIGHTS: Record<TimeOfDay, LightPreset> = {
     envIntensity: 0.8, envHorizon: '#FFF2DA', envTop: '#9CC2EA',
     bounce: 0.4, bounceColor: '#FFF1DE',
     shaft: 0.2, shaftColor: '#FFF4E0',
-    practicalColor: '#FFC27A',
+    practicalColor: '#FFC27A', practicalGain: 1, practicalDistance: 4,
     sky: { horizon: '#E4EEF6', low: '#CFE2F2', mid: '#A9CBEA', zenith: '#6FA2D8', cloud: '#F4F6F8', cloudLit: '#FFFFFF', glow: '#FFF6E0' },
     stars: 0, moon: 0,
     haze: '#CFE0EE', hazeAmount: 0.8, mist: 0.1,
@@ -127,20 +130,20 @@ export const LIGHTS: Record<TimeOfDay, LightPreset> = {
     bloom: 0.3, bloomThreshold: 1.0, ao: 1, vignette: 0.35, saturation: 0.15, contrast: 0.06,
   },
   night: {
-    sunDir: [0.45, 0.55, 0.75], sunColor: '#8FA6E0', sunIntensity: 0.55,   // moonlight key
-    hemiSky: '#34406A', hemiGround: '#0A0C12', hemiIntensity: 0.28,
+    sunDir: [0.45, 0.55, 0.75], sunColor: '#8FA6E0', sunIntensity: 0.85,   // moonlight key
+    hemiSky: '#3C4A7A', hemiGround: '#0E1018', hemiIntensity: 0.42,
     fog: '#0E1220', fogNear: 40, fogFar: 900, interior: 1.6, exposure: 0.8,
     skySun: [0.42, 0.24, 1],
-    rimDir: [-0.3, 0.5, -1], rimColor: '#4A5A9A', rimIntensity: 0.25,
+    rimDir: [-0.3, 0.5, -1], rimColor: '#5A6CB0', rimIntensity: 0.4,
     envIntensity: 0.18, envHorizon: '#2A3458', envTop: '#141A30',
     bounce: 0, bounceColor: '#FFB98A',
     shaft: 0, shaftColor: '#FFC48A',
-    practicalColor: '#FFB566',
+    practicalColor: '#FFB566', practicalGain: 0.38, practicalDistance: 2.4,
     sky: { horizon: '#1C2340', low: '#141B33', mid: '#0C1226', zenith: '#05081A', cloud: '#161C30', cloudLit: '#2A3352', glow: '#3A4A80' },
     stars: 1, moon: 1,
     haze: '#1E2744', hazeAmount: 0.8, mist: 0.4,
-    hillLit: '#4A5A8A', hillShade: '#1A2238', hillRim: '#8FA6E0',
-    water: { deep: '#070B16', shine: '#8FA6E0', glitter: 0.35 },
+    hillLit: '#5E70A8', hillShade: '#232C48', hillRim: '#9FB4EC',
+    water: { deep: '#0E1628', shine: '#9FB4EC', glitter: 0.6 },
     bloom: 0.8, bloomThreshold: 0.92, ao: 0.9, vignette: 0.55, saturation: 0.05, contrast: 0.08,
   },
 };
