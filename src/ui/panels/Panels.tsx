@@ -65,7 +65,7 @@ function Thumb({ i }: { i: number }) {
   return (
     <li>
       <button type="button" className={'thumb' + (ok ? ' is-loaded' : '')} onClick={() => useWall.getState().setOpen(i)} aria-label={`Open photo ${i + 1}: ${p.alt}`}>
-        <img src={p.src.replace(/\.webp$/, '-thumb.webp')} alt="" loading="lazy" decoding="async" onLoad={() => setOk(true)} />
+        <img ref={(el) => { if (el?.complete && el.naturalWidth > 0 && !ok) setOk(true); }} src={p.src.replace(/\.webp$/, '-thumb.webp')} alt="" decoding="async" onLoad={() => setOk(true)} />
       </button>
     </li>
   );

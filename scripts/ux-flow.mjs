@@ -17,10 +17,10 @@ async function run(device) {
   const files = [];
   const shot = async (name) => { const f = `${prefix}-${device}-${String(files.length).padStart(2, '0')}-${name}.png`; await p.screenshot({ path: f }); files.push(f); };
   const t0 = Date.now();
-  await p.goto(url);
-  await p.waitForTimeout(250); await shot('boot');
+  await p.goto(url, { waitUntil: 'domcontentloaded' });
+  await p.waitForTimeout(80); await shot('boot');
   await p.waitForSelector('.loader', { timeout: 30000 }).catch(() => {});
-  await p.waitForTimeout(600); await shot('loader');
+  await p.waitForTimeout(350); await shot('loader');
   await p.waitForSelector('html[data-ready]', { timeout: 60000 });
   console.log(device, 'revealed after', Date.now() - t0, 'ms');
   await p.waitForTimeout(500); await shot('reveal');
@@ -36,7 +36,9 @@ async function run(device) {
   if (await m.count()) await m.first().click({ force: true }); else await p.keyboard.press('2');
   await p.waitForTimeout(400); await shot('wall-moving');
   await p.waitForSelector('.sheet', { timeout: 10000 }); await p.waitForTimeout(600); await shot('wall');
-  await p.locator('.thumb').nth(2).click(); await p.waitForTimeout(800); await shot('lightbox');
+  await p.locator('.thumb').nth(2).click();
+  await p.waitForSelector('.lightbox__img.is-loaded', { timeout: 10000 }).catch(() => {});
+  await p.waitForTimeout(300); await shot('lightbox');
   await p.keyboard.press('ArrowRight'); await p.waitForTimeout(600);
   await p.keyboard.press('Escape'); await p.waitForTimeout(300);
   await p.keyboard.press('Escape'); await p.waitForTimeout(1800);

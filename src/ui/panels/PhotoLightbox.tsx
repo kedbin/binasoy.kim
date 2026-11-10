@@ -40,7 +40,14 @@ export function PhotoLightbox() {
         style={dx ? { transform: `translateX(${dx}px) rotate(${dx * 0.01}deg)`, transition: 'none' } : undefined}
       >
         <div className={'lightbox__img' + (loaded === p.src ? ' is-loaded' : '')}>
-          <img key={p.src} src={p.src} alt={p.alt} onLoad={() => setLoaded(p.src)} draggable={false} />
+          <img
+            key={p.src}
+            ref={(el) => { if (el?.complete && el.naturalWidth > 0 && loaded !== p.src) setLoaded(p.src); }}
+            src={p.src}
+            alt={p.alt}
+            onLoad={() => setLoaded(p.src)}
+            draggable={false}
+          />
         </div>
         <figcaption>{p.caption}</figcaption>
         <div className="lightbox__nav">
