@@ -2,10 +2,10 @@
 // - A generated Lightformer environment (no HDR download): warm sun-side band, lavender dome, dark ground.
 // - Shadow flags: van/props from other workers don't set castShadow/receiveShadow, so we flag opaque lit
 //   meshes globally (cheap traversal at a few frames after load). Opt out with `userData.noShadow = true`.
-// - ContactShadows baked once under the van + kayak (works on every tier, incl. low with no realtime shadows).
+// - ContactShadows baked once (~40 frames after mount, so the van exists) under the van + kayak (works on every tier, incl. low with no realtime shadows).
 import { useFrame, useThree } from '@react-three/fiber';
 import { ContactShadows } from '@react-three/drei';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { useScene } from '../../state/store';
 import { LIGHTS } from './presets';
@@ -76,7 +76,7 @@ export function EnvMap() {
   return null;
 }
 
-const SKIP = /hills|sky|water|leaves|birds|fireflies|shaft|hotspot/i;
+const SKIP = /hills|sky|water|leaves|birds|fireflies|shaft|hotspot|contact/i;
 
 function flag(root: THREE.Object3D, quality: string) {
   root.traverse((o) => {
@@ -113,8 +113,12 @@ export function ShadowFlags() {
 
 export function GroundContact() {
   const quality = useScene((s) => s.quality);
+  const [ready, setReady] = useState(false);
+  const n = useRef(0);
+  useFrame(() => { if (!ready && ++n.current > 40) setReady(true); });
   const [kx, , kz] = ANCHORS.kayak.pos;
   const res = quality === 'high' ? 512 : 256;
+  if (!ready) return null;
   return (
     <group name="contact-shadows">
       {/* under the van: wheels, bumper, body — baked once */}
