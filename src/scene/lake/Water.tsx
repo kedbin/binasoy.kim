@@ -54,8 +54,10 @@ void main(){
   // sun glitter path: sparse sparkles along the reflected sun
   vec3 R = reflect(-V, vec3(0.0, 1.0, 0.0));
   float sd = max(dot(R, normalize(uSunDir)), 0.0);
-  float path = pow(sd, 60.0);
-  float sp = step(0.86, n2(vWorld.xz * vec2(1.2, 6.0) + vec2(uTime * 0.9, uTime * 0.3)));
+  float az = pow(max(dot(normalize(-V.xz + 1e-4), normalize(uSunDir.xz + 1e-4)), 0.0), 900.0);
+  float path = pow(sd, 90.0) * (0.35 + 0.65 * az);
+  vec2 sq = vWorld.xz * vec2(9.5, 28.0);
+  float sp = smoothstep(0.48, 0.64, n2(sq + vec2(uTime * 1.9, uTime * 0.7)) * n2(sq * 1.43 + vec2(-uTime * 1.4, uTime * 1.1) + 5.0));
   float glit = path * sp * uGlitter;
   col += uSunColor * glit * 2.2 + uSunColor * pow(sd, 18.0) * 0.12 * uGlitter;
   alpha = clamp(alpha + glit * 0.9, 0.0, 1.0);
@@ -128,30 +130,31 @@ void main(){
   vec2 rg = (rr > 0.001 ? rd / rr : vec2(0.0)) * ring * 0.9;
   float rmask = exp(-rr * 0.18);
 
+  // horizontal wind-line bands: gentle horizontal slicing of the mirror (photo #6)
+  float wl = n2(vec2(vWorld.x * 0.015 + uTime * 0.01, vWorld.z * 0.55));
+  float brk = smoothstep(0.68, 0.86, wl) * (1.0 - smoothstep(uFarZ - 50.0, uFarZ - 16.0, vWorld.z));
+  float rippleX = sin(vWorld.z * 3.8 - uTime * 1.1) * 0.0035 * brk;
+
   // screen-space distortion shrinks with distance (perspective) → glassy far water, gentle wobble up close
   float persp = 6.0 / (6.0 + dist);
-  vec2 distort = g * vec2(0.010, 0.006) * persp + rg * 0.012 * rmask * persp;
+  vec2 distort = g * vec2(0.009, 0.005) * persp + vec2(rippleX, 0.0) + rg * 0.012 * rmask * persp;
+  // never sample above vUvProj.y near the shoreline (in tDiffuse the reflected scene only exists at uv.y <= waterline)
+  distort.y = -abs(distort.y);
   vec2 uv = vUvProj.xy / vUvProj.w + distort;
   vec3 refl = texture2D(tDiffuse, uv).rgb;
-  // a short stretched second tap: soft vertical smear typical of a lake mirror
-  refl = mix(refl, texture2D(tDiffuse, uv + vec2(0.0, 0.0025)).rgb, 0.3);
+  // a short stretched second tap downward into the reflection: soft vertical smear typical of a lake mirror
+  refl = mix(refl, texture2D(tDiffuse, uv - vec2(0.0, 0.0025)).rgb, 0.28);
   // still-lake mirror: slightly darker + cooler than the source, saturation kept (fall colours stay vivid)
   float rl = dot(refl, vec3(0.299, 0.587, 0.114));
-  refl = mix(vec3(rl), refl, 1.12) * color;
+  refl = mix(vec3(rl), refl, 1.25) * color;
 
   // fresnel: deep body looking down, mirror at grazing (still lake)
   float cosT = clamp(V.y, 0.0, 1.0);
-  float fres = 0.18 + 0.78 * pow(1.0 - cosT, 3.0);
-  vec3 body = mix(uWaterDeep, mix(uSkyLow, uSkyMid, 0.5), 0.2);
+  float fres = 0.36 + 0.62 * pow(1.0 - cosT, 2.4);
+  vec3 body = uWaterDeep * 0.75;
   vec3 col = mix(body, refl, fres);
-  // ripple streaks catch a little sky light (not on the glassy far water)
-  float streak = smoothstep(0.62, 0.9, w0) * near;
-  col += uWaterShine * streak * 0.05;
-  // soft horizontal ripple breaks: wind lines where the mirror is roughened and shows sky sheen
-  float wl = n2(vec2(vWorld.x * 0.012 + uTime * 0.01, vWorld.z * 0.22)) * 0.7 + n2(vec2(vWorld.x * 0.03, vWorld.z * 0.6 + 7.0)) * 0.3;
-  float brk = smoothstep(0.66, 0.82, wl);
-  vec3 sheen = mix(uSkyLow, uSkyMid, 0.35) * (1.0 - uNight * 0.6);
-  col = mix(col, mix(col, sheen, 0.55), brk * 0.6);
+  // faint horizontal wind-line modulation (slight cool darkening, never a pale band)
+  col = mix(col, mix(col * 0.9, uWaterDeep, 0.18), brk * 0.28);
   col += uWaterShine * max(ring, 0.0) * rmask * 0.06 * (1.0 - uNight * 0.6);
 
   // sun / moon glitter path toward the low light source
@@ -161,12 +164,12 @@ void main(){
   // narrow column toward the sun azimuth; sparkles get sparser with distance
   float az = pow(max(dot(normalize(-V.xz + 1e-4), normalize(uSunDir.xz + 1e-4)), 0.0), 900.0);
   float path = pow(sd, 90.0) * (0.35 + 0.65 * az);
-  // fine sparkles: product of two finely scaled noises drifting in different directions → tiny twinkling points
-  vec2 sq = vWorld.xz * vec2(4.0, 14.0);
-  float sp = n2(sq + vec2(uTime * 1.7, uTime * 0.6)) * n2(sq * 1.37 + vec2(-uTime * 1.3, uTime * 0.9) + 5.0);
-  sp = smoothstep(0.42, 0.62, sp);
+  // fine pinpoint sparkles: two high-frequency noises drifting across each other + a softer shimmer core
+  vec2 sq = vWorld.xz * vec2(9.5, 28.0);
+  float sp = n2(sq + vec2(uTime * 1.9, uTime * 0.7)) * n2(sq * 1.43 + vec2(-uTime * 1.4, uTime * 1.1) + 5.0);
+  sp = smoothstep(0.48, 0.64, sp);
   vec3 glintCol = mix(uSunColor, vec3(0.85, 0.9, 1.0), uMoon);
-  col += glintCol * path * sp * uGlitter * 2.2 + glintCol * pow(sd, 24.0) * az * 0.12 * uGlitter;
+  col += glintCol * path * sp * uGlitter * 2.6 + glintCol * pow(sd, 28.0) * az * 0.10 * uGlitter;
 
   // van glow on the near water at night
   float vg = exp(-pow(vWorld.x * 0.35, 2.0)) * exp(-max(vWorld.z - uShoreZ, 0.0) * 0.06);
@@ -174,8 +177,8 @@ void main(){
   col += uPractical * vg * vgs * uNight * uInterior * 0.14;
 
   // darker band where the far shore meets the water + a whisper of mist
-  float farBand = smoothstep(uFarZ - 30.0, uFarZ - 4.0, vWorld.z);
-  col *= 1.0 - farBand * 0.22;
+  float farBand = smoothstep(uFarZ - 26.0, uFarZ - 6.0, vWorld.z);
+  col = mix(col, col * vec3(0.5, 0.48, 0.52), farBand * 0.75);
 
   // near shore: shallow, sandy, soft edge (sand shows through)
   float shore = 1.0 - smoothstep(0.0, 2.2, vWorld.z - uShoreZ);
@@ -184,9 +187,9 @@ void main(){
   gl_FragColor = vec4(col, alpha);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
-  // half-strength fog: the mirrored hills are unfogged (like their source), so full fog would lay a pale band
+  // the mirrored hills/sky already carry their own aerial haze in tDiffuse; only fog water beyond the far shore
   #ifdef USE_FOG
-    float fogFactor = smoothstep(fogNear, fogFar, vFogDepth) * 0.35;
+    float fogFactor = smoothstep(max(fogNear, uFarZ + 40.0), fogFar, vFogDepth) * 0.25;
     gl_FragColor.rgb = mix(gl_FragColor.rgb, fogColor, fogFactor);
   #endif
 }`;
@@ -207,7 +210,7 @@ function ReflectiveWater({ quality }: { quality: Exclude<Quality, 'low'> }) {
     const r = RES[quality];
     const geo = new THREE.PlaneGeometry(1600, 800, 1, 1);
     const m = new Reflector(geo, {
-      textureWidth: r.w, textureHeight: r.h, multisample: r.ms, clipBias: 0.002, color: 0xc4ccda,
+      textureWidth: r.w, textureHeight: r.h, multisample: r.ms, clipBias: 0, color: 0xb8c2d4,
       shader: {
         name: 'LakeMirror', vertexShader: rVert, fragmentShader: rFrag,
         uniforms: THREE.UniformsUtils.merge([THREE.UniformsLib.fog, {

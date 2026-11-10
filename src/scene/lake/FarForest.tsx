@@ -202,8 +202,8 @@ function buildShoreProps(ridge: Ridge, mat: THREE.ShaderMaterial, glowMat: THREE
   box.translate(0, 0.5, 0);
   const parts: [number, number, number, number, number, number, string][] = [
     // x, y, z, w, h, d, colour
-    [cx, base, cz, 7, 3.4, 5.5, '#6A4632'],          // log walls
-    [cx - 4.2, base, cz + 0.4, 1.4, 4.8, 1.4, '#7A6E66'], // stone chimney
+    [cx, base, cz, 5, 2.6, 4, '#5A3A2A'],            // log walls
+    [cx - 3.0, base, cz + 0.4, 1.0, 3.8, 1.0, '#7A6E66'], // stone chimney
     [cx + 1.5, WORLD.waterY + 0.35, cz - 9, 2.4, 0.35, 13, '#8A6B4E'], // dock deck
     [cx + 1.5, WORLD.waterY - 0.8, cz - 15, 2.6, 1.2, 0.5, '#4B3A2E'],  // dock end post band
     [cx - 1.0, base - 1.6, cz, 8, 1.6, 6, '#4E3A2C'], // foundation / bank
@@ -222,13 +222,13 @@ function buildShoreProps(ridge: Ridge, mat: THREE.ShaderMaterial, glowMat: THREE
   roofGeo.rotateX(Math.PI / 6 + Math.PI);
   // the shader expects instancing: a 1-instance mesh
   const roofI = new THREE.InstancedMesh(roofGeo, mat, 1);
-  roofI.setMatrixAt(0, m.compose(p.set(cx, base + 3.4 + 1.0, cz), q.identity(), s.set(8.4, 2.4, 3.9)));
+  roofI.setMatrixAt(0, m.compose(p.set(cx, base + 2.6 + 0.75, cz), q.identity(), s.set(6, 1.8, 2.9)));
   roofI.setColorAt(0, col.set('#3B2C27'));
   roofI.frustumCulled = false;
   // windows: glow at night (practical colour), dark glass by day
   const win = new THREE.InstancedMesh(box, glowMat, 2);
-  [[cx - 1.6, cz - 2.8], [cx + 1.8, cz - 2.8]].forEach(([x, z], i) => {
-    m.compose(p.set(x, base + 1.2, z), q.identity(), s.set(1.3, 1.1, 0.2));
+  [[cx - 1.2, cz - 2.05], [cx + 1.3, cz - 2.05]].forEach(([x, z], i) => {
+    m.compose(p.set(x, base + 1.2, z), q.identity(), s.set(0.9, 0.8, 0.15));
     win.setMatrixAt(i, m);
     win.setColorAt(i, col.set('#2A2622'));
   });
