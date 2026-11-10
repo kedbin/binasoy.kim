@@ -31,6 +31,43 @@ export interface LightPreset {
   fogFar: number;
   interior: number;        // multiplier for van practical lights (fairy lights, puck lamp)
   exposure: number;
+  // ---- Look-dev fields (O1). All colours/intensities for light, sky, haze and post come from here. ----
+  /** Visible sun/moon disk direction in the sky (can sit lower than the shadow-casting key). */
+  skySun: [number, number, number];
+  /** Cool counter light from the sky opposite the sun: rims silhouettes, lifts shadow sides. */
+  rimDir: [number, number, number];
+  rimColor: string;
+  rimIntensity: number;
+  /** Image-based light (generated Lightformer rig) strength for PBR materials. */
+  envIntensity: number;
+  envHorizon: string;      // warm band on the sun side of the env map
+  envTop: string;          // sky dome in the env map
+  /** Warm bounce inside the van (sun spill off the duvet) — day/golden only. */
+  bounce: number;
+  bounceColor: string;
+  /** Volumetric sun shaft through the open hatch (0 = off). */
+  shaft: number;
+  shaftColor: string;
+  /** Warm practical colour inside the van at night (scaled by `interior`). */
+  practicalColor: string;
+  /** Sky gradient (horizon → zenith) + clouds. */
+  sky: { horizon: string; low: string; mid: string; zenith: string; cloud: string; cloudLit: string; glow: string };
+  stars: number;           // 0..1
+  moon: number;            // 0..1 moon disk visibility (drawn at skySun)
+  /** Aerial perspective toward the far hills + low mist on the lake. */
+  haze: string;
+  hazeAmount: number;      // 0..1 extra haze per hill layer
+  mist: number;            // 0..1 low mist band at the far shore
+  /** Far hills: lit/shadow tints multiplied over the season foliage. */
+  hillLit: string;
+  hillShade: string;
+  hillRim: string;         // backlit crown edges
+  water: { deep: string; shine: string; glitter: number };
+  /** Post-processing. */
+  bloom: number;
+  bloomThreshold: number;
+  ao: number;
+  vignette: number;
 }
 
 export const SEASONS: Record<Season, SeasonPalette> = {
