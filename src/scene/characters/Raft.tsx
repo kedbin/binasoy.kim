@@ -57,7 +57,7 @@ export function RaftScene() {
 
   const geo = useMemo(() => ({ hull: raftGeometry(), rope: ropeGeometry(), fit: fittingsGeometry() }), []);
   const mats = useMemo(() => ({
-    hull: natureMaterial({ roughness: 0.5, fill: 0.22 }), // PVC sheen; fill keeps the backlit hull readable
+    hull: natureMaterial({ roughness: 0.5, fill: 0.34 }), // PVC sheen; fill keeps the backlit hull readable
     rope: natureMaterial({ color: '#D9CBA8', roughness: 1 }),
     fit: natureMaterial({ roughness: 0.5, fill: 0.15 }),
     wake: new THREE.ShaderMaterial({

@@ -21,7 +21,7 @@ export function outline(u: number, out = new THREE.Vector3()) {
 
 export function raftGeometry() {
   const R = RAFT.tubeR;
-  const rings = 96, seg = 14;
+  const rings = 96, seg = 24;
   const P = new THREE.Vector3(), Pn = new THREE.Vector3(), T = new THREE.Vector3(), Nh = new THREE.Vector3();
   const up = new THREE.Vector3(0, 1, 0);
   const tube = loft(rings, seg, (t, a, out) => {
@@ -37,16 +37,16 @@ export function raftGeometry() {
   }, [false, false], true);
   const tg = soft(tube);
   // paint: grey tube, white stripe band on the outside, darker underside (painted AO), seams
-  const grey = new THREE.Color('#6C727A'), white = new THREE.Color('#F1F0EA');
+  const grey = new THREE.Color('#6C727A'), white = new THREE.Color('#F4F2EC');
   paint(tg, (p, n, outC) => {
     const centre = outline(0); void centre;
     const sideOut = n.x * p.x + n.z * p.z > 0 ? 1 : 0;
-    const band = sideOut && n.y > -0.12 && n.y < 0.26 ? 1 : 0;
+    const band = sideOut && n.y > -0.22 && n.y < 0.24 ? 1 : 0;
     outC.copy(band ? white : grey);
     const under = smooth01(n.y, -0.9, 0.2);
     outC.multiplyScalar(0.62 + 0.38 * under);
     // thin dark pinstripes either side of the white band
-    if (sideOut && (Math.abs(n.y + 0.16) < 0.04 || Math.abs(n.y - 0.3) < 0.04)) outC.multiplyScalar(0.55);
+    
   });
   // floor: flattened rounded slab inside the tube
   const floor = loft(1, 48, (t, a, out) => {
