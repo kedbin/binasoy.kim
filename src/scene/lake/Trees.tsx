@@ -84,7 +84,7 @@ function Birches({ shadows, foliage }: { shadows: boolean; foliage: string[] }) 
     const spots: [number, number, number, number, number][] = [
       // x, z, height, lean, leafiness
       [-7.6, 5.4, 8.2, 0.12, 0.45], [-9.2, 4.0, 6.8, -0.09, 0.5], [-6.3, 8.0, 7.4, 0.06, 0.35], [-10.5, 7.2, 9.0, -0.04, 0.55],
-      [9.4, 3.2, 7.6, -0.1, 0.5],
+      [11.5, 0.5, 7.6, -0.1, 0.5],
     ];
     return spots.map(([x, z, h, lean, leafy], i) => ({ x, z, y: groundHeight(x, z) - 0.05, ...birch(900 + i * 11, { height: h, lean, leafy }) }));
   }, []);
