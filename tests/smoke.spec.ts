@@ -16,18 +16,18 @@ async function enterVan(page: Page) {
 }
 
 test.describe('3D smoke', () => {
-  test('loader → auto climb-in → dock → laptop → Esc → quick view', async ({ page }) => {
+  test('loader → auto climb-in → clean HUD (no dock/orbs) → laptop CampMail → Esc → quick view', async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));
     await enterVan(page);
 
-    const dock = page.getByRole('navigation', { name: 'Places in the van' });
-    await expect(dock).toBeVisible();
-    await expect(dock.getByRole('button')).toHaveCount(5);
+    // No bottom dock clutter or blinking orbs
+    await expect(page.locator('.dock')).toHaveCount(0);
+    await expect(page.locator('.marker__dot')).toHaveCount(0);
 
-    await dock.getByRole('button', { name: /Work/ }).click();
+    // Press 1 to open laptop
+    await page.keyboard.press('1');
     await expect(page.locator('.hud')).toHaveAttribute('data-view', 'laptop');
-    await expect(dock.getByRole('button', { name: /Work/ })).toHaveAttribute('aria-current', 'location');
     await expect(page.locator('button.kos-icon').first()).toBeAttached({ timeout: 15_000 });
 
     await page.keyboard.press('Escape');

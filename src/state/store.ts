@@ -21,6 +21,9 @@ interface SceneState {
   transitioning: boolean;
   /** Loader finished its reveal; the HUD may show and the intro dolly may start. */
   revealed: boolean;
+  /** Progressive mount stage (1..5) so heavy 3D subsystems yield to the loader UI between frames. */
+  loadStage: number;
+  setLoadStage: (n: number) => void;
   /** Scene compiled + warm frames rendered (WarmUp) — loader can reveal. */
   sceneReady: boolean;
   reducedMotion: boolean;
@@ -52,9 +55,11 @@ export const useScene = create<SceneState>((set, get) => ({
   arrived: null,
   transitioning: false,
   revealed: false,
+  loadStage: 1,
+  setLoadStage: (loadStage) => set({ loadStage }),
   sceneReady: false,
   reducedMotion: reduced,
-  quality: 'mid',
+  quality: 'high',
   timeOfDay: 'golden',
   season: 'fall',
   setSeason: (season) => set({ season }),

@@ -1,13 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
-import { useScene } from '../state/store';
+import { useScene, type Quality } from '../state/store';
 
-/** Time of day, sound and quick view, collapsed behind one small button (top-right). */
+const NEXT_Q: Record<Quality, Quality> = { high: 'mid', mid: 'low', low: 'high' };
+const Q_LABEL: Record<Quality, string> = { high: 'High (Mirror + Bloom)', mid: 'Balanced', low: 'Battery Saver' };
+
 export function Settings() {
   const [open, setOpen] = useState(false);
   const timeOfDay = useScene((s) => s.timeOfDay);
   const sound = useScene((s) => s.sound);
+  const quality = useScene((s) => s.quality);
   const toggleTime = useScene((s) => s.toggleTime);
   const toggleSound = useScene((s) => s.toggleSound);
+  const setQuality = useScene((s) => s.setQuality);
   const root = useRef<HTMLDivElement>(null);
   const btn = useRef<HTMLButtonElement>(null);
 
@@ -35,6 +39,9 @@ export function Settings() {
           </button>
           <button type="button" role="menuitemcheckbox" aria-checked={sound} onClick={toggleSound}>
             <span aria-hidden="true">♪</span> {sound ? 'Sound on' : 'Sound off'}<small>Lake ambience</small>
+          </button>
+          <button type="button" role="menuitem" onClick={() => setQuality(NEXT_Q[quality])}>
+            <span aria-hidden="true">✦</span> Graphics: {quality.toUpperCase()}<small>{Q_LABEL[quality]}</small>
           </button>
           <button type="button" role="menuitem" onClick={quick}>
             <span aria-hidden="true">≡</span> Quick view<small>Plain page, no 3D</small>

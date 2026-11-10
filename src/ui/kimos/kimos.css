@@ -54,3 +54,33 @@
 .kos-modal .kos-photos{grid-template-columns:repeat(2,1fr)}
 .kos-bar span,.kos-bar button{white-space:nowrap}.kos-modal .kos-bar{gap:8px;font-size:12px}.kos-modal .kos-bar .kos-brand{flex:none}
 .kos-term input:focus-visible{outline:0;box-shadow:none}
+
+/* CampMail (MouseMail-inspired email client) */
+.kos-mail{display:flex;flex-direction:column;height:100%;background:var(--kos-paper);font-size:13px}
+.kos-mail__headers{display:grid;border-bottom:1px solid rgba(43,35,32,.14);background:#fff9f0}
+.kos-mail__row{display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid rgba(43,35,32,.08)}
+.kos-mail__row:last-child{border-bottom:0}
+.kos-mail__lbl{width:54px;flex:none;font-weight:800;color:#6b5d54;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.kos-mail__to{flex:1;font-weight:700;color:var(--kos-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kos-mail__row input{flex:1;border:0;background:transparent;font:inherit;color:var(--kos-ink);padding:3px 4px;border-radius:6px;outline:0}
+.kos-mail__row input:focus{background:#f4e8d6}
+.kos-mail__copy{border:1px solid rgba(43,35,32,.2);background:#fff;padding:3px 9px;border-radius:99px;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+.kos-mail__copy:hover{background:#f4e8d6}
+.kos-mail__bar{display:flex;align-items:center;gap:6px;padding:7px 12px;background:#f3e7d3;border-bottom:1px solid rgba(43,35,32,.12);flex-wrap:wrap}
+.kos-mail__bar-lbl{font-size:11px;font-weight:800;color:#6b5d54;text-transform:uppercase;letter-spacing:.04em;margin-right:2px}
+.kos-mail__presets{display:flex;gap:4px;flex-wrap:wrap;flex:1}
+.kos-mail__pill{border:1px solid rgba(43,35,32,.18);background:#fff;padding:3px 9px;border-radius:99px;font-size:11.5px;font-weight:700;cursor:pointer}
+.kos-mail__pill:hover{background:#fbf4e8}
+.kos-mail__pill.is-on{background:var(--kos-ink);color:#ffd58a;border-color:var(--kos-ink)}
+.kos-mail__send{border:0;background:var(--kos-accent);color:#fff;padding:5px 14px;border-radius:99px;font-weight:800;font-size:12.5px;cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.kos-mail__send:hover{filter:brightness(1.08)}
+.kos-mail__compose{flex:1;display:flex;flex-direction:column;position:relative;background:#fff}
+.kos-mail__compose textarea{flex:1;width:100%;border:0;resize:none;padding:12px 14px;font:inherit;font-size:13.5px;line-height:1.55;color:var(--kos-ink);background:transparent;outline:0}
+.kos-mail__err{margin:0;padding:6px 14px;background:#fde8e4;color:#9e2a22;font-weight:700;font-size:12px;border-top:1px solid #f5c2b8}
+.kos-mail__sent{flex:1;padding:18px 18px;display:flex;flex-direction:column;justify-content:center;gap:10px;background:#fff}
+.kos-mail__sent h3{margin:0;font-size:17px}
+.kos-mail__actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.kos-mail__status{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 12px;background:#efe2cc;border-top:1px solid rgba(43,35,32,.12);font-size:11.5px;color:#6b5d54;font-weight:600;flex-wrap:wrap}
+.kos-mail__socials{display:flex;gap:10px}
+.kos-mail__socials a{color:var(--kos-accent);text-decoration:none;font-weight:800}
+.kos-mail__socials a:hover{text-decoration:underline}
