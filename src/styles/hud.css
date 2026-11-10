@@ -81,7 +81,7 @@
 
 /* ---------- sheets (Photos / Certs / Résumé) ---------- */
 .sheet { pointer-events: auto; position: absolute; display: flex; flex-direction: column; background: var(--paper); color: var(--ink); box-shadow: 0 16px 50px #0006; outline: none; transition: transform .3s var(--ease); }
-.sheet--side { top: calc(68px + var(--sat)); right: calc(16px + var(--sar)); bottom: calc(100px + var(--sab)); width: min(400px, 36vw); min-width: 320px; border-radius: 22px; animation: side-in .45s var(--ease); }
+.sheet--side { top: calc(68px + var(--sat)); right: calc(16px + var(--sar)); max-height: calc(100vh - 168px - var(--sat) - var(--sab)); width: min(400px, 36vw); min-width: 320px; border-radius: 22px; animation: side-in .45s var(--ease); }
 .sheet--bottom { left: 0; right: 0; bottom: 0; max-height: 58vh; border-radius: 22px 22px 0 0; padding-bottom: var(--sab); animation: sheet-in .45s var(--ease); }
 .sheet__handle { display: grid; place-items: center; height: 22px; cursor: grab; touch-action: none; flex: none; }
 .sheet__handle span { width: 42px; height: 5px; border-radius: 99px; background: #2a242033; }

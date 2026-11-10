@@ -10,7 +10,8 @@ for (const v of list.split(',')) {
   const errs = []; p.on('pageerror', (e) => errs.push(e.message));
   // ?still: no intro auto-advance (O5), so the intro shot stays on the intro
   await p.goto(base + (base.includes('?') ? '&' : '?') + 'q=high' + (v === 'intro' ? '&still' : ''));
-  await p.waitForTimeout(2500);
+  await p.waitForSelector('.hud.is-revealed', { timeout: 90000 }).catch(() => {});
+  await p.waitForTimeout(800);
   await p.evaluate((v) => { const s = window.__scene.getState(); if (v === 'night') { s.goTo('seat'); s.setTimeOfDay('night'); } else s.goTo(v); }, v);
   await p.waitForTimeout(6000);
   const f = `${prefix}-${v}.png`; await p.screenshot({ path: f }); files.push(f);
