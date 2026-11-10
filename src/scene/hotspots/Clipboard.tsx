@@ -52,8 +52,8 @@ export function Clipboard() {
       const lift = 0.012 * Math.pow(free, 2.2) * (0.3 + cx) + 0.003 * Math.pow(free, 3);
       o.set(x, 0.0125 + lift + 0.0008 * Math.sin(u * 9), z - lift * 0.3);
     });
-    // second sheet slightly offset beneath for thickness
-    const under = gridSurface(2, 2, (u, v, o) => o.set((0.5 - u) * PW + 0.003, 0.0118, (v - 0.5) * PD - 0.003));
+    // second sheet slightly offset beneath for thickness (kept below paper's sin trough at 0.0117)
+    const under = gridSurface(2, 2, (u, v, o) => o.set((0.5 - u) * PW + 0.003, 0.0112, (v - 0.5) * PD - 0.003));
     // metal clip: base plate + rounded spring roll + lever
     const clipParts = [
       rbox(0.1, 0.004, 0.034, 0, 0.013, 0.152, 0.0015, 1),
