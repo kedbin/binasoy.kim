@@ -6,15 +6,17 @@ import { WORLD } from '../layout';
 import { mulberry32 } from './noise';
 import { mergeAll } from './Shore';
 import { useScene } from '../../state/store';
+import { SEASONS, type Season } from '../env/presets';
 
 type Kind = 'pine' | 'maple';
 interface T { x: number; z: number; s: number; r: number; c: THREE.Color; kind: Kind }
 
-function placements(count: number): T[] {
+function placements(count: number, season: Season): T[] {
+  const pal = SEASONS[season];
   const rand = mulberry32(7);
   const out: T[] = [];
-  const maples = ['#D9682B', '#C4452C', '#E3A63B', '#E8B44A', '#B8642A'].map((h) => new THREE.Color(h));
-  const pines = ['#2F4A3A', '#3B5A3F', '#28402F'].map((h) => new THREE.Color(h));
+  const maples = pal.foliage.map((h) => new THREE.Color(h));
+  const pines = pal.conifer.map((h) => new THREE.Color(h));
   let tries = 0;
   while (out.length < count && tries++ < count * 20) {
     const side = rand() < 0.5 ? -1 : 1;
@@ -27,7 +29,7 @@ function placements(count: number): T[] {
     if (Math.hypot(x, z) < 13) continue;
     const kind: Kind = rand() < 0.45 ? 'pine' : 'maple';
     const s = 0.8 + rand() * 0.9 + (Math.abs(x) > 20 ? 0.4 : 0);
-    const c = (kind === 'pine' ? pines[Math.floor(rand() * 3)] : maples[Math.floor(rand() * maples.length)]).clone();
+    const c = (kind === 'pine' ? pines[Math.floor(rand() * pines.length)] : maples[Math.floor(rand() * maples.length)]).clone();
     c.offsetHSL(0, 0, (rand() - 0.5) * 0.06);
     out.push({ x, z, s, r: rand() * Math.PI * 2, c, kind });
   }
@@ -63,7 +65,7 @@ function Forest({ kind, items }: { kind: Kind; items: T[] }) {
   }, [list, kind]);
   return (
     <instancedMesh ref={ref} args={[geo, undefined, list.length]} castShadow receiveShadow>
-      <meshLambertMaterial flatShading />
+      <meshStandardMaterial flatShading roughness={0.9} envMapIntensity={0.7} />
     </instancedMesh>
   );
 }
@@ -87,15 +89,16 @@ function Birches() {
     return mergeAll(parts);
   }, []);
   return (
-    <mesh geometry={geo} castShadow>
-      <meshLambertMaterial color="#E9E4DA" />
+    <mesh geometry={geo} castShadow receiveShadow>
+      <meshStandardMaterial color="#E9E4DA" roughness={0.8} />
     </mesh>
   );
 }
 
 export function Trees() {
   const quality = useScene((s) => s.quality);
-  const items = useMemo(() => placements(quality === 'low' ? 90 : quality === 'mid' ? 190 : 280), [quality]);
+  const season = useScene((s) => s.season);
+  const items = useMemo(() => placements(quality === 'low' ? 90 : quality === 'mid' ? 190 : 280, season), [quality, season]);
   return (
     <group name="trees">
       <Forest kind="pine" items={items} />
