@@ -1,8 +1,8 @@
 // OWNER: Opus O1. Post stack: N8AO contact darkening → bloom (fairy lights/fireflies/sun) → subtle DOF
 // (outside view, high only) → AgX tone mapping → vignette. Disabled on low tier (renderer tone-maps instead).
 // Intensities follow the damped env (presets.ts → live).
-import { EffectComposer, Bloom, Vignette, N8AO, ToneMapping, DepthOfField, SMAA } from '@react-three/postprocessing';
-import { ToneMappingMode, type BloomEffect, type VignetteEffect, type DepthOfFieldEffect } from 'postprocessing';
+import { EffectComposer, Bloom, Vignette, N8AO, ToneMapping, DepthOfField, SMAA, HueSaturation, BrightnessContrast } from '@react-three/postprocessing';
+import { ToneMappingMode, type BloomEffect, type VignetteEffect, type DepthOfFieldEffect, type HueSaturationEffect, type BrightnessContrastEffect } from 'postprocessing';
 import { useFrame } from '@react-three/fiber';
 import { useRef } from 'react';
 import { useScene } from '../state/store';
@@ -18,6 +18,8 @@ export function Effects() {
   const ao = useRef<N8>(null);
   const dof = useRef<DepthOfFieldEffect>(null);
   const dofK = useRef(0);
+  const hs = useRef<HueSaturationEffect>(null);
+  const bc = useRef<BrightnessContrastEffect>(null);
 
   useFrame((_, dt) => {
     if (bloom.current) {
@@ -25,10 +27,12 @@ export function Effects() {
       bloom.current.luminanceMaterial.threshold = live.n.bloomThreshold;
     }
     if (vig.current) vig.current.darkness = live.n.vignette;
+    if (hs.current) hs.current.saturation = live.n.saturation;
+    if (bc.current) bc.current.contrast = live.n.contrast;
     if (ao.current) ao.current.configuration.intensity = AO_BASE[quality] * live.n.ao;
     if (dof.current) {
       dofK.current += ((view === 'outside' ? 1 : 0) - dofK.current) * Math.min(1, dt * 2);
-      dof.current.bokehScale = dofK.current * 2.2;
+      dof.current.bokehScale = dofK.current * 1.4;
     }
   });
 
@@ -48,8 +52,10 @@ export function Effects() {
         color="#2a1a22"
       />
       <Bloom ref={bloom} intensity={0.5} luminanceThreshold={0.95} luminanceSmoothing={0.25} mipmapBlur radius={0.72} />
-      {high ? <DepthOfField ref={dof} worldFocusDistance={30} worldFocusRange={40} bokehScale={0} /> : <></>}
+      {high ? <DepthOfField ref={dof} focusDistance={45} focusRange={420} bokehScale={0} /> : <></>}
       <ToneMapping mode={ToneMappingMode.AGX} />
+      <HueSaturation ref={hs} saturation={0.2} />
+      <BrightnessContrast ref={bc} contrast={0.1} />
       <Vignette ref={vig} offset={0.3} darkness={0.42} />
       {!high ? <SMAA /> : <></>}
     </EffectComposer>

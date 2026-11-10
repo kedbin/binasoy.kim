@@ -117,7 +117,7 @@ void main(){
   float hy = abs(vW.y - uWaterY);
   // canopy cells: crowns ~5-6 m; elongated vertically on conifer patches
   float conif = vHill.y;
-  vec2 cp = vec2(vW.x * 0.17 + vW.z * 0.05, hy * mix(0.2, 0.13, conif));
+  vec2 cp = vec2(vW.x * 0.13 + vW.z * 0.04, hy * mix(0.16, 0.1, conif));
   vec4 c = cells(cp);
   vec3 fol = pick6(c.y);
   vec3 con = c.y < 0.33 ? uCon[0] : c.y < 0.66 ? uCon[1] : uCon[2];
@@ -128,22 +128,23 @@ void main(){
   float lum = dot(base, vec3(0.299, 0.587, 0.114));
   base = mix(base, vec3(lum), uNight * 0.7);
 
-  // fake crown dome normal → lit from the sun side (sun x sign), dark gaps between crowns
-  vec2 l2 = normalize(vec2(-uKeyDir.x, 0.8));
+  // fake crown dome normal: crowns catch light on their sun-facing upper edge; dark gaps between crowns
   vec2 cd = c.zw;
-  float dome = 1.0 - smoothstep(0.15, 0.55, c.x);
-  float crownLit = clamp(0.5 + dot(cd * 1.6, l2), 0.0, 1.0);
-  float gap = smoothstep(0.32, 0.62, c.x);
-  // macro: sun-side slopes + up-facing get light; backlit front faces stay in cool shade
-  vec3 L = normalize(uKeyDir);
-  float macro = clamp(dot(normalize(vN), normalize(vec3(L.x, 0.6, -0.15))) * 0.7 + 0.35, 0.0, 1.0);
-  float lit = clamp(macro * 0.65 + crownLit * dome * 0.45 - gap * 0.25, 0.0, 1.0);
+  float dome = 1.0 - smoothstep(0.1, 0.5, c.x);
+  float gap = smoothstep(0.38, 0.7, c.x);
+  float topLit = clamp(0.5 + cd.y * 1.4 + cd.x * sign(-uKeyDir.x) * 0.6, 0.0, 1.0);
+  // the hills face the camera with the sun BEHIND them → front faces sit in cool shade;
+  // only up-facing slopes / crest crowns pick up warm light (photo #5/#6)
+  vec3 Nn = normalize(vN);
+  float up = smoothstep(0.35, 0.95, Nn.y);
+  float crest = smoothstep(0.7, 1.0, vCrest);
+  float lit = clamp(up * 0.45 + crest * 0.45 + topLit * dome * 0.22 - gap * 0.18, 0.0, 1.0);
   vec3 col = base * mix(uHillShade, uHillLit, lit);
+  col *= 1.0 - gap * 0.22;
   // AO toward the waterline (dense understory)
-  col *= mix(0.55, 1.0, smoothstep(0.0, 9.0, hy));
-  // backlit rim along the crest
-  float crest = smoothstep(0.82, 1.0, vCrest) * (0.6 + 0.4 * dome);
-  col += uHillRim * crest * 0.22 * (1.0 - gap);
+  col *= mix(0.6, 1.0, smoothstep(0.0, 10.0, hy));
+  // backlit rim on the very top crowns
+  col += uHillRim * smoothstep(0.9, 1.0, vCrest) * dome * 0.18;
 
   // aerial perspective
   float haze = clamp(vHill.x * uHazeAmt, 0.0, 1.0);

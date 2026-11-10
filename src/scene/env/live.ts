@@ -20,7 +20,7 @@ const COLOR_KEYS: ColorKeys[] = [
 ];
 const NUM_KEYS: NumKeys[] = [
   'sunIntensity', 'hemiIntensity', 'fogNear', 'fogFar', 'interior', 'exposure', 'rimIntensity', 'envIntensity',
-  'bounce', 'shaft', 'stars', 'moon', 'hazeAmount', 'mist', 'bloom', 'bloomThreshold', 'ao', 'vignette',
+  'bounce', 'shaft', 'stars', 'moon', 'hazeAmount', 'mist', 'bloom', 'bloomThreshold', 'ao', 'vignette', 'saturation', 'contrast',
 ];
 const VEC_KEYS: VecKeys[] = ['sunDir', 'skySun', 'rimDir'];
 const SKY_KEYS = ['horizon', 'low', 'mid', 'zenith', 'cloud', 'cloudLit', 'glow'] as const;
