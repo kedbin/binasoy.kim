@@ -1,6 +1,6 @@
 import { Canvas } from '@react-three/fiber';
 import { Suspense, useEffect } from 'react';
-import { AdaptiveDpr, Preload, SoftShadows } from '@react-three/drei';
+import { AdaptiveDpr, Preload } from '@react-three/drei';
 import * as THREE from 'three';
 import { EnvDriver, EnvMap, ShadowFlags, GroundContact } from '../scene/env/EnvLighting';
 import { SunShafts } from '../scene/env/SunShafts';
@@ -28,7 +28,8 @@ export function App({ initialQuality }: { initialQuality: Quality }) {
       <Canvas
         className="scene-canvas"
         dpr={DPR[quality]}
-        shadows={quality !== 'low'}
+        // native PCF (Vogel-disk) soft shadows; drei SoftShadows/PCSS breaks samplers on three 0.187
+        shadows={quality !== 'low' ? 'percentage' : false}
         gl={{
           antialias: quality === 'low',
           powerPreference: 'high-performance',
@@ -40,7 +41,6 @@ export function App({ initialQuality }: { initialQuality: Quality }) {
       >
         <Suspense fallback={null}>
           <EnvDriver />
-          {quality === 'high' && <SoftShadows size={22} samples={12} focus={0.6} />}
           <EnvMap />
           <Lighting />
           <ShadowFlags />

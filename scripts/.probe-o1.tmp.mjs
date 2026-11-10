@@ -1,0 +1,14 @@
+import { chromium } from '@playwright/test';
+const [url, out, view = 'seat', tod = 'night', wait = '7000'] = process.argv.slice(2);
+const b = await chromium.launch({ args: ['--use-angle=d3d11', '--ignore-gpu-blocklist'] });
+const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
+const logs = [];
+p.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') logs.push(m.type() + ': ' + m.text()); });
+p.on('pageerror', (e) => logs.push('pageerror: ' + e.message));
+await p.goto(url);
+await p.waitForTimeout(2500);
+await p.evaluate(([v, t]) => { const s = window.__scene.getState(); s.goTo(v); s.setTimeOfDay(t); }, [view, tod]);
+await p.waitForTimeout(+wait);
+await p.screenshot({ path: out });
+console.log(logs.filter(l=>!l.includes("X4000")&&!l.includes("toNonIndexed")).slice(0, 25).map(l=>l.slice(0,400)).join('\n'));
+await b.close();

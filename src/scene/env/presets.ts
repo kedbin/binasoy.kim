@@ -94,7 +94,7 @@ export const LIGHTS: Record<TimeOfDay, LightPreset> = {
     // Key sits ~12° up so shadows are long but readable; the sky disk itself hugs the horizon.
     sunDir: [-0.5, 0.21, 1], sunColor: '#FFB070', sunIntensity: 3.4,
     hemiSky: '#C9B8DA', hemiGround: '#5E4A34', hemiIntensity: 0.6,
-    fog: '#E7C2B4', fogNear: 60, fogFar: 1100, interior: 1, exposure: 0.95,
+    fog: '#E7C2B4', fogNear: 60, fogFar: 1100, interior: 1, exposure: 0.9,
     skySun: [-0.45, 0.035, 1],
     rimDir: [0.35, 0.55, -1], rimColor: '#A9A3E0', rimIntensity: 0.9,
     envIntensity: 0.55, envHorizon: '#FFB27A', envTop: '#9C9AC8',
@@ -129,7 +129,7 @@ export const LIGHTS: Record<TimeOfDay, LightPreset> = {
   night: {
     sunDir: [0.45, 0.55, 0.75], sunColor: '#8FA6E0', sunIntensity: 0.55,   // moonlight key
     hemiSky: '#34406A', hemiGround: '#0A0C12', hemiIntensity: 0.28,
-    fog: '#0E1220', fogNear: 40, fogFar: 900, interior: 1.6, exposure: 1.1,
+    fog: '#0E1220', fogNear: 40, fogFar: 900, interior: 1.6, exposure: 0.72,
     skySun: [0.42, 0.32, 1],
     rimDir: [-0.3, 0.5, -1], rimColor: '#4A5A9A', rimIntensity: 0.25,
     envIntensity: 0.18, envHorizon: '#2A3458', envTop: '#141A30',
@@ -139,7 +139,7 @@ export const LIGHTS: Record<TimeOfDay, LightPreset> = {
     sky: { horizon: '#1C2340', low: '#141B33', mid: '#0C1226', zenith: '#05081A', cloud: '#161C30', cloudLit: '#2A3352', glow: '#3A4A80' },
     stars: 1, moon: 1,
     haze: '#151B30', hazeAmount: 0.7, mist: 0.35,
-    hillLit: '#5A6A9A', hillShade: '#1A2036', hillRim: '#8FA6E0',
+    hillLit: '#3A4670', hillShade: '#121828', hillRim: '#6F86C8',
     water: { deep: '#070B16', shine: '#8FA6E0', glitter: 0.35 },
     bloom: 0.9, bloomThreshold: 0.6, ao: 0.8, vignette: 0.55, saturation: 0.05, contrast: 0.08,
   },

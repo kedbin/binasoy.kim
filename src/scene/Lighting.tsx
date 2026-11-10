@@ -45,7 +45,7 @@ export function Lighting() {
     cam.updateProjectionMatrix();
     l.shadow.bias = -0.00025;
     l.shadow.normalBias = 0.025;
-    l.shadow.radius = quality === 'high' ? 1 : 3.5; // PCF softness on mid (high uses PCSS)
+    l.shadow.radius = quality === 'high' ? 4 : 3; // PCF Vogel-disk softness (texels)
     l.shadow.mapSize.set(mapSize, mapSize);
     l.shadow.map?.dispose();
     l.shadow.map = null as unknown as THREE.WebGLRenderTarget;
@@ -80,12 +80,12 @@ export function Lighting() {
     if (spill.current) {
       // warm pool of light falling out of the hatch onto the grass at night
       spill.current.color.copy(L.c.practicalColor);
-      spill.current.intensity = prac * 9;
+      spill.current.intensity = prac * 6;
       spill.current.visible = prac > 0.02;
     }
     if (fill.current) {
       fill.current.color.copy(L.c.practicalColor);
-      fill.current.intensity = prac * 0.9;
+      fill.current.intensity = prac * 0.25; // van.tsx practicals already light the cabin
       fill.current.visible = prac > 0.02;
     }
   });
