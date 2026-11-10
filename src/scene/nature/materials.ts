@@ -22,6 +22,8 @@ export interface NatureMatOpts {
   /** subtle back-light wrap so thin foliage glows when the sun is behind it. */
   translucency?: number;
   flatShading?: boolean;
+  /** cheap stylised fill: adds albedo × fill as emission so backlit subjects (characters vs sunset) stay readable. */
+  fill?: number;
 }
 
 export function natureMaterial(o: NatureMatOpts = {}) {
@@ -35,10 +37,11 @@ export function natureMaterial(o: NatureMatOpts = {}) {
   const uWindY = { value: new THREE.Vector2(...(o.windY ?? [0, 1])) };
   const uFreq = { value: o.windFreq ?? 1 };
   const uTrans = { value: o.translucency ?? 0 };
-  m.userData.uniforms = { uTint, uWind, uWindY, uFreq, uTrans };
+  const uFill = { value: o.fill ?? 0 };
+  m.userData.uniforms = { uTint, uWind, uWindY, uFreq, uTrans, uFill };
   m.customProgramCacheKey = () => `nature${o.wind ? 'w' : ''}${o.translucency ? 't' : ''}`;
   m.onBeforeCompile = (s) => {
-    Object.assign(s.uniforms, { uTint, uWind, uWindY, uFreq, uTrans, uTime: timeUniform, uWindGlobal: windUniform });
+    Object.assign(s.uniforms, { uTint, uWind, uWindY, uFreq, uTrans, uFill, uTime: timeUniform, uWindGlobal: windUniform });
     s.vertexShader = s.vertexShader
       .replace('#include <common>', `#include <common>
 attribute float aTint; varying float vTint;
@@ -63,11 +66,11 @@ if (uWind > 0.0) {
 }`);
     s.fragmentShader = s.fragmentShader
       .replace('#include <common>', `#include <common>
-varying float vTint; uniform vec3 uTint; uniform float uTrans;`)
+varying float vTint; uniform vec3 uTint; uniform float uTrans; uniform float uFill;`)
       .replace('#include <color_fragment>', `#include <color_fragment>
 diffuseColor.rgb = mix(diffuseColor.rgb, uTint * (0.75 + 0.25 * vColor.rgb), clamp(vTint, 0.0, 1.0));`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-totalEmissiveRadiance += diffuseColor.rgb * uTrans * 0.18 * vTint;`);
+totalEmissiveRadiance += diffuseColor.rgb * (uTrans * 0.18 * vTint + uFill);`);
   };
   return m;
 }

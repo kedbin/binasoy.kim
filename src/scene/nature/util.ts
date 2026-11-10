@@ -103,14 +103,15 @@ export function mergeAll(list: G[]) {
  * Generic loft: rings × seg grid. `fn(t, a, out)` returns the vertex for ring t∈[0,1] and angle a∈[0,2π).
  * Winding is auto-corrected to face outward. Optional fan caps at both ends.
  */
-export function loft(rings: number, seg: number, fn: (t: number, a: number, out: THREE.Vector3, i: number, j: number) => void, caps: [boolean, boolean] = [false, false]) {
+export function loft(rings: number, seg: number, fn: (t: number, a: number, out: THREE.Vector3, i: number, j: number) => void, caps: [boolean, boolean] = [false, false], closed = false) {
   const pos: number[] = [], idx: number[] = [];
   const v = new THREE.Vector3();
-  for (let i = 0; i <= rings; i++) for (let j = 0; j < seg; j++) { fn(i / rings, (j / seg) * Math.PI * 2, v, i, j); pos.push(v.x, v.y, v.z); }
-  const at = (i: number, j: number) => i * seg + (j % seg);
+  const nr = closed ? rings - 1 : rings;
+  for (let i = 0; i <= nr; i++) for (let j = 0; j < seg; j++) { fn(i / rings, (j / seg) * Math.PI * 2, v, i, j); pos.push(v.x, v.y, v.z); }
+  const at = (i: number, j: number) => (closed ? i % rings : i) * seg + (j % seg);
   // orientation: sum over all quads of (quad normal · radial-out), using winding (a, c, b)
   const ringC = (i: number) => { const c = new THREE.Vector3(); for (let j = 0; j < seg; j++) c.add(new THREE.Vector3().fromArray(pos, at(i, j) * 3)); return c.divideScalar(seg); };
-  const centres = Array.from({ length: rings + 1 }, (_, i) => ringC(i));
+  const centres = Array.from({ length: nr + 1 }, (_, i) => ringC(i));
   let score = 0;
   const A = new THREE.Vector3(), B = new THREE.Vector3(), Cc = new THREE.Vector3(), nrm = new THREE.Vector3(), out = new THREE.Vector3();
   for (let i = 0; i < rings; i++) for (let j = 0; j < seg; j++) {

@@ -34,19 +34,19 @@ export function raftGeometry() {
     const bulge = 1 + 0.035 * Math.cos(t * Math.PI * 8);
     const r = R * bulge;
     out.set(P.x + Nh.x * Math.cos(a) * r, P.y + Math.sin(a) * r, P.z + Nh.z * Math.cos(a) * r);
-  });
+  }, [false, false], true);
   const tg = soft(tube);
   // paint: grey tube, white stripe band on the outside, darker underside (painted AO), seams
-  const grey = new THREE.Color('#8E949B'), white = new THREE.Color('#F1F0EA');
+  const grey = new THREE.Color('#6C727A'), white = new THREE.Color('#F1F0EA');
   paint(tg, (p, n, outC) => {
     const centre = outline(0); void centre;
     const sideOut = n.x * p.x + n.z * p.z > 0 ? 1 : 0;
-    const band = sideOut && Math.abs(n.y) < 0.34 ? 1 : 0;
+    const band = sideOut && n.y > -0.12 && n.y < 0.26 ? 1 : 0;
     outC.copy(band ? white : grey);
     const under = smooth01(n.y, -0.9, 0.2);
-    outC.multiplyScalar(0.55 + 0.45 * under);
+    outC.multiplyScalar(0.62 + 0.38 * under);
     // thin dark pinstripes either side of the white band
-    if (sideOut && Math.abs(Math.abs(n.y) - 0.36) < 0.035) outC.multiplyScalar(0.45);
+    if (sideOut && (Math.abs(n.y + 0.16) < 0.04 || Math.abs(n.y - 0.3) < 0.04)) outC.multiplyScalar(0.55);
   });
   // floor: flattened rounded slab inside the tube
   const floor = loft(1, 48, (t, a, out) => {
@@ -86,8 +86,8 @@ export function ropeGeometry() {
     const a = eyelets[i], b = eyelets[(i + 1) % N];
     const mid = a.clone().lerp(b, 0.5);
     const out = new THREE.Vector3(mid.x, 0, mid.z).normalize().multiplyScalar(0.05);
-    mid.add(out); mid.y -= 0.12;
-    parts.push(soft(tubeAlong([a, a.clone().lerp(mid, 0.5).add(new THREE.Vector3(0, -0.04, 0)).add(out.clone().multiplyScalar(0.5)), mid, b.clone().lerp(mid, 0.5).add(new THREE.Vector3(0, -0.04, 0)).add(out.clone().multiplyScalar(0.5)), b], () => 0.011, 5, 12, [false, false])));
+    mid.add(out); mid.y -= 0.14;
+    parts.push(soft(tubeAlong([a, a.clone().lerp(mid, 0.5).add(new THREE.Vector3(0, -0.04, 0)).add(out.clone().multiplyScalar(0.5)), mid, b.clone().lerp(mid, 0.5).add(new THREE.Vector3(0, -0.04, 0)).add(out.clone().multiplyScalar(0.5)), b], () => 0.016, 5, 12, [false, false])));
     // eyelet patch (small flat disc)
     const patch = new THREE.CylinderGeometry(0.035, 0.035, 0.012, 10);
     const n = new THREE.Vector3(a.x, 0, a.z).normalize();

@@ -10,7 +10,12 @@ import { natureMaterial } from '../nature/materials';
 import { BODY, hoodieGeometry, headGeometry, eyesGeometry, shortHair, longHair, glassesGeometry, handGeometry, shoeGeometry } from './personGeo';
 import { oarGeometry } from './raftGeo';
 import { solve2, span } from './ik';
-import { smooth01 } from '../nature/util';
+import { smooth01, soft, paint } from '../nature/util';
+
+/** Capsule with painted underside AO (vertex colours required by natureMaterial). */
+function cap(r: number, len: number) {
+  return paint(soft(new THREE.CapsuleGeometry(r, Math.max(0.001, len), 4, 10)), (_p, n, o) => { o.setScalar(0.78 + 0.26 * (n.y * 0.5 + 0.5)); });
+}
 
 /** Raft-local rig constants (raft origin = hull bottom centre). */
 export const SEAT = { y: 0.3, z: -0.15, kimX: 0.18, wingX: -0.18 };
@@ -20,19 +25,21 @@ const ROW = { cycle: 2.1, burst: 7.5, period: 16 };
 
 const SKIN = '#E8BC98';
 const LOOK = {
-  kim: { hoodie: '#2C3037', pants: '#3A4152', hair: '#1B1613', shoes: '#26272B', skin: SKIN },
+  kim: { hoodie: '#3A4250', pants: '#4A5266', hair: '#1B1613', shoes: '#26272B', skin: SKIN },
   wing: { hoodie: '#C9A27A', pants: '#4A473F', hair: '#5B3A26', shoes: '#F0ECE4', skin: '#EDC3A2' },
 };
 
-const cloth = (c: string, tint = '#ffffff') => natureMaterial({ color: c, tint, roughness: 0.88 });
+// fill: characters are seen against the sunset (backlit) — a soft albedo fill keeps their colours readable.
+const FILL = 0.3;
+const cloth = (c: string, tint = '#ffffff') => natureMaterial({ color: c, tint, roughness: 0.88, fill: FILL });
 
 interface Shared { yaw: { value: number } }
 
 type Limb = { upper: THREE.Mesh; fore: THREE.Mesh; hand: THREE.Mesh };
 
 function makeLimb(len: [number, number], r: [number, number], sleeve: THREE.Material, skin: THREE.Material, hand: THREE.BufferGeometry) {
-  const up = new THREE.Mesh(new THREE.CapsuleGeometry(r[0], len[0] - r[0] * 1.2, 4, 10), sleeve);
-  const fo = new THREE.Mesh(new THREE.CapsuleGeometry(r[1], len[1] - r[1] * 1.2, 4, 10), sleeve);
+  const up = new THREE.Mesh(cap(r[0], len[0] - r[0] * 1.2), sleeve);
+  const fo = new THREE.Mesh(cap(r[1], len[1] - r[1] * 1.2), sleeve);
   const h = new THREE.Mesh(hand, skin);
   for (const m of [up, fo, h]) { m.castShadow = true; m.receiveShadow = true; }
   return { upper: up, fore: fo, hand: h } as Limb;
@@ -42,7 +49,7 @@ function makeLimb(len: [number, number], r: [number, number], sleeve: THREE.Mate
 function buildPerson(kind: 'kim' | 'wing', geo: ReturnType<typeof useGeos>) {
   const L = LOOK[kind];
   const mats = {
-    hoodie: cloth(L.hoodie), pants: cloth(L.pants), skin: cloth(L.skin), hair: natureMaterial({ color: L.hair, tint: kind === 'wing' ? '#9A6A44' : '#3A3330', roughness: 0.7 }),
+    hoodie: cloth(L.hoodie), pants: cloth(L.pants), skin: cloth(L.skin), hair: natureMaterial({ color: L.hair, tint: kind === 'wing' ? '#B07C50' : '#4A403A', roughness: 0.6, fill: FILL }),
     shoes: cloth(L.shoes, '#F4F1EA'), dark: natureMaterial({ color: '#141416', roughness: 0.4 }),
   };
   const root = new THREE.Group();
@@ -53,12 +60,12 @@ function buildPerson(kind: 'kim' | 'wing', geo: ReturnType<typeof useGeos>) {
   head.add(new THREE.Mesh(geo.eyes, mats.dark));
   const hair = new THREE.Mesh(kind === 'kim' ? geo.short : geo.long, mats.hair); hair.castShadow = true; head.add(hair);
   if (kind === 'kim') head.add(new THREE.Mesh(geo.glasses, mats.dark));
-  const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.05, 0.12, 10), mats.skin); neck.position.set(0, 0.53, 0); torso.add(neck);
+  const neck = new THREE.Mesh(paint(soft(new THREE.CylinderGeometry(0.045, 0.05, 0.12, 10)), (_p, _n, o) => { o.setScalar(0.8); }), mats.skin); neck.position.set(0, 0.53, 0); torso.add(neck);
   // legs (static seated pose, knees up): thigh + shin capsules, shoes
   for (const s of [-1, 1]) {
     const hip = new THREE.Vector3(s * 0.09, 0.03, 0.02), knee = new THREE.Vector3(s * 0.105, 0.1, 0.36), foot = new THREE.Vector3(s * 0.115, -0.19, 0.5);
-    const th = new THREE.Mesh(new THREE.CapsuleGeometry(0.075, hip.distanceTo(knee) - 0.04, 4, 10), mats.pants);
-    const sh = new THREE.Mesh(new THREE.CapsuleGeometry(0.06, knee.distanceTo(foot) - 0.05, 4, 10), mats.pants);
+    const th = new THREE.Mesh(cap(0.075, hip.distanceTo(knee) - 0.04), mats.pants);
+    const sh = new THREE.Mesh(cap(0.06, knee.distanceTo(foot) - 0.05), mats.pants);
     span(th, hip, knee); span(sh, knee, foot);
     const shoe = new THREE.Mesh(geo.shoe, mats.shoes); shoe.position.copy(foot).add(new THREE.Vector3(0, -0.035, 0.0)); shoe.rotation.y = s * 0.12;
     for (const m of [th, sh, shoe]) { m.castShadow = m.receiveShadow = true; root.add(m); }
@@ -100,7 +107,7 @@ function oarPose(p: number, side: number, active: number, dir: THREE.Vector3, gr
   if (p < 0.42) { const t = smooth01(p, 0, 0.42); yaw = 0.62 - 1.0 * t; pitch = 0.42; }
   else { const t = smooth01(p, 0.42, 1); yaw = -0.38 + 1.0 * t; pitch = 0.42 - 0.26 * Math.sin(t * Math.PI) - 0.1 * (1 - smooth01(p, 0.42, 0.52)) * 0; }
   // rest pose: oar trailing alongside, blade feathered just above the water
-  yaw = yaw * active + (-1.25) * (1 - active);
+  yaw = yaw * active + 1.2 * (1 - active);
   pitch = pitch * active + 0.2 * (1 - active);
   dir.set(side * Math.cos(yaw) * Math.cos(pitch), -Math.sin(pitch), -Math.sin(yaw) * Math.cos(pitch));
   _lock.set(side * OARLOCK.x, OARLOCK.y, OARLOCK.z);
@@ -111,12 +118,12 @@ export function People({ yaw }: Shared) {
   const geo = useGeos();
   const kim = useMemo(() => buildPerson('kim', geo), [geo]);
   const wing = useMemo(() => buildPerson('wing', geo), [geo]);
-  const oarMat = useMemo(() => natureMaterial({ roughness: 0.6 }), []);
+  const oarMat = useMemo(() => natureMaterial({ roughness: 0.6, fill: 0.2 }), []);
   const oars = useMemo(() => [new THREE.Mesh(geo.oar, oarMat), new THREE.Mesh(geo.oar, oarMat)], [geo, oarMat]);
   const thermos = useMemo(() => {
     const g = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.2, 14), natureMaterial({ color: '#B8483E', roughness: 0.5 }));
-    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.042, 0.05, 14), natureMaterial({ color: '#D9D5CC', roughness: 0.4 }));
+    const body = new THREE.Mesh(paint(soft(new THREE.CylinderGeometry(0.04, 0.04, 0.2, 14)), () => 0), natureMaterial({ color: '#B8483E', roughness: 0.5, fill: 0.2 }));
+    const cap = new THREE.Mesh(paint(soft(new THREE.CylinderGeometry(0.042, 0.042, 0.05, 14)), () => 0), natureMaterial({ color: '#D9D5CC', roughness: 0.4, fill: 0.2 }));
     body.position.y = 0.1; cap.position.y = 0.225;
     body.castShadow = cap.castShadow = true;
     g.add(body, cap); g.position.set(0, SEAT.y + 0.0, SEAT.z - 0.02);

@@ -59,7 +59,11 @@ export function shortHair(seed = 3) {
   for (let i = 0; i < p.count; i++) {
     const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
     const back = smooth01(-z / R, -0.2, 0.8);
-    if (y < R * 0.35) p.setY(i, y - back * 0.06);
+    const front = smooth01(z / R, -0.05, 0.4);
+    // keep the face clear: lift the front hairline to brow height; sideburns stay down by the ears
+    const minY = lerp(-R * 0.15, R * 0.5, front);
+    if (y < minY) p.setY(i, minY + (y - minY) * 0.15);
+    if (y < R * 0.35) p.setY(i, p.getY(i) - back * 0.06);
   }
   cap.computeVertexNormals();
   const tufts: G[] = [];
@@ -102,6 +106,9 @@ export function longHair(seed = 7) {
   for (let i = 0; i < p.count; i++) {
     const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
     if (y > R * 0.85 && Math.abs(x) < 0.012 && z > -R * 0.2) p.setY(i, y - 0.006);
+    const front = smooth01(z / R, 0.0, 0.45) * (1 - smooth01(Math.abs(x) / R, 0.8, 1.0));
+    const minY = lerp(-R * 0.3, R * 0.38, front);
+    if (p.getY(i) < minY) p.setY(i, minY + (p.getY(i) - minY) * 0.15);
   }
   cap.computeVertexNormals();
   // back sheet: from crown/back of head flowing down to mid-back, widening, slightly wavy

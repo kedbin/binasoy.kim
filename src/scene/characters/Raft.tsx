@@ -57,15 +57,19 @@ export function RaftScene() {
 
   const geo = useMemo(() => ({ hull: raftGeometry(), rope: ropeGeometry(), fit: fittingsGeometry() }), []);
   const mats = useMemo(() => ({
-    hull: natureMaterial({ roughness: 0.55 }), // PVC sheen
+    hull: natureMaterial({ roughness: 0.5, fill: 0.22 }), // PVC sheen; fill keeps the backlit hull readable
     rope: natureMaterial({ color: '#D9CBA8', roughness: 1 }),
-    fit: natureMaterial({ roughness: 0.5 }),
+    fit: natureMaterial({ roughness: 0.5, fill: 0.15 }),
     wake: new THREE.ShaderMaterial({
       vertexShader: wakeVert, fragmentShader: wakeFrag, transparent: true, depthWrite: false,
       uniforms: { uTime: timeUniform, uSpeed: { value: 1 }, uNight: nightUniform },
     }),
   }), []);
   useEffect(() => () => { Object.values(mats).forEach((m) => m.dispose()); }, [mats]);
+
+  useEffect(() => {
+    if (import.meta.env.DEV) (window as unknown as { __raft: THREE.Group | null }).__raft = drift.current;
+  }, []);
 
   useFrame(({ clock }) => {
     const t = clock.elapsedTime;
