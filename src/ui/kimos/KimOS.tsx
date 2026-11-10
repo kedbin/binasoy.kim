@@ -4,6 +4,10 @@ import { content } from '../../content';
 import { classify, EMAIL_RE, FAIL_COPY, LIMITS, NEEDS_FALLBACK, postContact } from './contact';
 import type { ContactPayload, FailReason, TemplateId } from './contact';
 import { useTurnstile } from './turnstile';
+import { Trailhead } from './Trailhead';
+import type { TrailNav } from './Trailhead';
+import { Terminal } from './Terminal';
+import type { PageId } from './pages';
 import './kimos.css';
 
 export interface KimOSProps { mode?: 'screen' | 'modal'; onExit?: () => void }
@@ -15,30 +19,19 @@ export interface KimOSProps { mode?: 'screen' | 'modal'; onExit?: () => void }
 type AppId = 'trailhead' | 'mail' | 'photos' | 'terminal';
 interface AppDef { id: AppId; label: string; title: string; glyph: string; color: string; w: number; h: number }
 const APPS: AppDef[] = [
-  { id: 'trailhead', label: 'Trailhead', title: 'Trailhead', glyph: '🧭', color: '#8fb078', w: 860, h: 640 },
+  { id: 'trailhead', label: 'Trailhead', title: 'Trailhead', glyph: '🧭', color: '#8fb078', w: 900, h: 680 },
   { id: 'mail', label: 'CampMail', title: 'CampMail — New note', glyph: '✉️', color: '#FFD58A', w: 660, h: 560 },
   { id: 'photos', label: 'Photos', title: 'Photos — van life', glyph: '📷', color: '#EDE8E0', w: 660, h: 520 },
-  { id: 'terminal', label: 'Terminal', title: 'Terminal', glyph: '>_', color: '#1E1F22', w: 620, h: 400 },
+  { id: 'terminal', label: 'Terminal', title: 'Terminal', glyph: '>_', color: '#1E1F22', w: 660, h: 460 },
 ];
 const APP_POS: Record<AppId, { x: number; y: number }> = {
-  trailhead: { x: 150, y: 22 }, mail: { x: 380, y: 60 }, photos: { x: 300, y: 90 }, terminal: { x: 460, y: 300 },
+  trailhead: { x: 150, y: 22 }, mail: { x: 380, y: 60 }, photos: { x: 300, y: 90 }, terminal: { x: 420, y: 180 },
 };
 
-type PageId = 'about' | 'experience' | 'projects' | 'certs' | 'resume';
-const PAGES: { id: PageId; label: string; glyph: string; path: string }[] = [
-  { id: 'about', label: 'About', glyph: '🏕', path: 'about' },
-  { id: 'experience', label: 'Experience', glyph: '🥾', path: 'experience' },
-  { id: 'projects', label: 'Projects', glyph: '🛠️', path: 'projects' },
-  { id: 'certs', label: 'Certs & Skills', glyph: '🏅', path: 'certs-and-skills' },
-  { id: 'resume', label: 'Résumé', glyph: '📎', path: 'resume' },
-];
-const pageOf = (id: PageId) => PAGES.find((p) => p.id === id)!;
-
-const VENDOR: Record<string, string> = { gcp: '#4285F4', azure: '#0078D4', aws: '#FF9900', 'google-ai': '#8E64D9', other: '#8FA3B8' };
 const thumb = (s: string) => s.replace(/\.webp$/, '-thumb.webp');
 const toAddr = (content.profile.links.find((l) => l.kind === 'email')?.href.replace(/^mailto:/, '') || '').trim();
 
-interface Win { id: AppId; x: number; y: number; z: number; nav?: { page: PageId; n: number } }
+interface Win { id: AppId; x: number; y: number; z: number; nav?: TrailNav }
 
 function useReducedMotion() {
   const [r, setR] = useState(() => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -70,145 +63,6 @@ function Wallpaper() {
       </svg>
     </div>
   );
-}
-
-function Link({ href, children, className = 'kos-link' }: { href: string; children: ReactNode; className?: string }) {
-  const ext = /^https?:/.test(href);
-  return <a className={className} href={href} {...(ext ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>{children}</a>;
-}
-
-// ---------------------------------------------------------------- Trailhead pages
-type Go = (p: PageId) => void;
-function NextTrail({ go, to }: { go: Go; to: PageId }) {
-  const p = pageOf(to);
-  return <button type="button" className="kos-next" onClick={() => go(to)}>Next stop: {p.glyph} {p.label} →</button>;
-}
-
-function AboutPage({ go }: { go: Go }) {
-  const p = content.profile;
-  const links = p.links.filter((l) => l.kind !== 'resume');
-  return (<article>
-    <h2>{p.name}</h2>
-    <div>{p.roles.map((r) => <span className="kos-tag" key={r}>{r}</span>)}</div>
-    <div className="kos-tagline">{p.tagline}</div>
-    {p.bio.map((b, i) => <p key={i}>{b}</p>)}
-    <div className="kos-stats">{p.stats.map((s) => <div className="kos-stat" key={s.label}><b>{s.value}</b><span className="kos-muted">{s.label}</span></div>)}</div>
-    <p className="kos-muted">📍 {p.location} · 🟢 {p.status}</p>
-    <h3>Elsewhere</h3>
-    <div className="kos-chips">{links.map((l) => <Link key={l.href} href={l.href} className="kos-chip kos-chip--link">{l.label}{/^https?:/.test(l.href) ? ' ↗' : ''}</Link>)}</div>
-    <NextTrail go={go} to="experience" />
-  </article>);
-}
-function ExperiencePage({ go }: { go: Go }) {
-  return (<article><h2>Experience</h2>
-    <div className="kos-tl">{content.experience.map((j) => (
-      <section className="kos-job" key={j.id}>
-        <h3>{j.role} · {j.company}</h3>
-        <div className="kos-muted">{j.start} – {j.end}{j.location ? ' · ' + j.location : ''}</div>
-        {j.summary && <p>{j.summary}</p>}
-        <ul>{j.bullets.map((b, i) => <li key={i}>{b}</li>)}</ul>
-      </section>))}</div>
-    <NextTrail go={go} to="projects" />
-  </article>);
-}
-function ProjectsPage({ go }: { go: Go }) {
-  return (<article><h2>Projects</h2>
-    <div className="kos-grid">{content.projects.map((p) => (
-      <section className="kos-card" key={p.id}>
-        <h3>{p.name}</h3><div className="kos-muted">{p.tagline}</div>
-        <p>{p.description}</p>
-        {p.metric && <div className="kos-metric">★ {p.metric}</div>}
-        <div>{p.tags.map((t) => <span className="kos-tag" key={t}>{t}</span>)}</div>
-        {p.href && <Link href={p.href}>Visit {p.name} ↗</Link>}
-      </section>))}</div>
-    <NextTrail go={go} to="certs" />
-  </article>);
-}
-function CertsPage({ go }: { go: Go }) {
-  const [feat, rest] = useMemo(() => [content.certs.filter((c) => c.featured), content.certs.filter((c) => !c.featured)], []);
-  const card = (c: typeof content.certs[number]) => (
-    <section className="kos-card" key={c.id} style={{ '--c': VENDOR[c.vendor] } as CSSProperties}>
-      <div className="kos-muted">{c.issuer}</div><h3>{c.name}</h3>{c.blurb && <p>{c.blurb}</p>}
-    </section>);
-  return (<article><h2>Certifications</h2>
-    <div className="kos-grid">{feat.map(card)}</div>
-    {rest.length > 0 && <><h3 className="kos-h3gap">Also certified</h3><div className="kos-grid">{rest.map(card)}</div></>}
-    <h2 className="kos-h2gap">Skills</h2>
-    {content.skills.map((g) => (<section key={g.title}><h3>{g.title}</h3>
-      <div className="kos-chips">{g.items.map((i) => <span className="kos-chip" key={i}>{i}</span>)}</div></section>))}
-    <NextTrail go={go} to="resume" />
-  </article>);
-}
-function ResumePage({ go }: { go: Go }) {
-  const p = content.profile;
-  const latest = content.experience[0];
-  return (<article className="kos-resume">
-    <div className="kos-doc" aria-hidden="true"><span>PDF</span></div>
-    <h2>Résumé</h2>
-    <p className="kos-muted">{p.name} · {p.roles.join(' · ')} · {p.location}</p>
-    <div className="kos-actions">
-      <a className="kos-link" href={p.resumePdf} download>Download PDF ⬇</a>
-      <a className="kos-link kos-link--ghost" href={p.resumePdf} target="_blank" rel="noopener noreferrer">Open in a new tab ↗</a>
-    </div>
-    <h3 className="kos-h3gap">At a glance</h3>
-    <ul>
-      {latest && <li>Now: {latest.role} · {latest.company} ({latest.start} – {latest.end})</li>}
-      <li>{content.certs.length} certifications · {content.projects.length} projects · {content.experience.length} roles</li>
-      {p.stats.map((s) => <li key={s.label}>{s.value} {s.label}</li>)}
-    </ul>
-    <p className="kos-muted">Want to talk? <button type="button" className="kos-inline" onClick={() => go('about')}>Back to the start</button> or drop a note in CampMail.</p>
-  </article>);
-}
-
-function Trailhead({ nav, reduced }: { nav?: Win['nav']; reduced: boolean }) {
-  const [hist, setHist] = useState<{ stack: PageId[]; i: number }>({ stack: [nav?.page ?? 'about'], i: 0 });
-  const [reloadN, setReloadN] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const bodyRef = useRef<HTMLDivElement>(null);
-  const page = hist.stack[hist.i];
-
-  const go = useCallback((p: PageId) => setHist((h) => (h.stack[h.i] === p ? h : { stack: [...h.stack.slice(0, h.i + 1), p], i: h.i + 1 })), []);
-  const back = () => setHist((h) => (h.i > 0 ? { ...h, i: h.i - 1 } : h));
-  const fwd = () => setHist((h) => (h.i < h.stack.length - 1 ? { ...h, i: h.i + 1 } : h));
-  const reload = () => { setReloadN((n) => n + 1); if (!reduced) setLoading(true); };
-
-  // External navigation requests (desktop / terminal "open projects").
-  const lastNav = useRef(nav?.n);
-  useEffect(() => { if (nav && nav.n !== lastNav.current) { lastNav.current = nav.n; go(nav.page); } }, [nav, go]);
-  useEffect(() => { bodyRef.current?.scrollTo?.(0, 0); }, [page, reloadN]);
-  useEffect(() => { if (!loading) return; const t = setTimeout(() => setLoading(false), 450); return () => clearTimeout(t); }, [loading, reloadN]);
-
-  const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
-    if (!e.altKey) return;
-    if (e.key === 'ArrowLeft') { e.preventDefault(); back(); } else if (e.key === 'ArrowRight') { e.preventDefault(); fwd(); }
-  };
-  const cur = pageOf(page);
-  return (
-    <div className="kos-br" onKeyDown={onKey}>
-      <div className="kos-br__bar">
-        <button type="button" className="kos-br__btn" onClick={back} disabled={hist.i === 0} aria-label="Back" title="Back (Alt+←)">←</button>
-        <button type="button" className="kos-br__btn" onClick={fwd} disabled={hist.i >= hist.stack.length - 1} aria-label="Forward" title="Forward (Alt+→)">→</button>
-        <button type="button" className="kos-br__btn" onClick={reload} aria-label="Reload" title="Reload">↻</button>
-        <button type="button" className="kos-br__btn" onClick={() => go('about')} aria-label="Home" title="Home">⌂</button>
-        <div className="kos-br__url" aria-label="Address">
-          <span aria-hidden="true">🔒</span> <span className="kos-muted">trail://kim/</span>{cur.path}
-        </div>
-      </div>
-      <nav className="kos-br__marks" aria-label="Bookmarks">
-        {PAGES.map((p) => (
-          <button type="button" key={p.id} className={'kos-br__mark' + (p.id === page ? ' is-on' : '')} aria-current={p.id === page ? 'page' : undefined} onClick={() => go(p.id)}>
-            <span aria-hidden="true">{p.glyph}</span> {p.label}
-          </button>))}
-      </nav>
-      {loading && <div className="kos-br__progress" aria-hidden="true" />}
-      <div className="kos-br__page" ref={bodyRef} key={page + ':' + reloadN} aria-busy={loading || undefined}>
-        {page === 'about' && <AboutPage go={go} />}
-        {page === 'experience' && <ExperiencePage go={go} />}
-        {page === 'projects' && <ProjectsPage go={go} />}
-        {page === 'certs' && <CertsPage go={go} />}
-        {page === 'resume' && <ResumePage go={go} />}
-      </div>
-    </div>);
 }
 
 // ---------------------------------------------------------------- Photos
@@ -430,73 +284,6 @@ function CampMail({ reduced, onDone }: { reduced: boolean; onDone: () => void })
   );
 }
 
-// ---------------------------------------------------------------- Terminal
-function Terminal({ onClose, openPage, openApp, onExit }: { onClose: () => void; openPage: (p: PageId) => void; openApp: (a: AppId) => void; onExit?: () => void }) {
-  const [lines, setLines] = useState<string[]>(['KimOS terminal — type "help"']);
-  const [val, setVal] = useState('');
-  const [typing, setTyping] = useState<string | null>(null);
-  const [shown, setShown] = useState(0);
-  const [hist, setHist] = useState<string[]>([]);
-  const [hi, setHi] = useState(-1);
-  const endRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  useEffect(() => { inputRef.current?.focus(); }, []);
-  useEffect(() => {
-    if (typing === null) return;
-    if (shown >= typing.length) { setLines((l) => [...l, typing]); setTyping(null); return; }
-    const t = setTimeout(() => setShown((s) => Math.min(typing.length, s + 6)), 12);
-    return () => clearTimeout(t);
-  }, [typing, shown]);
-  useEffect(() => { endRef.current?.scrollIntoView?.({ block: 'end' }); }, [lines, shown]);
-
-  const pageAlias: Record<string, PageId> = { about: 'about', experience: 'experience', exp: 'experience', projects: 'projects', certs: 'certs', skills: 'certs', resume: 'resume', 'résumé': 'resume', cv: 'resume' };
-  const run = (raw: string): string | null => {
-    const c = raw.trim().toLowerCase().replace(/\s+/g, ' ');
-    const p = content.profile;
-    if (c.startsWith('open ') || c.startsWith('cd ')) {
-      const arg = c.split(' ')[1].replace(/\/$/, '').replace(/\.(txt|pdf)$/, '');
-      if (pageAlias[arg]) { openPage(pageAlias[arg]); return `opening trail://kim/${pageOf(pageAlias[arg]).path} in Trailhead…`; }
-      if (arg === 'mail' || arg === 'campmail') { openApp('mail'); return 'opening CampMail…'; }
-      if (arg === 'photos') { openApp('photos'); return 'opening Photos…'; }
-      return `open: no such trail "${arg}". try "ls"`;
-    }
-    switch (c) {
-      case '': return '';
-      case 'help': return 'commands: help, whoami, ls, open <page>, cat about.txt, projects, certs, skills, mail, wingwing, weather, clear, exit, logout';
-      case 'whoami': return p.name + ' — ' + p.roles.join(' · ');
-      case 'ls': return PAGES.map((x) => x.path).join('  ') + '  photos/  mail';
-      case 'pwd': return '/home/' + p.shortName.toLowerCase() + '/van';
-      case 'cat about.txt': return p.tagline + '\n\n' + p.bio.join('\n\n');
-      case 'projects': return content.projects.map((x) => '• ' + x.name + ' — ' + x.tagline).join('\n') + '\n(open projects for the full trail)';
-      case 'certs': return content.certs.map((x) => '• ' + x.issuer + ': ' + x.name).join('\n');
-      case 'skills': return content.skills.map((g) => g.title + ': ' + g.items.join(', ')).join('\n');
-      case 'mail': openApp('mail'); return 'opening CampMail…';
-      case 'wingwing': return '🐾 ' + p.partner + ' is the best co-pilot, and the reason every campsite feels like home. 💛';
-      case 'weather': return 'golden hour · lake still · a few fireflies. perfect for shipping.';
-      case 'sudo rm -rf /': case 'sudo rm -rf': return 'nice try. the van stays parked.';
-      case 'exit': onClose(); return '';
-      case 'logout': case 'shutdown': if (onExit) { onExit(); return ''; } return 'nowhere to go — enjoy the view.';
-      default: return c + ': command not found. try "help"';
-    }
-  };
-  const onKey = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'ArrowUp' && hist.length) { e.preventDefault(); const n = Math.min(hist.length - 1, hi + 1); setHi(n); setVal(hist[hist.length - 1 - n]); return; }
-    if (e.key === 'ArrowDown' && hi >= 0) { e.preventDefault(); const n = hi - 1; setHi(n); setVal(n < 0 ? '' : hist[hist.length - 1 - n]); return; }
-    if (e.key !== 'Enter' || typing !== null) return;
-    const cmd = val; setVal(''); setHi(-1);
-    if (cmd.trim()) setHist((h) => [...h, cmd]);
-    if (cmd.trim().toLowerCase() === 'clear') { setLines([]); return; }
-    setLines((l) => [...l, '$ ' + cmd]);
-    const out = run(cmd);
-    if (out) { setShown(0); setTyping(out); }
-  };
-  return (<div className="kos-term" onClick={() => inputRef.current?.focus()}>
-    {lines.map((l, i) => <div key={i}>{l}</div>)}
-    {typing !== null && <div>{typing.slice(0, shown)}</div>}
-    <div>$ <input ref={inputRef} value={val} onChange={(e) => setVal(e.target.value)} onKeyDown={onKey} aria-label="Terminal input" spellCheck={false} autoCapitalize="off" autoComplete="off" /></div>
-    <div ref={endRef} /></div>);
-}
-
 // ---------------------------------------------------------------- Window manager
 function Window({ win, app, modal, onClose, onFocus, onMove, children }: {
   win: Win; app: AppDef; modal: boolean; onClose: () => void; onFocus: () => void;
@@ -571,10 +358,10 @@ export function KimOS({ mode = 'screen', onExit }: KimOSProps) {
 
   const body = (w: Win) => {
     switch (w.id) {
-      case 'trailhead': return <Trailhead nav={w.nav} reduced={reduced} />;
+      case 'trailhead': return <Trailhead nav={w.nav} reduced={reduced} onMail={() => open('mail')} />;
       case 'mail': return <CampMail reduced={reduced} onDone={() => close('mail')} />;
       case 'photos': return <Photos />;
-      case 'terminal': return <Terminal onClose={() => close('terminal')} openPage={(p) => open('trailhead', p)} openApp={(a) => open(a)} onExit={onExit} />;
+      case 'terminal': return <Terminal onClose={() => close('terminal')} openPage={(p) => open('trailhead', p)} openMail={() => open('mail')} />;
     }
   };
 

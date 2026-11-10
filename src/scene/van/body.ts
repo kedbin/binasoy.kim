@@ -15,7 +15,20 @@ export const WHEEL = { r: 0.34, y: 0.34, zs: [-2.72, 0.32] as number[], arch: 0.
 /** Greenhouse windows (z,y) polygons, CCW. */
 export const WIN_SLIDE: [number, number][] = [[-1.28, BELT + 0.06], [0.24, BELT + 0.06], [0.24, 1.66], [-1.28, 1.66]];
 export const WIN_QUARTER: [number, number][] = [[0.36, BELT + 0.06], [0.98, BELT + 0.06], [0.84, 1.66], [0.36, 1.66]];
-export const WIN_FRONT: [number, number][] = [[-2.62, BELT + 0.06], [-1.42, BELT + 0.06], [-1.42, 1.66], [-2.1, 1.66]];
+/** Cab door window (driver / passenger). The cab is a solid full-width slab, so this pane sits proud of its flat
+ *  side (x = CAB_SKIN) over a black surround, instead of being cut in. Front edge follows the windshield rake. */
+export const WIN_FRONT: [number, number][] = [[-2.47, BELT + 0.06], [-1.5, BELT + 0.06], [-1.5, 1.62], [-2.12, 1.62]];
+const WIN_FRONT_SURROUND: [number, number][] = [[-2.53, BELT + 0.03], [-1.45, BELT + 0.03], [-1.45, 1.65], [-2.15, 1.65]];
+/** Flat side of the cabin slab (see makeBody: slab(cabinProfile(), -OUT + 0.01, OUT - 0.01, ...)). */
+const CAB_SKIN = OUT - 0.01;
+/** Windshield plane: origin at the cowl, local +y up the rake; OUT_N is its outward normal (y, z). */
+const WS_RAKE = Math.atan2(0.66, 0.58);
+const WS_N = [0.66 / Math.hypot(0.66, 0.58), -0.58 / Math.hypot(0.66, 0.58)] as const;
+function onWindshield(g: G, proud: number) {
+  g.rotateX(WS_RAKE);
+  g.translate(0, 1.125 + WS_N[0] * proud, -2.86 + WS_N[1] * proud);
+  return g;
+}
 
 /** Inward lean of the greenhouse above the beltline (tumblehome). */
 export const lean = (y: number) => 1 - Math.max(0, y - BELT) * 0.09;
@@ -165,6 +178,8 @@ export function makeBody() {
   for (const s of [1, -1]) {
     const x = s * (OUT + 0.003);
     chrome.push(rb(x - 0.008, x + 0.008, BELT + 0.02, BELT + 0.045, -2.62, 0.98, 0.006, 1));
+    // chrome window line over the cab door window (the greenhouse strip below starts behind the B-pillar)
+    chrome.push(rb(s * (CAB_SKIN + 0.004) - 0.006, s * (CAB_SKIN + 0.004) + 0.006, 1.66, 1.675, -2.12, -1.45, 0.004, 1));
     chrome.push(applyLean(rb(s * (OUT - 0.008) - 0.008, s * (OUT - 0.008) + 0.008, 1.68, 1.70, -2.1, 0.84, 0.006, 1)));
     // sliding door seam (front + rear edge + track line) and front door seam
     for (const z of [-1.36, 0.3]) seam.push(rb(x - 0.004, x + 0.004, 0.36, BELT, z - 0.004, z + 0.004, 0.002, 1));
@@ -179,15 +194,23 @@ export function makeBody() {
     if (s > 0) seam.push(...[0.15, 0.31].map((y) => rb(x - 0.004, x + 0.004, 0.75 + y * 0.5 - 0.075, 0.75 + y * 0.5 - 0.07, 0.6, 0.74, 0.002, 1)));
     // mirrors: stalk + rounded cap + glass
     const mx = s * (OUT + 0.1);
-    black.push(rbox(0.12, 0.04, 0.08, s * (OUT + 0.04), 1.13, -2.3, 0.015, 2));
-    const cap = new THREE.SphereGeometry(1, 16, 10); cap.scale(0.075, 0.075, 0.12); cap.translate(mx, 1.18, -2.28);
+    // sits on the front corner of the cab door window (sail panel), not mid-glass
+    black.push(rbox(0.12, 0.04, 0.08, s * (OUT + 0.04), 1.13, -2.62, 0.015, 2));
+    const cap = new THREE.SphereGeometry(1, 16, 10); cap.scale(0.075, 0.075, 0.12); cap.translate(mx, 1.18, -2.6);
     white.push(cap);
-    black.push(rbox(0.12, 0.1, 0.01, mx, 1.18, -2.22, 0.03, 2));
+    black.push(rbox(0.12, 0.1, 0.01, mx, 1.18, -2.54, 0.03, 2));
     // roof rails with feet
     const rx = s * (OUT * lean(ROOF) - 0.1);
     black.push(tube([V(rx, ROOF + 0.005, -1.75), V(rx, ROOF + 0.045, -1.55), V(rx, ROOF + 0.05, 0.0), V(rx, ROOF + 0.045, 0.85), V(rx, ROOF + 0.005, 1.0)], 0.014, 40, 8));
     for (const z of [-1.7, 0.95]) black.push(rbox(0.04, 0.05, 0.12, rx, ROOF + 0.015, z, 0.015, 2));
     chrome.push(rbox(0.006, 0.02, 1.6, rx + s * 0.013, ROOF + 0.05, -0.35, 0.003, 1));
+  }
+  // cab door windows: black rubber surround (thin closed slab, both sides) behind the proud smoked pane
+  black.push(...sym(slab(roundPoly(new THREE.Shape(), WIN_FRONT_SURROUND, 0.07), CAB_SKIN - 0.004, CAB_SKIN + 0.004, 0.002, 8)));
+  // windshield: black ceramic band around the glass
+  {
+    const s = roundPoly(new THREE.Shape(), [[-0.83, -0.035], [0.83, -0.035], [0.705, 0.875], [-0.705, 0.875]], 0.1);
+    black.push(onWindshield(extrude(s, 0.004, 0, 1, 8), 0.0045));
   }
   // hood seam + cowl/wiper well
   seam.push(rb(-0.82, 0.82, 1.045, 1.07, -2.9, -2.885, 0.004, 1));
@@ -205,7 +228,7 @@ export function makeBody() {
 /** Glass panes (smoked) for side windows + windshield, as flat shapes slightly proud/inset of the body skin. */
 export function makeGlass() {
   const panes: G[] = [];
-  for (const w of [WIN_SLIDE, WIN_QUARTER, WIN_FRONT]) {
+  for (const w of [WIN_SLIDE, WIN_QUARTER]) {
     const sh = roundPoly(new THREE.Shape(), w, 0.06);
     const g = new THREE.ShapeGeometry(sh, 8);
     g.rotateY(-Math.PI / 2);
@@ -213,14 +236,16 @@ export function makeGlass() {
     applyLean(g);
     panes.push(...sym(g));
   }
-  // windshield: shaped quad following the cabin profile rake
+  // cab door windows: flat (the cab has no tumblehome), just proud of the black surround
+  {
+    const g = new THREE.ShapeGeometry(roundPoly(new THREE.Shape(), WIN_FRONT, 0.06), 8);
+    g.rotateY(-Math.PI / 2);
+    g.translate(CAB_SKIN + 0.0065, 0, 0);
+    panes.push(...sym(g));
+  }
+  // windshield: shaped quad following the cabin profile rake (cowl (-2.86,1.12) up to the roof (-2.2,1.7))
   const ws = new THREE.Shape();
   roundPoly(ws, [[-0.78, 0], [0.78, 0], [0.66, 0.84], [-0.66, 0.84]], 0.08);
-  // local +y follows the rake from the cowl (-2.86,1.12) up to the roof (-2.2,1.7)
-  const g2 = new THREE.ShapeGeometry(ws, 8);
-  g2.rotateX(Math.atan2(0.66, 0.58));
-  g2.translate(0, 1.125, -2.86);
-  g2.translate(0, 0.66 * 0.006, -0.58 * 0.006); // proud of the skin along the outward normal
-  panes.push(g2);
+  panes.push(onWindshield(new THREE.ShapeGeometry(ws, 8), 0.0065)); // proud of the black band
   return merge(panes, false);
 }
