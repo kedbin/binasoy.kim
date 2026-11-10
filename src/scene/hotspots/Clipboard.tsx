@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { ANCHORS } from '../layout';
 import { Hotspot } from './Hotspot';
 import { canvasTex } from './textures';
-import { extrude, rrShape, rbox, gridSurface, merge, tube, V } from '../van/util';
+import { rbox, gridSurface, merge, tube, V } from '../van/util';
 
 function paperTex() {
   return canvasTex(256, 360, (g, w, h) => {
@@ -43,8 +43,7 @@ export function Clipboard() {
 
   const geo = useMemo(() => {
     // rounded hardboard with bevel, lying flat (thickness 0..0.012)
-    const board = extrude(rrShape(-0.125, -0.175, 0.125, 0.175, 0.018), 0.008, 0.002, 2, 6);
-    board.rotateX(-Math.PI / 2); board.translate(0, 0.002, 0);
+    const board = rbox(0.25, 0.01, 0.35, 0, 0.006, 0, 0.004, 3);
     // paper: slight sag + lifted, curled free corner (bottom-left, away from the clip at +z)
     const paper = gridSurface(16, 22, (u, v, o) => {
       const x = (0.5 - u) * PW, z = (v - 0.5) * PD;
@@ -79,17 +78,17 @@ export function Clipboard() {
         <meshStandardMaterial map={wood} roughness={0.7} />
       </mesh>
       <mesh geometry={geo.under}><meshStandardMaterial color="#EFEAE0" roughness={1} side={THREE.DoubleSide} /></mesh>
-      <mesh geometry={geo.paper} castShadow receiveShadow>
+      <mesh geometry={geo.paper} receiveShadow>
         <meshStandardMaterial map={tex} roughness={0.95} side={THREE.DoubleSide} />
       </mesh>
       <mesh geometry={geo.clip} castShadow>
-        <meshStandardMaterial color="#C9CDD3" metalness={1} roughness={0.25} />
+        <meshStandardMaterial color="#D5D9DE" metalness={0.55} roughness={0.3} />
       </mesh>
       {/* pen lying beside the board */}
       <group position={[0.165, 0.006, 0.02]} rotation={[Math.PI / 2, 0, 0.25]}>
         <mesh geometry={geo.pen} castShadow><meshStandardMaterial color="#2F4A3A" roughness={0.35} /></mesh>
         <mesh geometry={geo.grip}><meshStandardMaterial color="#1a1a1c" roughness={0.6} /></mesh>
-        <mesh geometry={geo.penClip}><meshStandardMaterial color="#d0d3d8" metalness={1} roughness={0.2} /></mesh>
+        <mesh geometry={geo.penClip}><meshStandardMaterial color="#d0d3d8" metalness={0.5} roughness={0.25} /></mesh>
       </group>
     </Hotspot>
   );

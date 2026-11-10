@@ -4,7 +4,7 @@ import { VAN } from '../layout';
 import { fbm, gridSurface, rbox, smooth, type G } from './util';
 
 const TOP = VAN.bedTopY; // 0.78
-export const MATTRESS = { x: 0.745, z0: -1.32, z1: 1.06, y0: VAN.floorY + 0.02, y1: TOP - 0.01 };
+export const MATTRESS = { x: 0.745, z0: -1.32, z1: 1.06, y0: VAN.floorY + 0.02, y1: TOP - 0.03 };
 
 /** Plush mattress: very rounded box with a slight crown and a piped seam bulge. */
 export function makeMattress(seg = 6) {
@@ -41,7 +41,7 @@ export function makeDuvet(nu: number, nv: number) {
     const wr = fbm(sx * 3.2, sz * 2.4, 0.3, 3) * 0.014 + Math.sin(sx * 7 + sz * 4.5) * 0.004
       + Math.sin((sx - sz) * 5.0) * smooth(0.2, 0.9, Math.abs(sx)) * 0.006;
     // side drape: past the mattress edge the cloth rolls over a cylinder then falls
-    let x = sx, y = TOP + 0.02 + wr;
+    let x = sx, y = TOP - 0.004 + wr * 0.7;
     const ax = Math.abs(sx), sgn = Math.sign(sx) || 1;
     if (ax > mx - R) {
       const d = ax - (mx - R);
@@ -102,7 +102,7 @@ export function makePillow(w = 0.27, h = 0.075, d = 0.18) {
 export function makeBlanket(nu = 40, nv = 48): G {
   const width = 1.05, x0 = -0.08; // centred a bit left
   const zStart = 0.4;
-  const yTop = TOP + 0.045;
+  const yTop = TOP + 0.016;
   const zEdge = MATTRESS.z1 + 0.02; // where it rolls over
   const R = 0.06;
   const flatLen = zEdge - R - zStart;
