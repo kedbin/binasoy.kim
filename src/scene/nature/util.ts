@@ -3,7 +3,7 @@
 // so it can be merged freely. `color` = painted shade / AO (multiplies the material/instance colour),
 // `aTint` = 0..1 blend toward the material's highlight colour (sun-kissed gold, moss, white stripe…).
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { mergeGeometries, mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { mulberry32, fbm2, noise2, fbm1 } from '../lake/noise';
 
 export { mulberry32, fbm2, noise2, fbm1 };
@@ -85,7 +85,6 @@ export function paintFaces(g: G, fn: (c: THREE.Vector3, n: THREE.Vector3, out: T
   for (let f = 0; f < p.count / 3; f++) {
     _a.fromBufferAttribute(p, f * 3); _b.fromBufferAttribute(p, f * 3 + 1); _d.fromBufferAttribute(p, f * 3 + 2);
     _v.copy(_a).add(_b).add(_d).multiplyScalar(1 / 3);
-    _n.subVectors(_d, _b).cross(_b.clone().sub(_a).multiplyScalar(-1)).normalize();
     _n.subVectors(_b, _a).cross(_d.clone().sub(_a)).normalize();
     _c.setRGB(1, 1, 1);
     const t = fn(_v, _n, _c, f);
@@ -109,13 +108,18 @@ export function loft(rings: number, seg: number, fn: (t: number, a: number, out:
   const v = new THREE.Vector3();
   for (let i = 0; i <= rings; i++) for (let j = 0; j < seg; j++) { fn(i / rings, (j / seg) * Math.PI * 2, v, i, j); pos.push(v.x, v.y, v.z); }
   const at = (i: number, j: number) => i * seg + (j % seg);
-  // orientation test on a middle ring
-  const mi = Math.max(1, Math.floor(rings / 2)) - (rings === 1 ? 1 : 0);
+  // orientation: sum over all quads of (quad normal · radial-out), using winding (a, c, b)
   const ringC = (i: number) => { const c = new THREE.Vector3(); for (let j = 0; j < seg; j++) c.add(new THREE.Vector3().fromArray(pos, at(i, j) * 3)); return c.divideScalar(seg); };
-  const A = new THREE.Vector3().fromArray(pos, at(mi, 0) * 3), B = new THREE.Vector3().fromArray(pos, at(mi, 1) * 3), Cc = new THREE.Vector3().fromArray(pos, at(mi + 1, 0) * 3);
-  const nrm = Cc.clone().sub(A).cross(B.clone().sub(A));
-  const out = A.clone().sub(ringC(mi));
-  const flip = nrm.dot(out) < 0;
+  const centres = Array.from({ length: rings + 1 }, (_, i) => ringC(i));
+  let score = 0;
+  const A = new THREE.Vector3(), B = new THREE.Vector3(), Cc = new THREE.Vector3(), nrm = new THREE.Vector3(), out = new THREE.Vector3();
+  for (let i = 0; i < rings; i++) for (let j = 0; j < seg; j++) {
+    A.fromArray(pos, at(i, j) * 3); B.fromArray(pos, at(i, j + 1) * 3); Cc.fromArray(pos, at(i + 1, j) * 3);
+    nrm.subVectors(Cc, A).cross(B.clone().sub(A));
+    out.copy(A).sub(centres[i]);
+    score += nrm.dot(out);
+  }
+  const flip = score < 0;
   for (let i = 0; i < rings; i++) for (let j = 0; j < seg; j++) {
     const a = at(i, j), b = at(i, j + 1), c = at(i + 1, j), d = at(i + 1, j + 1);
     if (!flip) idx.push(a, c, b, b, c, d); else idx.push(a, b, c, b, d, c);
@@ -126,7 +130,7 @@ export function loft(rings: number, seg: number, fn: (t: number, a: number, out:
     for (let j = 0; j < seg; j++) {
       const a = at(i, j), b = at(i, j + 1);
       // start cap faces -axis, end cap +axis; follow the side winding convention
-      if (end !== flip) idx.push(ci, a, b); else idx.push(ci, b, a);
+      if (end === flip) idx.push(ci, a, b); else idx.push(ci, b, a);
     }
   };
   if (caps[0]) addCap(0, false);
@@ -159,6 +163,21 @@ export function blob(r: number, detail: number, squash: [number, number, number]
     p.multiplyScalar((len + n * amp * 2 * r) / len);
     p.set(p.x * squash[0], p.y * squash[1], p.z * squash[2]);
   });
+}
+
+/** Smooth (welded) lumpy blob: soft rounded shading instead of facets. */
+export function softBlob(r: number, detail: number, squash: [number, number, number], amp: number, freq: number, seed: number) {
+  let g: G = new THREE.IcosahedronGeometry(r, detail);
+  g.deleteAttribute('normal'); g.deleteAttribute('uv');
+  g = mergeVertices(g, 1e-4);
+  displace(g, (p) => {
+    const n = fbm3(p.x * freq + seed * 7.1, p.y * freq + seed * 3.3, p.z * freq - seed * 1.7, 3) - 0.5;
+    const len = p.length();
+    p.multiplyScalar((len + n * amp * 2 * r) / len);
+    p.set(p.x * squash[0], p.y * squash[1], p.z * squash[2]);
+  });
+  g.computeVertexNormals();
+  return clean(g);
 }
 
 /** Translate/rotate helper returning the same geometry. */
