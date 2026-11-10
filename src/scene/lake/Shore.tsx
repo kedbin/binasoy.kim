@@ -56,8 +56,12 @@ function Grass({ count, palette, shadows }: { count: number; palette: string[]; 
     const band = r();
     const x = band < 0.25 ? -13 + r() * 24 : (r() - 0.5) * 44;
     const z = band < 0.25 ? 6.4 + r() * 1.3 : -12 + r() * 21;
-    if (beachMask(x, z) > 0.35 || inVan(x, z, 0.15) || onTrack(x, z)) return null;
-    return { x, z, s: 0.55 + r() * 0.6 - (z > 5 ? 0.15 : 0), r: r() * 6.28, tilt: (r() - 0.5) * 0.2, c: Math.floor(r() * 9) };
+    if (beachMask(x, z) > 0.2 || inVan(x, z, 0.15) || onTrack(x, z)) return null;
+    // view corridor from the bumper to past the fence: only short tufts (< 25 cm) so the lake/raft stay clear
+    const corridor = Math.abs(x) < 6 && z > 1.5 && z < WORLD.fenceZ + 1;
+    const edge = Math.min(1, Math.max(0, (Math.abs(x) - 6) / 6));
+    const s = corridor ? 0.45 + r() * 0.35 : 0.6 + r() * 0.5 + edge * 0.5;
+    return { x, z, s, r: r() * 6.28, tilt: (r() - 0.5) * 0.2, c: Math.floor(r() * 9) };
   }), [count]);
   const ref = useRef<THREE.InstancedMesh>(null);
   useInstances(ref, items, colors, -0.02);

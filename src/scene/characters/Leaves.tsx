@@ -71,8 +71,9 @@ export function Leaves() {
     if (m.instanceColor) m.instanceColor.needsUpdate = true;
   }, [n, pal]);
 
-  useFrame(({ clock }, dt) => {
+  useFrame(({ clock, camera }, dt) => {
     const m = ref.current; if (!m) return;
+    const cp = camera.position;
     const night = useScene.getState().timeOfDay === 'night';
     m.count = night ? Math.floor(n * 0.35) : n;
     const t = clock.elapsedTime;
@@ -89,7 +90,9 @@ export function Leaves() {
       // rocking (pendulum) + occasional full tumble for a subset
       const rock = wob * 0.9 * mo.flutter;
       dummy.rotation.set(l.rx + rock + l.flip * t * l.sp * 2.2 * mo.spin, l.ry + t * 0.4 * mo.spin, rock * 0.6);
-      dummy.scale.setScalar(mo.size);
+      // never let a leaf brush the lens: shrink to nothing inside ~1.2 m of the camera
+      const dc = dummy.position.distanceTo(cp);
+      dummy.scale.setScalar(mo.size * THREE.MathUtils.smoothstep(dc, 0.7, 1.4));
       dummy.updateMatrix();
       m.setMatrixAt(i, dummy.matrix);
     }

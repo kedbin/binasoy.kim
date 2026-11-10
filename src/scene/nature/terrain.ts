@@ -15,8 +15,9 @@ export function groundHeight(x: number, z: number) {
   const n = fbm2(x * 0.15, z * 0.15, 3);
   let y = 0;
   const b0 = WORLD.beachZ0 - 1.5;
-  if (z > b0) y = -0.35 * smooth01(z, b0, WORLD.beachZ0 + 0.5);
-  if (z > WORLD.shoreZ - 1) y -= 0.6 * (z - (WORLD.shoreZ - 1)) * 0.25;
+  // grass bank steps down to a dry beach that stays just above the waterline, then shelves under the lake
+  if (z > b0) y = -0.07 * smooth01(z, b0, WORLD.beachZ0 + 0.5) - 0.06 * smooth01(z, WORLD.beachZ0 + 0.5, WORLD.shoreZ - 0.2);
+  if (z > WORLD.shoreZ - 0.4) y -= 0.25 * (z - (WORLD.shoreZ - 0.4));
   const amp = z < WORLD.beachZ0 ? 0.14 : 0.04;
   y += (n - 0.5) * amp * vanFlat(x, z);
   // gentle rise into the forest behind / to the sides
