@@ -30,7 +30,7 @@ export const WORLD = {
 /** Anchors for interactive props (hotspots). */
 export const ANCHORS = {
   laptop: { pos: [0.18, VAN.bedTopY + 0.02, 0.35] as const, rotY: Math.PI + 0.25 },
-  photoWall: { pos: [-0.77, 1.2, -0.4] as const, rotY: Math.PI / 2 },   // left side panel
+  photoWall: { pos: [-0.745, 1.36, -0.52] as const, rotY: Math.PI / 2 }, // photo garland across the sliding-door window
   stickers: { pos: [0.762, 0.915, 0.08] as const, rotY: -Math.PI / 2 },  // right side cubby door (below sill)
   clipboard: { pos: [-0.5, VAN.bedTopY + 0.03, 0.75] as const, rotY: 0.4 },
   raft: { pos: [-3, WORLD.waterY, 26] as const },
@@ -43,7 +43,7 @@ export const CAMERA: Record<string, { pos: [number, number, number]; target: [nu
   seat:      { pos: [0, 1.22, -1.05], target: [0, 1.0, 6],     fov: 62 },  // lying against pillows, facing the lake
   laptop:    { pos: [0.12, 1.12, -0.05], target: [0.18, 0.92, 0.35], fov: 40 },
   outside:   { pos: [0, 1.45, 2.2],   target: [-2, 2.2, 60],   fov: 55 },  // at bumper looking at lake
-  wall:      { pos: [-0.15, 1.2, -0.4], target: [-0.77, 1.2, -0.4], fov: 50 },
+  wall:      { pos: [-0.1, 1.4, -0.52], target: [-0.71, 1.4, -0.52], fov: 50 },  // distance is refitted in CameraRig
   stickers:  { pos: [0.18, 0.96, 0.08], target: [0.762, 0.915, 0.08], fov: 46 },
   clipboard: { pos: [-0.4, 1.25, 0.45], target: [-0.5, 0.8, 0.75], fov: 45 },
 };

@@ -6,8 +6,10 @@ export const look = {
   yaw: 0, pitch: 0,       // radians, current offset from the preset's forward direction
   vYaw: 0, vPitch: 0,     // radians / s, inertia after release
   dragging: false,
-  /** px moved in the current gesture: hotspots ignore clicks after a real drag */
+  /** furthest the pointer got from where it went down (css px): hotspots ignore clicks after a real drag */
   moved: 0,
+  /** how far a press may wander and still count as a tap; fingers jitter far more than a mouse */
+  slop: 6,
 };
 
 export const LOOK_LIMITS: Record<string, { yaw: number; pitch: number }> = {
@@ -44,12 +46,12 @@ export function resetLook() { look.yaw = look.pitch = look.vYaw = look.vPitch = 
 
 /** Attach to the canvas container. Returns a cleanup. */
 export function attachLook(el: HTMLElement) {
-  let id = -1, lx = 0, ly = 0, lt = 0;
+  let id = -1, lx = 0, ly = 0, lt = 0, sx = 0, sy = 0;
   // any new gesture (canvas, marker, HUD) resets the drag distance used to suppress clicks
-  const anyDown = () => { look.moved = 0; };
+  const anyDown = (e: PointerEvent) => { look.moved = 0; look.slop = e.pointerType === 'mouse' ? 6 : 16; };
   const down = (e: PointerEvent) => {
     if (e.button !== 0 && e.pointerType === 'mouse') return;
-    id = e.pointerId; lx = e.clientX; ly = e.clientY; lt = performance.now();
+    id = e.pointerId; lx = sx = e.clientX; ly = sy = e.clientY; lt = performance.now();
     look.moved = 0; look.vYaw = look.vPitch = 0;
     look.dragging = !!lookLimits();
   };
@@ -57,14 +59,15 @@ export function attachLook(el: HTMLElement) {
     if (e.pointerId !== id) return;
     const dx = e.clientX - lx, dy = e.clientY - ly;
     lx = e.clientX; ly = e.clientY;
-    look.moved += Math.abs(dx) + Math.abs(dy);
-    if (!look.dragging) return;
+    look.moved = Math.max(look.moved, Math.hypot(e.clientX - sx, e.clientY - sy));
+    // inside the tap slop nothing turns, so a wobbly tap never nudges the view
+    if (!look.dragging || look.moved < look.slop) return;
     const now = performance.now(), dtt = Math.max(1, now - lt) / 1000; lt = now;
     // drag the world: moving the pointer right turns the view left
     const yy = dx * SENS, pp = dy * SENS;
     look.yaw += yy; look.pitch += pp;
     look.vYaw = look.vYaw * 0.6 + (yy / dtt) * 0.4; look.vPitch = look.vPitch * 0.6 + (pp / dtt) * 0.4;
-    if (look.moved > 6) el.style.cursor = 'grabbing';
+    el.style.cursor = 'grabbing';
   };
   const up = (e: PointerEvent) => {
     if (e.pointerId !== id) return;

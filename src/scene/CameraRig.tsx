@@ -28,6 +28,30 @@ function laptopPose(aspect: number, screen: THREE.Object3D, pos: THREE.Vector3, 
   pos.copy(_c).addScaledVector(_n, Math.max(dH, dW));
 }
 
+/** Garland footprint to keep in frame (metres), incl. a little air around it. */
+const WALL_FIT = { w: 0.86, h: 0.5 };
+/**
+ * Back the camera off the photo garland until all of it fits in the part of the screen the Photos sheet
+ * leaves free (side sheet on desktop, bottom sheet on phones). Without this, portrait phones crop the outer prints.
+ */
+let wallFov = CAMERA.wall.fov;
+function wallPose(w: number, h: number, pos: THREE.Vector3, target: THREE.Vector3) {
+  const p = CAMERA.wall;
+  const compact = w < 820;
+  const freeW = compact ? w : w - Math.min(400, Math.max(320, w * 0.36)) - 32;
+  const freeH = compact ? h * 0.5 : h;
+  const t = Math.tan(THREE.MathUtils.degToRad(p.fov) / 2);
+  // the vertical FOV spans the whole canvas height, so scale the needed size up by canvas/free
+  const dH = (WALL_FIT.h * (h / freeH)) / (2 * t);
+  const dW = (WALL_FIT.w * (w / freeW)) / (2 * t * (w / h));
+  const want = Math.max(dH, dW);
+  // the opposite wall is ~1.5 m away: past that, widen the lens instead of backing through it
+  const d = THREE.MathUtils.clamp(want, 0.5, 1.3);
+  wallFov = Math.min(84, THREE.MathUtils.radToDeg(2 * Math.atan(t * (want / d))));
+  target.set(...p.target);
+  pos.set(p.target[0] + d, p.pos[1], p.pos[2]);
+}
+
 const INSIDE = new Set<View>(['seat', 'laptop', 'wall', 'stickers', 'clipboard']);
 /** Pre-reveal camera: pulled back from the intro shot so the reveal can dolly in. */
 const INTRO_START = new THREE.Vector3(...CAMERA.intro.target).lerp(new THREE.Vector3(...CAMERA.intro.pos), 1.32).add(new THREE.Vector3(0, 0.25, 0));
@@ -85,11 +109,14 @@ export function CameraRig() {
   function target(view: View, pos: THREE.Vector3, tgt: THREE.Vector3) {
     const screen = useLaptopStore.getState().screen;
     if (view === 'laptop' && screen) { laptopPose((camera as THREE.PerspectiveCamera).aspect, screen, pos, tgt); return; }
+    if (view === 'wall') { wallPose(size.width, size.height, pos, tgt); return; }
     const p = CAMERA[view] ?? CAMERA.seat;
     pos.set(...p.pos); tgt.set(...p.target);
   }
 
-  useFrame((_, dt) => {
+  useFrame((_, rawDt) => {
+    // A hitch (panel mounting, texture upload) must not teleport the camera along its flight: cap the step.
+    const dt = Math.min(rawDt, 1 / 24);
     const s = f.current, st = useScene.getState();
     const cam = camera as THREE.PerspectiveCamera;
     const preset = CAMERA[s.view] ?? CAMERA.seat;
@@ -114,8 +141,8 @@ export function CameraRig() {
       if (look.yaw || look.pitch) { cam.rotateOnWorldAxis(Y, look.yaw); cam.rotateX(look.pitch); }
     }
     // Portrait screens: widen vertical FOV so the horizontal framing roughly matches a 16:10 desktop.
-    const portraitBoost = s.view === 'laptop' ? 1 : THREE.MathUtils.clamp(1.6 / cam.aspect, 1, 1.55);
-    const goal = Math.min(preset.fov * portraitBoost, 95);
+    const portraitBoost = s.view === 'laptop' || s.view === 'wall' ? 1 : THREE.MathUtils.clamp(1.6 / cam.aspect, 1, 1.55);
+    const goal = s.view === 'wall' ? wallFov : Math.min(preset.fov * portraitBoost, 95);
     const fov = s.t < 1 ? THREE.MathUtils.lerp(s.fromFov, goal, ease(s.t)) : goal;
     // Lens shift: keep the subject centred in the area not covered by a side sheet (bottom sheets: shift up).
     const sh = st.arrived === s.view ? st.sheet : null;
