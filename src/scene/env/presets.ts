@@ -138,7 +138,7 @@ export const LIGHTS: Record<TimeOfDay, LightPreset> = {
     envIntensity: 0.18, envHorizon: '#2A3458', envTop: '#141A30',
     bounce: 0, bounceColor: '#FFB98A',
     shaft: 0, shaftColor: '#FFC48A',
-    practicalColor: '#FFB566', practicalGain: 0.3, practicalDistance: 2.2,
+    practicalColor: '#FFB566', practicalGain: 0.2, practicalDistance: 2.0,
     sky: { horizon: '#1C2340', low: '#141B33', mid: '#0C1226', zenith: '#05081A', cloud: '#161C30', cloudLit: '#2A3352', glow: '#3A4A80' },
     stars: 1, moon: 1,
     haze: '#1E2744', hazeAmount: 0.8, mist: 0.4,
