@@ -30,7 +30,7 @@ function laptopPose(aspect: number, screen: THREE.Object3D, pos: THREE.Vector3, 
 
 const INSIDE = new Set<View>(['seat', 'laptop', 'wall', 'stickers', 'clipboard']);
 /** Pre-reveal camera: pulled back from the intro shot so the reveal can dolly in. */
-const INTRO_START = new THREE.Vector3(...CAMERA.intro.pos).add(new THREE.Vector3(1.1, 0.5, 2.6));
+const INTRO_START = new THREE.Vector3(...CAMERA.intro.target).lerp(new THREE.Vector3(...CAMERA.intro.pos), 1.32).add(new THREE.Vector3(0, 0.25, 0));
 /** Through the middle of the tailgate opening, a bit outside. */
 const HATCH = new THREE.Vector3(0, 1.3, VAN.backZ + 0.6);
 const CABIN = new THREE.Vector3(0, 1.2, -0.45);
