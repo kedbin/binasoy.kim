@@ -1,15 +1,9 @@
-// Smoothly animated 0 (golden hour) → 1 (night) value shared by all lake materials.
-import { useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
-import { useScene } from '../../state/store';
+// Shared animated uniforms for lake materials. Now backed by the damped env (env/live.ts):
+// 0 = golden/day, 1 = night. Kept as a thin alias so existing imports keep working.
+import { envUniforms } from '../env/live';
 
-export const nightUniform = { value: 0 };
-export const timeUniform = { value: 0 };
+export const nightUniform = envUniforms.uNight;
+export const timeUniform = envUniforms.uTime;
 
-export function useTimeOfDayDriver() {
-  useFrame((state, dt) => {
-    const target = useScene.getState().timeOfDay === 'night' ? 1 : 0;
-    nightUniform.value = THREE.MathUtils.damp(nightUniform.value, target, 1.6, dt);
-    timeUniform.value = state.clock.elapsedTime;
-  });
-}
+/** @deprecated EnvDriver (env/EnvLighting.tsx) drives all env uniforms now. */
+export function useTimeOfDayDriver() {}

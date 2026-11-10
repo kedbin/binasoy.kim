@@ -1,19 +1,22 @@
 // Foreground: grass bank under the van sloping to a sandy beach, split-rail fence, rocks.
 import { useMemo } from 'react';
 import * as THREE from 'three';
-import { WORLD, PALETTE } from '../layout';
+import { WORLD } from '../layout';
+import { SEASONS, type Season } from '../env/presets';
 import { fbm2, mulberry32 } from './noise';
 import { useScene } from '../../state/store';
 
-function groundGeometry() {
+function groundGeometry(season: Season) {
+  const pal = SEASONS[season];
   const w = 160, d = 100, sx = 120, sz = 90;
   const g = new THREE.PlaneGeometry(w, d, sx, sz);
   g.rotateX(-Math.PI / 2);
   g.translate(0, 0, -60 + d / 2); // z from -60 .. 40
   const pos = g.attributes.position as THREE.BufferAttribute;
   const col = new Float32Array(pos.count * 3);
-  const grass = new THREE.Color(PALETTE.grass), grass2 = new THREE.Color('#8A8A4E'), dry = new THREE.Color('#A79A62');
-  const sand = new THREE.Color(PALETTE.sand), wet = new THREE.Color('#9C8C70');
+  const grass = new THREE.Color(pal.grass[0]), grass2 = new THREE.Color(pal.grass[1 % pal.grass.length]), dry = new THREE.Color(pal.grass[2 % pal.grass.length]);
+  const sand = new THREE.Color(pal.ground), wet = sand.clone().multiplyScalar(0.72);
+  const dark = new THREE.Color('#000000');
   const c = new THREE.Color();
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i), z = pos.getZ(i);
@@ -29,6 +32,12 @@ function groundGeometry() {
     c.copy(grass).lerp(grass2, n).lerp(dry, Math.max(0, n - 0.55) * 1.5);
     const s = sand.clone().lerp(wet, THREE.MathUtils.smoothstep(z, WORLD.shoreZ - 2, WORLD.shoreZ));
     c.lerp(s, beach);
+    // painted AO: soft darkening under/around the van footprint (complements ContactShadows)
+    const vx = Math.abs(x) / 1.6, vz = (z + 1.0) / 3.2;
+    const vanAO = Math.exp(-(vx * vx + vz * vz) * 1.4);
+    c.lerp(dark, vanAO * 0.25);
+    // fine grass value noise so the lawn isn't a flat swatch
+    c.multiplyScalar(0.9 + 0.2 * fbm2(x * 1.3, z * 1.3, 2));
     col.set([c.r, c.g, c.b], i * 3);
   }
   g.setAttribute('color', new THREE.BufferAttribute(col, 3));
@@ -80,15 +89,16 @@ function mergeAll(geos: THREE.BufferGeometry[]) {
 
 export function Shore() {
   const quality = useScene((s) => s.quality);
-  const ground = useMemo(groundGeometry, []);
+  const season = useScene((s) => s.season);
+  const ground = useMemo(() => groundGeometry(season), [season]);
   const fence = useMemo(fenceGeometry, []);
   return (
     <group name="shore">
       <mesh geometry={ground} receiveShadow={quality !== 'low'}>
-        <meshLambertMaterial vertexColors />
+        <meshStandardMaterial vertexColors roughness={0.95} envMapIntensity={0.6} />
       </mesh>
-      <mesh geometry={fence} castShadow={quality === 'high'}>
-        <meshLambertMaterial color="#6B5640" />
+      <mesh geometry={fence} castShadow={quality !== 'low'} receiveShadow>
+        <meshStandardMaterial color="#6B5640" roughness={0.9} />
       </mesh>
     </group>
   );
