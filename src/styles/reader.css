@@ -26,8 +26,8 @@
 .r-status { display: inline-flex; align-items: center; gap: .5rem; font-size: .9rem; font-weight: 700; color: var(--pine); background: #E9F0E4; padding: 4px 12px; border-radius: 999px; margin: 0 0 1rem !important; }
 .r-dot { width: .6rem; height: .6rem; border-radius: 50%; background: #3E8E4F; box-shadow: 0 0 0 3px #3E8E4F33; }
 .r-roles { display: flex; flex-wrap: wrap; gap: .4rem .5rem; margin: .8rem 0 !important; }
-.r-roles span { font-weight: 700; color: var(--maple); font-size: .95rem; }
-.r-roles span:not(:last-child)::after { content: "·"; margin-left: .5rem; color: var(--gold); }
+.r-roles span { font-weight: 700; color: var(--r-link); font-size: .95rem; }
+.r-roles span:not(:last-child)::after { content: "·"; margin-left: .5rem; color: var(--r-muted); }
 .r-tagline { font-size: 1.25rem; line-height: 1.45; color: var(--ink); max-width: 36ch; }
 .r-links { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1.2rem 0 .4rem; }
 .reader-prose .r-btn { display: inline-block; text-decoration: none; font-weight: 700; font-size: .95rem; padding: 8px 16px; border-radius: 999px; background: var(--r-card); color: var(--ink); border: 1.5px solid var(--r-line); transition: transform .2s cubic-bezier(.4,0,.2,1), border-color .2s; }
