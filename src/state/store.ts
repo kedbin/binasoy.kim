@@ -3,13 +3,17 @@ import { create } from 'zustand';
 /** Camera / UI state machine. All interactive objects call goTo(view). */
 export type View = 'intro' | 'seat' | 'laptop' | 'outside' | 'wall' | 'stickers' | 'clipboard';
 export type Quality = 'low' | 'mid' | 'high';
-export type TimeOfDay = 'golden' | 'night';
+export type { TimeOfDay, Season } from '../scene/env/presets';
+import type { TimeOfDay, Season } from '../scene/env/presets';
 
 interface SceneState {
   view: View;
   prevView: View;
   quality: Quality;
   timeOfDay: TimeOfDay;
+  season: Season;
+  setSeason: (s: Season) => void;
+  setTimeOfDay: (t: TimeOfDay) => void;
   sound: boolean;
   loaded: boolean;
   hovered: string | null;
@@ -27,6 +31,9 @@ export const useScene = create<SceneState>((set, get) => ({
   prevView: 'intro',
   quality: 'mid',
   timeOfDay: 'golden',
+  season: 'fall',
+  setSeason: (season) => set({ season }),
+  setTimeOfDay: (timeOfDay) => set({ timeOfDay }),
   sound: false,
   loaded: false,
   hovered: null,
