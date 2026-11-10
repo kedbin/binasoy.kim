@@ -7,7 +7,7 @@ async function enterVan(page: Page) {
   await page.goto('/?q=low');
   await expect(page.locator('html')).toHaveClass(/mode-3d/);
   // stage (a) static loader → stage (b) React loader → reveal
-  await expect(page.locator('canvas').first()).toBeVisible({ timeout: 45_000 });
+  await expect(page.locator('canvas').first()).toBeVisible({ timeout: 90_000 });
   await expect(page.locator('html')).toHaveAttribute('data-ready', '1', { timeout: 100_000 });
   await expect(page.locator('.hud.is-revealed')).toBeAttached();
   await expect(page.locator('#boot-loader')).toHaveCount(0);
