@@ -11,6 +11,8 @@ import { CoachMark } from './CoachMark';
 import { PLACES, placeOf } from './places';
 
 const AUTO_ENTER_MS = 2600;
+/** Auto-advance only once per page load; ?still disables it (screenshots). */
+let autoDone = new URLSearchParams(location.search).has('still');
 
 function announce(v: View) {
   if (v === 'seat') return 'Back in the van, lying on the bed facing the lake. Choose a place from the dock, or press 1 to 5.';
@@ -28,8 +30,8 @@ function useIntroAutoEnter() {
   const revealed = useScene((s) => s.revealed);
   const view = useScene((s) => s.view);
   useEffect(() => {
-    if (!revealed || view !== 'intro') return;
-    const go = () => { if (useScene.getState().view === 'intro') useScene.getState().goTo('seat'); };
+    if (!revealed || view !== 'intro' || autoDone) return;
+    const go = () => { autoDone = true; if (useScene.getState().view === 'intro') useScene.getState().goTo('seat'); };
     const t = setTimeout(go, useScene.getState().reducedMotion ? 1200 : AUTO_ENTER_MS);
     const opts = { once: true } as const;
     // ignore the first ~400ms so the click that might have been on the loader doesn't skip the reveal
