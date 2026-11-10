@@ -48,6 +48,43 @@ export const rrHole = (x0: number, y0: number, x1: number, y1: number, r: number
   return p;
 };
 
+/** Polygon with rounded corners (points CCW recommended). Works for Shape (outer) and Path (holes). */
+export function roundPoly<T extends THREE.Path>(p: T, pts: [number, number][], r: number | number[]): T {
+  const n = pts.length;
+  const rad = (i: number) => (Array.isArray(r) ? r[i] : r);
+  const cut = (i: number) => {
+    const [px, py] = pts[i];
+    const [ax, ay] = pts[(i - 1 + n) % n];
+    const [bx, by] = pts[(i + 1) % n];
+    const la = Math.hypot(ax - px, ay - py), lb = Math.hypot(bx - px, by - py);
+    const rr = Math.min(rad(i), la / 2, lb / 2);
+    return { a: [px + ((ax - px) / la) * rr, py + ((ay - py) / la) * rr], b: [px + ((bx - px) / lb) * rr, py + ((by - py) / lb) * rr], p: [px, py] };
+  };
+  const c0 = cut(0);
+  p.moveTo(c0.b[0], c0.b[1]);
+  for (let k = 1; k <= n; k++) {
+    const c = cut(k % n);
+    p.lineTo(c.a[0], c.a[1]);
+    p.quadraticCurveTo(c.p[0], c.p[1], c.b[0], c.b[1]);
+  }
+  return p;
+}
+/** Offset a convex CCW polygon outward by d (miter). */
+export function offsetPoly(pts: [number, number][], d: number): [number, number][] {
+  const n = pts.length;
+  return pts.map((p, i) => {
+    const a = pts[(i - 1 + n) % n], b = pts[(i + 1) % n];
+    const e1 = [p[0] - a[0], p[1] - a[1]], e2 = [b[0] - p[0], b[1] - p[1]];
+    const l1 = Math.hypot(e1[0], e1[1]), l2 = Math.hypot(e2[0], e2[1]);
+    const n1 = [e1[1] / l1, -e1[0] / l1], n2 = [e2[1] / l2, -e2[0] / l2];
+    const m = [n1[0] + n2[0], n1[1] + n2[1]];
+    const ml = Math.hypot(m[0], m[1]) || 1;
+    const cos = (m[0] / ml) * n1[0] + (m[1] / ml) * n1[1];
+    const k = d / Math.max(0.3, cos);
+    return [p[0] + (m[0] / ml) * k, p[1] + (m[1] / ml) * k];
+  });
+}
+
 /** Set a per-vertex colour = base * ao(x,y,z). */
 export function paint(g: G, color: THREE.ColorRepresentation, ao?: AO): G {
   const c = new THREE.Color(color);
