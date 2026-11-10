@@ -11,6 +11,38 @@ const W = 0.19, H = 0.225, PH = 0.16;
 const urls = content.photos.map((p) => p.src.replace(/\.webp$/, '-thumb.webp'));
 const TAPE = ['#E8A5A0', '#A9C9B0', '#F2D58A', '#B9A7C9', '#9DBCD4', '#F4C7A1'];
 const framePlane = new THREE.PlaneGeometry(1, 1);
+/** Curl the bottom edge away from the wall a touch (glossy instant-film card). */
+function curl(g: THREE.BufferGeometry, h: number, amt: number) {
+  const p = g.attributes.position as THREE.BufferAttribute;
+  for (let i = 0; i < p.count; i++) {
+    const t = Math.max(0, (-p.getY(i) / h) * 2); // 0 at middle, 1 at bottom edge
+    p.setZ(i, p.getZ(i) + t * t * amt);
+  }
+  g.computeVertexNormals();
+  return g;
+}
+const cardGeo = curl(new THREE.BoxGeometry(W, H, 0.003, 4, 8, 1), H, 0.012);
+const photoGeo = (() => { const g = new THREE.PlaneGeometry(PH, PH, 4, 6); g.translate(0, 0.012, 0.0018); return curl(g, H, 0.012); })();
+/** Washi tape: thin strip with torn ends, slightly translucent. */
+const tapeGeo = (() => {
+  const s = new THREE.Shape();
+  const w = 0.03, h = 0.0095;
+  s.moveTo(-w, -h);
+  for (let k = 0; k <= 6; k++) s.lineTo(-w + w * 2 * (k / 6), -h + (k % 2 ? 0.0012 : 0));
+  for (let k = 0; k <= 4; k++) s.lineTo(w + (k % 2 ? 0.0015 : 0), -h + (2 * h * k) / 4);
+  for (let k = 6; k >= 0; k--) s.lineTo(-w + w * 2 * (k / 6), h - (k % 2 ? 0.0012 : 0));
+  for (let k = 4; k >= 0; k--) s.lineTo(-w - (k % 2 ? 0.0015 : 0), -h + (2 * h * k) / 4);
+  return new THREE.ShapeGeometry(s);
+})();
+const paperTex = (() => {
+  if (typeof document === 'undefined') return null;
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const g = c.getContext('2d')!;
+  g.fillStyle = '#ffffff'; g.fillRect(0, 0, 128, 128);
+  for (let i = 0; i < 1600; i++) { g.fillStyle = `rgba(110,90,60,${Math.random() * 0.06})`; g.fillRect(Math.random() * 128, Math.random() * 128, 1 + Math.random(), 1); }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+})();
 
 function Polaroid({ i, tex, x, y, rot }: { i: number; tex: THREE.Texture; x: number; y: number; rot: number }) {
   const [hov, setHov] = useState(false);
@@ -36,16 +68,14 @@ function Polaroid({ i, tex, x, y, rot }: { i: number; tex: THREE.Texture; x: num
         e.stopPropagation(); useWall.getState().setOpen(i);
       }}
     >
-      <mesh position={[0, 0, 0]} castShadow>
-        <boxGeometry args={[W, H, 0.004]} />
-        <meshStandardMaterial color="#FAF7F0" roughness={0.9} />
+      <mesh geometry={cardGeo} castShadow receiveShadow>
+        <meshStandardMaterial color="#FAF7F0" map={paperTex} roughness={0.85} />
       </mesh>
-      <mesh geometry={framePlane} position={[0, 0.012, 0.0025]} scale={[PH, PH, 1]}>
-        <meshStandardMaterial map={map} roughness={0.8} emissive="#ffffff" emissiveMap={map} emissiveIntensity={0.18} />
+      <mesh geometry={photoGeo}>
+        <meshPhysicalMaterial map={map} roughness={0.35} clearcoat={0.6} clearcoatRoughness={0.25} emissive="#ffffff" emissiveMap={map} emissiveIntensity={0.18} />
       </mesh>
-      <mesh position={[0.01, H / 2 - 0.002, 0.004]} rotation={[0, 0, 0.12 * (i % 2 ? 1 : -1)]}>
-        <boxGeometry args={[0.06, 0.02, 0.002]} />
-        <meshStandardMaterial color={TAPE[i % TAPE.length]} roughness={0.9} transparent opacity={0.88} />
+      <mesh geometry={tapeGeo} position={[0.01, H / 2 - 0.002, 0.0035]} rotation={[0, 0, 0.12 * (i % 2 ? 1 : -1)]}>
+        <meshStandardMaterial color={TAPE[i % TAPE.length]} roughness={0.8} transparent opacity={0.8} depthWrite={false} />
       </mesh>
     </group>
   );

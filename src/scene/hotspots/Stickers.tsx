@@ -32,7 +32,18 @@ function drawSticker(g: CanvasRenderingContext2D, s: number, vendor: string, lab
 }
 const SUB: Record<string, string> = { gcp: 'Google Cloud', azure: 'Azure', aws: 'AWS', 'google-ai': 'Google AI', other: '' };
 
-const planeG = new THREE.PlaneGeometry(1, 1);
+/** Sticker sheet: subdivided plane with one corner peeling up a hair (die-cut vinyl). */
+const planeG = (() => {
+  const g = new THREE.PlaneGeometry(1, 1, 8, 8);
+  const p = g.attributes.position as THREE.BufferAttribute;
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), y = p.getY(i);
+    const d = Math.max(0, (x + y) - 0.55); // top-right corner
+    p.setZ(i, d * d * 0.18);
+  }
+  g.computeVertexNormals();
+  return g;
+})();
 export function Stickers() {
   const certs = content.certs;
   const texs = useMemo(() => certs.map((c, i) => canvasTex(256, 256, (g) => drawSticker(g, 256, c.vendor, STICKER_SHORT[c.id] ?? c.name.slice(0, 8), SUB[c.vendor], i % 3))), [certs]);
@@ -47,7 +58,7 @@ export function Stickers() {
         const col = i % 4, row = Math.floor(i / 4);
         return (
           <mesh key={certs[i].id} geometry={planeG} position={[(col - 1.5) * 0.2 + (row ? 0.0 : 0), 0.1 - row * 0.2, 0.006 + i * 0.0002]} rotation={[0, 0, rots[i % rots.length]]} scale={[sz, sz, 1]}>
-            <meshStandardMaterial map={t} transparent alphaTest={0.3} roughness={0.35} />
+            <meshPhysicalMaterial map={t} transparent alphaTest={0.3} roughness={0.4} clearcoat={1} clearcoatRoughness={0.15} side={THREE.DoubleSide} />
           </mesh>
         );
       })}
