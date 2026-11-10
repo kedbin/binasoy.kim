@@ -4,8 +4,8 @@
 //   meshes globally (cheap traversal at a few frames after load). Opt out with `userData.noShadow = true`.
 // - ContactShadows baked once under the van + kayak (works on every tier, incl. low with no realtime shadows).
 import { useFrame, useThree } from '@react-three/fiber';
-import { ContactShadows, Environment, Lightformer } from '@react-three/drei';
-import { useRef } from 'react';
+import { ContactShadows } from '@react-three/drei';
+import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { useScene } from '../../state/store';
 import { LIGHTS } from './presets';
@@ -30,27 +30,50 @@ export function EnvDriver() {
   return null;
 }
 
+/**
+ * Generated IBL: a tiny gradient dome (ground → horizon band toward the sun → dome) plus sun and cool
+ * counter-sky patches, prefiltered with PMREM once per time-of-day. Hand-rolled instead of drei <Environment>
+ * to avoid pulling the HDR/EXR/gainmap loaders into the bundle (~150 KB gzip).
+ */
 export function EnvMap() {
   const tod = useScene((s) => s.timeOfDay);
-  const p = LIGHTS[tod];
-  const [sx, sy, sz] = p.skySun;
-  const az = Math.atan2(sx, sz);
-  return (
-    <Environment key={tod} resolution={64} frames={1} background={false}>
-      {/* dome */}
-      <Lightformer form="rect" intensity={1.0} color={p.envTop} scale={[40, 40, 1]} position={[0, 12, 0]} rotation-x={Math.PI / 2} />
-      {/* ground bounce */}
-      <Lightformer form="rect" intensity={0.35} color={p.hemiGround} scale={[40, 40, 1]} position={[0, -6, 0]} rotation-x={-Math.PI / 2} />
-      {/* warm horizon band toward the sun */}
-      <Lightformer form="rect" intensity={2.2} color={p.envHorizon} scale={[18, 2.2, 1]}
-        position={[Math.sin(az) * 9, 1 + sy * 6, Math.cos(az) * 9]} target={[0, 0, 0]} />
-      {/* sun hot-spot */}
-      <Lightformer form="circle" intensity={6 * (1 - (tod === 'night' ? 0.85 : 0))} color={p.sunColor} scale={1.5}
-        position={[Math.sin(az) * 9, 1.2 + sy * 8, Math.cos(az) * 9]} target={[0, 0, 0]} />
-      {/* cool counter sky behind the van */}
-      <Lightformer form="rect" intensity={0.8} color={p.rimColor} scale={[20, 6, 1]} position={[-2, 4, -10]} target={[0, 0, 0]} />
-    </Environment>
-  );
+  const gl = useThree((s) => s.gl);
+  const scene = useThree((s) => s.scene);
+  useEffect(() => {
+    const p = LIGHTS[tod];
+    const s = new THREE.Vector3(...p.skySun).normalize();
+    const az = Math.atan2(s.x, s.z);
+    const env = new THREE.Scene();
+    const geo = new THREE.SphereGeometry(10, 32, 16);
+    const col = new Float32Array(geo.attributes.position.count * 3);
+    const top = new THREE.Color(p.envTop), hor = new THREE.Color(p.envHorizon), gnd = new THREE.Color(p.hemiGround);
+    const rim = new THREE.Color(p.rimColor), c = new THREE.Color(), d = new THREE.Vector3();
+    const pos = geo.attributes.position as THREE.BufferAttribute;
+    for (let i = 0; i < pos.count; i++) {
+      d.fromBufferAttribute(pos, i).normalize();
+      const toward = Math.max(0, Math.cos(Math.atan2(d.x, d.z) - az));
+      if (d.y < 0) c.copy(gnd).multiplyScalar(0.5 + 0.5 * (1 + d.y));
+      else {
+        c.copy(hor).lerp(top, THREE.MathUtils.smoothstep(d.y, 0.0, 0.45));
+        c.lerp(rim, (1 - toward) * 0.35 * (1 - d.y));
+        c.multiplyScalar(1 + toward * toward * 1.4 * (1 - THREE.MathUtils.smoothstep(d.y, 0, 0.3)));
+      }
+      col.set([c.r, c.g, c.b], i * 3);
+    }
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    env.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide })));
+    // sun hot-spot
+    const sun = new THREE.Mesh(new THREE.SphereGeometry(0.9, 12, 8), new THREE.MeshBasicMaterial({ color: new THREE.Color(p.sunColor).multiplyScalar(tod === 'night' ? 1.2 : 6) }));
+    sun.position.copy(s).multiplyScalar(8);
+    env.add(sun);
+    const pm = new THREE.PMREMGenerator(gl);
+    const rt = pm.fromScene(env, 0.02);
+    scene.environment = rt.texture;
+    pm.dispose();
+    env.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh) { m.geometry.dispose(); (m.material as THREE.Material).dispose(); } });
+    return () => { if (scene.environment === rt.texture) scene.environment = null; rt.dispose(); };
+  }, [tod, gl, scene]);
+  return null;
 }
 
 const SKIP = /hills|sky|water|leaves|birds|fireflies|shaft|hotspot/i;

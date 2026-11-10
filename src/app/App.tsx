@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber';
-import { Suspense, useEffect } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { AdaptiveDpr, Preload } from '@react-three/drei';
 import * as THREE from 'three';
 import { EnvDriver, EnvMap, ShadowFlags, GroundContact } from '../scene/env/EnvLighting';
@@ -12,7 +12,8 @@ import { Van } from '../scene/van/Van';
 import { Lake } from '../scene/lake/Lake';
 import { Characters } from '../scene/characters/Characters';
 import { Hotspots } from '../scene/hotspots/Hotspots';
-import { Effects } from '../scene/Effects';
+// Post stack (N8AO/bloom/AgX) is lazy: keeps ~95 KB gzip of AO code off the critical path and out of 'low'.
+const Effects = lazy(() => import('../scene/Effects').then((m) => ({ default: m.Effects })));
 import { Overlay } from '../ui/Overlay';
 import { Loader } from '../ui/Loader';
 import { AudioManager } from '../audio';
@@ -52,7 +53,7 @@ export function App({ initialQuality }: { initialQuality: Quality }) {
           <PracticalTamer />
           <Characters />
           <Hotspots />
-          <Effects />
+          {quality !== 'low' && <Suspense fallback={null}><Effects /></Suspense>}
           <Preload all />
         </Suspense>
         <CameraRig />
