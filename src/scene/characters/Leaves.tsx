@@ -92,7 +92,7 @@ export function Leaves() {
       dummy.rotation.set(l.rx + rock + l.flip * t * l.sp * 2.2 * mo.spin, l.ry + t * 0.4 * mo.spin, rock * 0.6);
       // never let a leaf brush the lens: shrink to nothing inside ~1.2 m of the camera
       const dc = dummy.position.distanceTo(cp);
-      dummy.scale.setScalar(mo.size * THREE.MathUtils.smoothstep(dc, 0.7, 1.4));
+      dummy.scale.setScalar(mo.size * THREE.MathUtils.smoothstep(dc, 1.2, 2.6));
       dummy.updateMatrix();
       m.setMatrixAt(i, dummy.matrix);
     }
