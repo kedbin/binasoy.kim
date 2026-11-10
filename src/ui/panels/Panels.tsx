@@ -25,7 +25,7 @@ function KimOSModal() {
 export function StickersPanel() {
   const feat = content.certs.filter((c) => c.featured), more = content.certs.filter((c) => !c.featured);
   return (
-    <Sheet title="Certifications" label="Certifications" kicker="Stickers on the van wall">
+    <Sheet title="Certifications" label="Certifications" kicker="Stickers on the storage cubby">
       {content.certs.length === 0 && <p className="sheet__empty">No certifications listed yet.</p>}
       <ul className="certs">
         {feat.map((c) => <li key={c.id} data-vendor={c.vendor}><span className="dot" /><div><strong>{c.name}</strong><em>{c.issuer}</em><p>{c.blurb}</p></div></li>)}
